@@ -54,7 +54,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
                     NumericMatrix rMatrix, StringVector inColNames,
 					StringVector inRowNames,
                     int repeats, long rareDepth, int NoOfMatrices,
-                    bool verbose = false, bool returnObject = false, bool transpose=false) {
+                    bool verbose = false, bool returnObject = false, int margin=1) {
 
     // initialize variables
     std::vector< std::vector < double > > rmat;
@@ -74,7 +74,11 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 		inrownames =  Rcpp::as<vector < string > >(inRowNames);
     }
 
-
+	// transpose matrix, yes or no
+	bool transpose = false;
+	if(margin == 2){
+		transpose = true;
+	}
 
     // create variables to be filled
     DivEsts * dd(NULL);

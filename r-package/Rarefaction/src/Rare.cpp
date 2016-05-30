@@ -194,7 +194,7 @@ int rarefyMain(string inF, string outF, string mode,
 		}
 
 		if(transpose == true){
-			Mo->transpose;
+			Mo->transpose();
 		}
 
 		rowNames = Mo->getRowNames();

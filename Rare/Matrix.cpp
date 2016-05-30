@@ -812,9 +812,21 @@ void Matrix::normalize() {
 void Matrix::transpose(){
 	// takes the matrix and transposes it
 	// column ID and row ID have to be swapped as well
-	int n = mat.size();
-	cout << "transpose now\n";
-	cout << "N is " << n ;
+	vector< vector< mat_fl > >  transpMat(mat[0].size(), vector< mat_fl >(mat.size()));
+
+	for(int i = 0; i < mat.size(); i++){
+		for(int j = 0; j < mat[i].size(); j++){
+			transpMat[j][i] = mat[i][j];
+		}
+	}
+
+	// switch column and row names
+	vector< string >  rowIDst 	= rowIDs;
+	rowIDs 						= colIDs;
+	colIDs						= rowIDst;
+
+	// swap the matrices
+	mat = transpMat;
 }
 
 vector<mat_fl> Matrix::getRowSums() {
