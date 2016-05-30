@@ -87,7 +87,8 @@ public:
 	~smplVec(){
 		//delete[] arr;
 	}
-	void rarefy(long,string o,int rep,DivEsts*, vector<vector<uint>>& retCnts, int=0,bool=false, bool=false);
+	void rarefy(long,string o,int rep,DivEsts*, vector<vector<vector<uint>>>& retCnts,
+		std::vector<string>& retCntsSampleNames, int=0,bool=false, bool=false);
 	long getRichness(const vector<unsigned int>& cnts);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
 private:
@@ -100,20 +101,18 @@ private:
 	vector <double> calc_div(const vector<uint>& , int meth, float base=2.718282f);
 	double calc_chao1(const vector<uint>& , int corrBias); //corrBias: 0/1
 	double calc_eveness(const vector<uint>& );
-	
+
 	void print2File(const vector<unsigned int>&,const string);
 	//unsigned short * arr;
 	vector<string> IDs;
 	vector<unsigned int> arr;
 	double totSum;
-	vector<MyRNG> rng_P; 
+	vector<MyRNG> rng_P;
 	MyRNG rng;
 	int num_threads;
 	long richness;
 	double Shannon;
 	int numFeatures;
- 
+
 	//vector<float> vec;
 };
-
-

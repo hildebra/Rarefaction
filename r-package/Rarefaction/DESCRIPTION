@@ -1,0 +1,12 @@
+Package: rarefaction
+Type: Package
+Title: This package needs a description
+Version: 0.1
+Date: 2016-05-10
+Author: Falk Hildebrand, Paul Saary
+Maintainer: Paul Saary <rwinbuilder@paulsaary.de>
+Description: More about what it does (maybe more than one line)
+License: GPL (>= 2)
+Imports: Rcpp (>= 0.12.3)
+LinkingTo: Rcpp
+SystemRequirements: C++11

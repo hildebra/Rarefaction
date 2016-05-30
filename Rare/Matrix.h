@@ -76,13 +76,13 @@ public:
 	ModStep(const string&);
 	void getAllKOs(list<string>&);
 	void setRedund(ModOccur& m);
-	vector<bool> abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>&, 
+	vector<bool> abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>&,
 		float hitComplRatio =0.8, int redund=0);
 
 
 
 	//e.g. alt[0][0] = KO001 and requires alt[0][1] =KO002 or alternatively only alt[1][0]=K0003
-	vector< vector< string > > alternates; 
+	vector< vector< string > > alternates;
 	//how redundant is each KO and the different steps (basically occurence of KOs across DB)
 	vector< vector <int> > redundancy;
 };
@@ -109,7 +109,7 @@ public:
 	void setRedund(int x) { redund = x; }
 	void setPathwCompl(float x) { PathwCompl = x; }
 	void setEnzymCompl(float x) { enzymCompl = x; }
-	
+
 	vector<mat_fl> calcModAbund(const vector<mat_fl>&, const unordered_map<string, int>&, vector<string>& );
 	vector<string> & modNms() { return moduleNames; }
 	vector<string> & modDescr() { return moduleDescriptions; }
@@ -125,7 +125,7 @@ private:
 
 	//list of options
 	int redund; // max redundancy of KOs used
-	float PathwCompl; //corresponds to -c 
+	float PathwCompl; //corresponds to -c
 	float enzymCompl; //single enzymes complexes - how much needs to be present to trigger present
 
 };
@@ -145,6 +145,7 @@ public:
 	void splitOnHDD(string out_seed);
 	void writeSums(string);
 	void normalize();
+	void transpose();
 	void writeMatrix(const string ofile,bool onlyFilled=false);
 	size_t smplNum(){ return colIDs.size(); }
 	smplVec* getSampleVec(uint which){ return new smplVec(mat[which],1); }
@@ -159,8 +160,10 @@ public:
 	void addRow(vector<mat_fl>);//idea is that a single row is added on to the matrix
 	void setSampleNames(vector<string> in) { colIDs = in; }
 	void setRowNames(vector<string> in) { rowIDs = in; }
+	vector < string > getSampleNames(){ return(colIDs); }
+	vector < string > getRowNames(){ return(rowIDs); }
 	//void addCount(string, int, mat_fl);
-	
+
 private:
 	//subroutines
 	void read_subset_genes(const string);
