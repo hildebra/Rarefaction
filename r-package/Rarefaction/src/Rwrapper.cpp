@@ -98,7 +98,10 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 						rowNames, NoOfMatrices, transpose);
 
 
-
+	if(verbose == true){
+		cout << "Done rarefying, will now produce R objects in Cpp\n";
+		cout << "and pass them to R\n";
+	}
 
     // convert output to R
     List divLst = createDivList(dd);
@@ -124,6 +127,10 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 		  RrarefyMatrices[i]	= RdfTmp;
 	  }
     }
+	if(verbose == true){
+		cout << "All R objects were produced\n";
+
+	}
     // create R object to return to R
     List returnList;
 	if(returnObject == true){

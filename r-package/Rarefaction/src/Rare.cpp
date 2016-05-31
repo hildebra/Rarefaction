@@ -194,14 +194,20 @@ int rarefyMain(string inF, string outF, string mode,
 		}
 
 		if(transpose == true){
+			if(verbose == true){
+				cout << "Will now transpose the matrix\n";
+			}
 			Mo->transpose();
+			if(verbose == true){
+				cout << "Done transposing\n";
+			}
 		}
 
 		rowNames = Mo->getRowNames();
 		//vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		//divvs->resize(0,NULL); // paul resize the vector
 		if(verbose == true){
-			cout << "Using " << numThr << "threads\n";
+			cout << "Using " << numThr << " threads\n";
 		}
 		//cerr << "TH";
 		//std::future<DivEsts*> *tt = new std::future<DivEsts*>[numThr - 1];
