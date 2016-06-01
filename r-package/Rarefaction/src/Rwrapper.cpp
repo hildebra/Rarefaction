@@ -76,7 +76,8 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 
 	// transpose matrix, yes or no
 	bool transpose = false;
-	if(margin == 2){
+	if(margin == 1){ 	// apply function over rows, which is not the default, but columns
+						// is what the function currently dioes by default
 		transpose = true;
 	}
 
