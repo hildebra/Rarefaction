@@ -33,14 +33,14 @@ List createDivList(DivEsts * div){
 IntegerMatrix matrix2Mat(std::vector<vector<unsigned int>> dfMat,
 						std::vector<string> colnames, std::vector<string> rownames ){
 	// create a mat from a vector vector uint
-	IntegerMatrix NM 	= Rcpp::IntegerMatrix(dfMat.size(), dfMat[0].size());
+	IntegerMatrix NM 	= Rcpp::IntegerMatrix( dfMat[0].size(), dfMat.size());
 	for (int i = 0; i < NM.nrow(); i++) {
 		Rcpp::NumericVector  v = wrap(dfMat[i]);
-		NM(i,_) = v;
+		NM(_,i) = v;
 	}
 
 	Rcpp::List dimnms =  Rcpp::List::create(
-						colnames, rownames);
+						rownames, colnames);
 
 	NM.attr("dimnames") = dimnms;
 
@@ -143,7 +143,6 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
     }else{
       returnList            = List::create(Named("div", divLst));
     }
-    //List returnList            = List::create(Named("div", divLst)) ;
 
     // clean up variables
     delete dd;
