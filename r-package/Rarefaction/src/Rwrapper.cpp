@@ -34,7 +34,7 @@ IntegerMatrix matrix2Mat(std::vector<vector<unsigned int>> dfMat,
 						std::vector<string> colnames, std::vector<string> rownames ){
 	// create a mat from a vector vector uint
 	IntegerMatrix NM 	= Rcpp::IntegerMatrix( dfMat[0].size(), dfMat.size());
-	for (int i = 0; i < NM.nrow(); i++) {
+	for (int i = 0; i < NM.ncol(); i++) {
 		Rcpp::NumericVector  v = wrap(dfMat[i]);
 		NM(_,i) = v;
 	}
