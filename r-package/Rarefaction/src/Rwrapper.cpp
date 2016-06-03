@@ -54,7 +54,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
                     NumericMatrix rMatrix, StringVector inColNames,
 					StringVector inRowNames,
                     int repeats, long rareDepth, int NoOfMatrices,
-                    bool verbose = false, bool returnObject = false, int margin=1) {
+                    bool verbose = false, bool returnObject = false, int margin=2) {
 
     // initialize variables
     std::vector< std::vector < double > > rmat;
