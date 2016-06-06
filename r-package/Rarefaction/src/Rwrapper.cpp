@@ -53,7 +53,7 @@ IntegerMatrix matrix2Mat(std::vector<vector<unsigned int>> dfMat,
 List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
                     NumericMatrix rMatrix, StringVector inColNames,
 					StringVector inRowNames,
-                    int repeats, long rareDepth, int NoOfMatrices,
+                    int repeats, long depth, int NoOfMatrices,
                     bool verbose = false, bool returnObject = false, int margin=2) {
 
     // initialize variables
@@ -94,7 +94,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 	std::vector<string> rowNames;
 
     // call the rarefaction main function
-    int res = rarefyMain(input, output, "rare_inmat", repeats, rareDepth, verbose,
+    int res = rarefyMain(input, output, "rare_inmat", repeats, depth, verbose,
                         returnObject, rmat, incolnames, inrownames , dd, divvs, retCnts, retCntsSampleNames,
 						rowNames, NoOfMatrices, transpose);
 

@@ -13,8 +13,8 @@ rare(x, sample, .. options with defaults MARGIN = 2)
 \arguments{
   \item{input}{Either a R object like a numeric matrix or a dataframe or a path to a \code{.csv}-file.}
   \item{output}{Should we not remove this option?}
-  \item{repeats}{How often shuffle?}
-  \item{rareDepth}{Should be renamed to depth, sample or samplsesize}
+  \item{repeats}{Number of times to compute diversity measures.}
+  \item{depth}{Number of elements per row/column to rarefy to. The so called rarefaction depth or samplesize.}
   \item{NoOfMatrices}{Number of rarefied matrices which are returned to R.}
   \item{verbose}{If extra output should be printed to std::out or not to see progress of rarefaction.}
   \item{returnObject}{Should be removed and TRUE by default?}

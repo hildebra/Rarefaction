@@ -1,6 +1,6 @@
 # this is the rarefy function
 
-rare <- function(input, output = ".", repeats=10, rareDepth = 1000,
+rare <- function(input, output = ".", repeats=10, depth = 1000,
 				NoOfMatrices = 1,
 				verbose=TRUE, returnObject=FALSE, margin = 2){
 
@@ -33,7 +33,7 @@ rare <- function(input, output = ".", repeats=10, rareDepth = 1000,
     result <- rcpp_rarefaction("", output,
                         input, colnames(input),
 						rownames(input),
-                        repeats, rareDepth,
+                        repeats, depth,
 						NoOfMatrices,
                         verbose, returnObject,
 						margin)
@@ -47,7 +47,7 @@ rare <- function(input, output = ".", repeats=10, rareDepth = 1000,
     result <- rcpp_rarefaction(   input, output,
                         matrix(1,1,c(1)),
 						c(NA),c(NA), # col and rownames
-                        repeats, rareDepth,
+                        repeats, depth,
 						NoOfMatrices,
                         verbose, returnObject,
 						margin)

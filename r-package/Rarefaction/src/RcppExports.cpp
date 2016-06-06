@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // rcpp_rarefaction
-List rcpp_rarefaction(Rcpp::String input, Rcpp::String output, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, long rareDepth, int NoOfMatrices, bool verbose, bool returnObject, int margin);
-RcppExport SEXP rarefaction_rcpp_rarefaction(SEXP inputSEXP, SEXP outputSEXP, SEXP rMatrixSEXP, SEXP inColNamesSEXP, SEXP inRowNamesSEXP, SEXP repeatsSEXP, SEXP rareDepthSEXP, SEXP NoOfMatricesSEXP, SEXP verboseSEXP, SEXP returnObjectSEXP, SEXP marginSEXP) {
+List rcpp_rarefaction(Rcpp::String input, Rcpp::String output, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, long depth, int NoOfMatrices, bool verbose, bool returnObject, int margin);
+RcppExport SEXP rarefaction_rcpp_rarefaction(SEXP inputSEXP, SEXP outputSEXP, SEXP rMatrixSEXP, SEXP inColNamesSEXP, SEXP inRowNamesSEXP, SEXP repeatsSEXP, SEXP depthSEXP, SEXP NoOfMatricesSEXP, SEXP verboseSEXP, SEXP returnObjectSEXP, SEXP marginSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -17,12 +17,12 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< StringVector >::type inColNames(inColNamesSEXP);
     Rcpp::traits::input_parameter< StringVector >::type inRowNames(inRowNamesSEXP);
     Rcpp::traits::input_parameter< int >::type repeats(repeatsSEXP);
-    Rcpp::traits::input_parameter< long >::type rareDepth(rareDepthSEXP);
+    Rcpp::traits::input_parameter< long >::type depth(depthSEXP);
     Rcpp::traits::input_parameter< int >::type NoOfMatrices(NoOfMatricesSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< bool >::type returnObject(returnObjectSEXP);
     Rcpp::traits::input_parameter< int >::type margin(marginSEXP);
-    __result = Rcpp::wrap(rcpp_rarefaction(input, output, rMatrix, inColNames, inRowNames, repeats, rareDepth, NoOfMatrices, verbose, returnObject, margin));
+    __result = Rcpp::wrap(rcpp_rarefaction(input, output, rMatrix, inColNames, inRowNames, repeats, depth, NoOfMatrices, verbose, returnObject, margin));
     return __result;
 END_RCPP
 }
