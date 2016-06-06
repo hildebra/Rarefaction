@@ -111,7 +111,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 
 	for (int curRep=0;curRep<rep;curRep++){
 		if(curIdx+dep >= (long) totSum){
-			if (verbose){cerr<<"shuffle ";}		shuffle_singl();		if (verbose){cerr<<"shed\n";}
+			if (verbose){cerr<<"shuffle \n";}		shuffle_singl();		if (verbose){cerr<<"shed\n";}
 			curIdx=0;
 		}
 
