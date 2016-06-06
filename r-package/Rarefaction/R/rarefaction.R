@@ -7,6 +7,12 @@ rare <- function(input, output = ".", repeats=10, rareDepth = 1000,
     # empty return object
     result <- list()
 
+	if(repeats < NoOfMatrices){
+		repeats <- NoOfMatrices
+		warning("Repeats can not be smaller than number of matrices to return. How else would we calculate those values, if not repeating the calculations?. Repeats set to match NoOfMatrices.")
+
+	}
+
   #validate if input is a path or a matrix
   if(class(input) == "matrix"){
     rare.status("Matrix object supplied for analysis", verbose)
