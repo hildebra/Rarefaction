@@ -1,11 +1,13 @@
 # this is the rarefy function
 
-rare <- function(input, output = ".", repeats=10, depth = 1000,
+rare <- function(input,  repeats=10, depth = 1000,
 				NoOfMatrices = 1,
 				verbose=TRUE, returnObject=FALSE, margin = 2){
 
     # empty return object
     result <- list()
+
+	output <- "." # no ouput
 
 	if(repeats < NoOfMatrices){
 		repeats <- NoOfMatrices

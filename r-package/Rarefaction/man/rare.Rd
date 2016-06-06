@@ -11,15 +11,14 @@ rare(x, sample, .. options with defaults MARGIN = 2)
 }
 
 \arguments{
-  \item{input}{Either a R object like a numeric matrix or a dataframe or a path to a \code{.csv}-file.}
-  \item{output}{Should we not remove this option?}
+  \item{input}{Either a R object like a numeric matrix or a path to a \code{.csv}-file.}
   \item{repeats}{Number of times to compute diversity measures.}
   \item{depth}{Number of elements per row/column to rarefy to. The so called rarefaction depth or samplesize.}
   \item{NoOfMatrices}{Number of rarefied matrices which are returned to R.}
   \item{verbose}{If extra output should be printed to std::out or not to see progress of rarefaction.}
   \item{returnObject}{Should be removed and TRUE by default?}
-  \item{margin}{In which direction should the dataset be rarefied.
-  Default is to rarefy all columns. Can be set to rows by
+  \item{margin}{In which direction the dataset will be rarefied.
+  Default is to rarefy all columns (margin=2). Can be set to rows by
   \code{margin=1} to get the same number of species in each row instead.}
 
 }

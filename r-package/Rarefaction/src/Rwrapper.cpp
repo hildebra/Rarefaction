@@ -39,9 +39,8 @@ IntegerMatrix matrix2Mat(std::vector<vector<unsigned int>> dfMat,
 		NM(_,i) = v;
 	}
 
-	Rcpp::List dimnms =  Rcpp::List::create(
-						rownames, colnames);
-
+	// assign dimnames
+	Rcpp::List dimnms =  Rcpp::List::create(rownames, colnames);
 	NM.attr("dimnames") = dimnms;
 
 	return(NM);
@@ -94,7 +93,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 	std::vector<string> rowNames;
 
     // call the rarefaction main function
-    int res = rarefyMain(input, output, "rare_inmat", repeats, depth, verbose,
+    rarefyMain(input, output, "rare_inmat", repeats, depth, verbose,
                         returnObject, rmat, incolnames, inrownames , dd, divvs, retCnts, retCntsSampleNames,
 						rowNames, NoOfMatrices, transpose);
 
@@ -114,7 +113,10 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
     if(returnObject == true){
       // only create these objects if needed
       // all divvs
-      int i;
+		if(verbose == true){
+			cout << "Will now prepare diversity measures for R\n";
+		}
+		int i;
       for(i=0; i<divvs->size(); i++){
         // create a Lst from div pointer
         List tmpDivLst = createDivList((*divvs)[i]);
@@ -122,15 +124,18 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 		//DFdivvs[i] = createDivVec((*divvs)[i]);
       }
 
+
       // matrices with all the counts
+	  if(verbose == true){
+		  cout << "Will now prepare rarefied matrices for R\n";
+	  }
 	  for(i=0; i < NoOfMatrices; i++){
 		  IntegerMatrix RdfTmp 		= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames);
-		  RrarefyMatrices[i]	= RdfTmp;
+		  RrarefyMatrices[i]		= RdfTmp;
 	  }
     }
 	if(verbose == true){
 		cout << "All R objects were produced\n";
-
 	}
     // create R object to return to R
     List returnList;
