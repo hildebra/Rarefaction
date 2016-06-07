@@ -1,4 +1,4 @@
-// rarefaction.cpp 
+// rarefaction.cpp
 // usage: rarefaction in_matrix outfile
 //outfile contains richness and sample sum; in same dir several files are created
 //C:\Users\Falk\SkyDrive\science\data\test\test.mat.subs
@@ -13,8 +13,11 @@ DivEsts* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, 
 	smplVec* cur = Mo->getSampleVec(i);
 	string curS = Mo->getSampleName(i);
 	div->SampleName = curS;
-	vector<vector<uint>> emptyRet;
-	cur->rarefy(rareDep, outF, repeats, div, emptyRet, writeFiles, false,false);
+	std::vector<vector<vector<uint>>> emptyRet;
+	std::vector<string> emptySmp;
+	cur->rarefy(rareDep, outF, repeats,
+					div, emptyRet, emptySmp,
+					writeFiles, false,false);
 	delete cur;
 	return div;
 }
@@ -28,7 +31,7 @@ void helpMsg(){
 
 int main(int argc, char* argv[])
 {
-	//changed the interface: argv3 is now argv1 (mode), 
+	//changed the interface: argv3 is now argv1 (mode),
 	cout<<"Rarefaction analysis ver "<<rar_ver<<endl;
 	if (argc < 3) {
 		helpMsg();
@@ -40,7 +43,7 @@ int main(int argc, char* argv[])
 	string mode = argv[1];
 	string arg4 = "";
 	uint numThr = 1; //number of threads to use
-	
+
 	if (argc>=5){
 		arg4 = argv[4];
 	}
@@ -80,7 +83,7 @@ int main(int argc, char* argv[])
 			}
 			Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
 			Mo->normalize();
-			Mo->writeMatrix(outF); 
+			Mo->writeMatrix(outF);
 			delete Mo;
 			std::exit(0);
 		} else if (mode == "help" || mode == "-help" || mode == "--help"){
@@ -125,10 +128,10 @@ int main(int argc, char* argv[])
 	MyRNG rng;
 	//test rand numbers.. check
 	//std::uniform_int_distribution<unsigned long> uint_distx(0,2223951715);	for (int i=0;i<100;i++){cout<<uint_distx(rng)<<" ";}	int i;	cin>>i;	std::exit(2);
-	
+
 	//testing max mem
 	//int maxSiz = 1;if (verbose){		for(std::vector<char>::size_type sz = 1;   ;  sz *= 2)		{			break;			std::cerr << "attempting sz = " << sz << '\n';			std::vector<unsigned short> v(sz);		}		//cout<<"Max vec size: "<<maxSiz<<endl;	}
-	
+
 
 
 	if (mode == "rare_inmat"){
@@ -145,7 +148,7 @@ int main(int argc, char* argv[])
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
 				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, outF, repeats, writeFiles);
-				
+
 			}
 			//use main thread to calc one sample as well
 			DivEsts * div = new DivEsts();
@@ -172,12 +175,13 @@ int main(int argc, char* argv[])
 	//old way of reading single samples..
 	smplVec* cur = new smplVec(inF,4);
 	DivEsts * div = new DivEsts();
-	
-	vector<vector<uint>> emptyRet;//placeholder for R function, not to be filled here
-	cur->rarefy(rareDep,outF,repeats,div, emptyRet,writeFiles,true,false);
-	
+
+	//placeholder for R function, not to be filled here
+	std::vector<vector<vector<uint>>> emptyRet;
+	std::vector<string> emptySmp;
+	cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, writeFiles,true,false);
+
 	div->print2file(outF+"_estimates");
-	
+
 	return 0;
 }
-
