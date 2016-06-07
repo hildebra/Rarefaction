@@ -50,28 +50,29 @@ IntegerMatrix matrix2Mat(std::vector<vector<unsigned int>> dfMat,
 // here we define what R passes on and returns to the C++ code
 // [[Rcpp::export]]
 List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
-                    NumericMatrix rMatrix, StringVector inColNames,
-					StringVector inRowNames,
-                    int repeats, long depth, int NoOfMatrices,
-                    bool verbose = false, bool returnObject = false, int margin=2) {
+						NumericMatrix rMatrix, StringVector inColNames,
+						StringVector inRowNames,
+						int repeats, long depth, int NoOfMatrices,
+						bool verbose = false, bool returnObject = false, int margin=2)
+						{
 
-    // initialize variables
-    std::vector< std::vector < double > > rmat;
-    vector < string > incolnames;
+	// initialize variables
+	std::vector< std::vector < double > > rmat;
+	vector < string > incolnames;
 	vector < string > inrownames;
 
-    if(input == ""){
-        // use R matrix as input
-        int nc = rMatrix.ncol();
-        rmat.resize(nc);
-        for( int i=0; i<nc; i++){
-            NumericMatrix::Column col = rMatrix(_,i) ;
-            rmat[i].assign( col.begin() , col.end() ) ;
-        }
-        // also assign the colnames, so we convert the type
-        incolnames =  Rcpp::as<vector < string > >(inColNames);
+	if(input == ""){
+		// use R matrix as input
+		int nc = rMatrix.ncol();
+		rmat.resize(nc);
+		for( int i=0; i<nc; i++){
+			NumericMatrix::Column col = rMatrix(_,i) ;
+			rmat[i].assign( col.begin() , col.end() ) ;
+		}
+		// also assign the colnames, so we convert the type
+		incolnames =  Rcpp::as<vector < string > >(inColNames);
 		inrownames =  Rcpp::as<vector < string > >(inRowNames);
-    }
+	}
 
 	// transpose matrix, yes or no
 	bool transpose = false;
@@ -86,16 +87,17 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
     vector<DivEsts*> * divvs;
     divvs 			=  new vector<DivEsts*>;
 
-    // return vector for counts
-    //std::vector<vector<unsigned int>> retCnts;
+	// return vector for counts
+	//std::vector<vector<unsigned int>> retCnts;
 	std::vector<vector<vector<unsigned int>>> retCnts(NoOfMatrices); // initialize a vector of matrices with the number of repeats
 	std::vector<string> retCntsSampleNames;
 	std::vector<string> rowNames;
 
-    // call the rarefaction main function
-    rarefyMain(input, output, "rare_inmat", repeats, depth, verbose,
-                        returnObject, rmat, incolnames, inrownames , dd, divvs, retCnts, retCntsSampleNames,
-						rowNames, NoOfMatrices, transpose);
+	// call the rarefaction main function
+	rarefyMain(input, output, "rare_inmat", repeats, depth, verbose,
+				returnObject, rmat, incolnames, inrownames ,
+				dd, divvs, retCnts, retCntsSampleNames,
+				rowNames, NoOfMatrices, transpose);
 
 
 	if(verbose == true){

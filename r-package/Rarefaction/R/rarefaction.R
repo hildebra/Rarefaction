@@ -1,8 +1,8 @@
 # this is the rarefy function
 
-rare <- function(input,  repeats=10, depth = 1000,
-				NoOfMatrices = 1,
-				verbose=TRUE, returnObject=FALSE, margin = 2){
+rare <- function(input, repeats=10, depth = 1000,
+				NoOfMatrices = 1, returnObject=TRUE,
+				margin = 2, verbose=TRUE ){
 
     # empty return object
     result <- list()
@@ -11,8 +11,13 @@ rare <- function(input,  repeats=10, depth = 1000,
 
 	if(repeats < NoOfMatrices){
 		repeats <- NoOfMatrices
-		warning("Repeats can not be smaller than number of matrices to return. How else would we calculate those values, if not repeating the calculations?. Repeats set to match NoOfMatrices.")
+		warning("Repeats can not be smaller than number of matrices to return. How else would we calculate those values, if not repeating the calculations? Repeats set to match NoOfMatrices.")
 
+	}
+
+	# convert dataframes
+	if(class(input) == "data.frame"){
+		input <- as.matrix(input)
 	}
 
   #validate if input is a path or a matrix
