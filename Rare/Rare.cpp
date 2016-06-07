@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 			Mo->writeMatrix(outF); 
 			delete Mo;
 			std::exit(0);
-		} else if (mode == "help" || mode == "-help" || mode == "--help"){
+		} else if (mode == "help" || mode == "-help" || mode == "-h" || mode == "--help"){
 			helpMsg();
 		} else if (mode == "lineExtr"){
 			lineCntOut(inF, outF, arg4);
