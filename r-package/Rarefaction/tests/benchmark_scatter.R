@@ -21,46 +21,74 @@ randommatrix <- function(x){
 }
 
 
-rmatrs <- lapply(c( 10000),randommatrix) 
+#rmatrs <- lapply(c( 10000),randommatrix) 
 
-
-
-
+path <- "/Users/saary/testData/testdataSingle.csv"
+table     <- read.table(file = path, header = TRUE, row.names = 1)
+table.m   <- as.matrix(table)
 
 run.vegan <- function(data, samplesize=NULL){
   if(is.null(samplesize)){
-    samplesize <- min(rowSums(data))
+    samplesize <- min(colSums(data))
   }
-	v.ret			<- vegan::rrarefy(x = data, sample = samplesize)
+  data2 <- t(data)
+	v.ret			<- vegan::rrarefy(x = data2, sample = samplesize)
 	return(c(v.ret))
 }
 
 run.rare <- function(data, samplesize=NULL){
 	if(is.null(samplesize)){
-	  samplesize <- min(rowSums(data))
+	  samplesize <- min(colSums(data))
 	}
   
-	data <- t(data)
-	res 		<- rarefaction::rare(input = data, output = "", 
-					rareDepth = samplesize, repeats = 1, 
-					NoOfMatrices = 1, returnObject = T, verbose = F)
-	return(c(res$raremat[[1]]))
+	
+	res 		<- rarefaction::rare(input = data, 
+					depth = samplesize, repeats = 1, 
+					NoOfMatrices = 1, returnObject = T, verbose = F, margin=2)
+	return(c(t(res$raremat[[1]])))
 }
 
 
-x <- c(sapply(rmatrs, run.rare))
-y <- c(sapply(rmatrs, run.vegan))
+#x <- c(sapply(rmatrs, run.rare))
+#y <- c(sapply(rmatrs, run.vegan))
 
-
+x <- run.rare(table.m, 100000)
+y <- run.vegan(table.m, 100000)
 
 df <- data.frame(rare=x, vegan=y)
-m <- ggplot(df, aes(rare, vegan)) +
+correaltion <- cor(x,y)
+dfNull <- df[rowSums(df)>1,]
+
+dfS <- dfNull[sample(1:nrow(dfNull), 1000,replace=FALSE),]
+dfS$rare <- as.numeric(dfS$rare)
+dfS$vegan <- as.numeric(dfS$vegan)
+rownames(dfS) <- NULL
+#dfS <- log(dfS, base = 10)
+
+m <- ggplot(dfS, aes(rare, vegan)) +
 	xlab("rarefaction values by 'rarefaction'") + 
 	ylab("rarefaction values by 'vegan'") +
 	ggtitle("Comparison of rarefaction results") +
-	scale_x_log10(breaks = c(10,100,1000,10000))+
-	scale_y_log10(breaks = c(10,100,1000,10000))+
-  coord_fixed()+
-	geom_point(shape=1)
-	
-ggsave(filename = "/Users/saary/projekt/Rarefaction/tests/scatter.pdf", plot = m, device = "pdf", width = 7.5, height = 7.5)
+	geom_point(shape=1) +
+  geom_smooth(method = "lm", formula = "y~x") + 
+  scale_x_log10()+  scale_y_log10()
+
+ggsave(filename = "/Users/saary/projekt/Rarefaction/tests/scatter_real_ggplot.png", plot = m, device = "png", width = 7.5, height = 7.5)
+
+
+# simple R plot, works
+png(file = "/Users/saary/projekt/Rarefaction/tests/scatter_real_R.png")
+reg1 <- lm(rare~vegan, dfS)
+par(cex=.8)
+plot(dfS$rare, dfS$vegan, log ="xy", main="Comparison of rarefaction results", xlab="rarefaction values by 'rarefaction'", ylab="rarefaction values by 'vegan'")
+abline(reg1)
+text(1500,200, paste("cor(x,y) = ", round(correaltion,3), sep=""))
+dev.off()
+
+
+# qplot ist auch doof
+n <- qplot(rare, vegan, data = dfNull, log="xy") +
+  geom_smooth(method="lm")
+
+
+

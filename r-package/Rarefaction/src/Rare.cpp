@@ -31,7 +31,7 @@ cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 	tmpCDR->retCntsSampleNames 	= retCntsSampleNames;
 
 	delete cur;
-	return tmpCDR ;
+	return tmpCDR;
 }
 
 /*
@@ -236,8 +236,9 @@ int rarefyMain(string inF, string outF, string mode,
 			tmpCDr 		= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles, retCnts,
 									retCntsSampleNames, NoOfMatrices);
 			divvs->push_back(tmpCDr->div);
-			retCnts 	= tmpCDr->retCnts; // is this correct or am I loosing values here?
+			retCnts 	= tmpCDr->retCnts; // Here the RAM grows and grows !is this correct or am I loosing values here?
 			retCntsSampleNames = tmpCDr->retCntsSampleNames;
+			delete tmpCDr;
 			//cout <<'\n' <<  i << " retCnts: " << tmpCDr->retCnts.size();
 			i++;
 			i 			= done;

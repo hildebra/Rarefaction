@@ -1,5 +1,5 @@
 
-path <- '/home/saary/rareFalk/testData/OTU.txt'
+path <- '/home/saary/data/testdata.csv'
 
 
 print("Rarefaction with path, without returning the values")
@@ -20,7 +20,7 @@ rm(list = ls())
 
 
 print("Rarefaction with path, while returning the values")
-path <- '/home/saary/rareFalk/testData/OTU.txt'
+path <- '/home/saary/data/testdata.csv'
 
 require("rarefaction")
 ptm <- proc.time()
@@ -37,11 +37,14 @@ rm(list = ls())
 
 
 print("vegan")
-path <- '/home/saary/rareFalk/testData/OTU.txt'
+path <- '/home/saary/data/testdata.csv'
 require("vegan")
 ptm <- proc.time()
 data            <- read.table(file = path, header = TRUE, row.names = 1)
+data			<- t(as.matrix(data))
 samplesize      <- min(rowSums(data))
+cat(c("samplesize"))
+cat(samplesize)
 result.vegan    <- vegan::rrarefy(x = data, sample = samplesize)
 proc.time() - ptm
 rm(list = ls())

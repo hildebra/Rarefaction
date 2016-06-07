@@ -30,7 +30,7 @@ result.rarefy   <- rarefaction::rare(input = path,
                                      NoOfMatrices = 1,
                                      returnObject = F,
                                      verbose = T,
-									 margin = 2)
+									 margin = 1)
 proc.time() - ptm
 str(result.rarefy)
 rm(list = ls())
