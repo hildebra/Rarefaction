@@ -2,7 +2,7 @@
 #include "ClStr2Mat.h"
 
 int rarefyMain(string inF, string outF, string mode ,
-    int repeats, long rareDep, bool verbose,
+    int repeats, long rareDep, unsigned int numThr, bool verbose,
     bool returnObject, vector<vector<mat_fl>> rmatrix,
     vector< string > cnames , vector< string > rnames , DivEsts * dd, vector<DivEsts*> * divvs,
     std::vector<vector<vector<uint>>> &retCnts,

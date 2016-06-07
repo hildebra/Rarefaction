@@ -13,21 +13,26 @@ struct cDR{
 	DivEsts* div;
 	std::vector<vector<vector<uint>>> retCnts;
 	std::vector<string> retCntsSampleNames;
+	std::vector<vector<uint>> RareSample;
 };
 cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
-	int repeats, int writeFiles, std::vector<vector<vector<uint>>> retCnts,
+	int repeats, int writeFiles,
 	std::vector<string> retCntsSampleNames, int NoOfMatrices){
 
 	smplVec* cur 	= Mo->getSampleVec(i);
 	string curS 	= Mo->getSampleName(i);
 	div->SampleName = curS;
 
-	cur->rarefy(rareDep, outF, repeats, div, retCnts, retCntsSampleNames,
+	// vector holding the rarefaction results for this sample
+	// repeat times
+	std::vector<vector<uint>> RareSample;
+
+	cur->rarefy(rareDep, outF, repeats, div, RareSample, retCntsSampleNames,
 				NoOfMatrices, writeFiles, true);
 
 	cDR* tmpCDR 				= new cDR();// 	= {*div, retCnts};
 	tmpCDR->div 				= div;
-	tmpCDR->retCnts 			= retCnts;
+	tmpCDR->RareSample 			= RareSample;
 	tmpCDR->retCntsSampleNames 	= retCntsSampleNames;
 
 	delete cur;
@@ -57,7 +62,7 @@ void helpMsg(){
 
 //int main(int argc, char* argv[])
 int rarefyMain(string inF, string outF, string mode,
-	int repeats, long rareDep, bool verbose,
+	int repeats, long rareDep, unsigned int numThr , bool verbose,
 	bool returnObject, vector<vector<mat_fl>> rmatrix,
 	vector< string > cnames , vector< string > rnames , DivEsts * dd,
 	vector<DivEsts*> *  divvs,
@@ -83,7 +88,7 @@ int rarefyMain(string inF, string outF, string mode,
 	string mode = argv[1];
 	string arg4 = "";
   */
-	uint numThr = 1; //number of threads to use
+	//uint numThr = 3; //number of threads to use
 	/*
 	if (argc>=5){
 		arg4 = argv[4];
@@ -216,15 +221,16 @@ int rarefyMain(string inF, string outF, string mode,
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
 			if(verbose == true){
-				cerr << "At Sample " << i+1 << " of " << Mo->smplNum() << " Samples\n";
+				cout << "At Sample " << i+1 << " of " << Mo->smplNum() << " Samples\n";
 			}
-			uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
+			uint toWhere = done+numThr - 1;
+			if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){
+					toWhere = Mo->smplNum() - 2;
+			}
 			for (; i < toWhere; i++){ // with just one thread this is not used?
 				DivEsts * div = new DivEsts();
 				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, outF,
-									repeats, writeFiles, retCnts, retCntsSampleNames,
-									NoOfMatrices);
-
+									repeats, writeFiles, retCntsSampleNames, NoOfMatrices);
 
 			}
 
@@ -233,43 +239,48 @@ int rarefyMain(string inF, string outF, string mode,
 			//divvs[i] = calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
 			cDR* tmpCDr;
 			//tmpCDr = new cDR;
-			tmpCDr 		= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles, retCnts,
+			tmpCDr 		= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles,
 									retCntsSampleNames, NoOfMatrices);
-			divvs->push_back(tmpCDr->div);
-			retCnts 	= tmpCDr->retCnts; // Here the RAM grows and grows !is this correct or am I loosing values here?
-			retCntsSampleNames = tmpCDr->retCntsSampleNames;
-			delete tmpCDr;
+
+
+
 			//cout <<'\n' <<  i << " retCnts: " << tmpCDr->retCnts.size();
 			i++;
 			i 			= done;
 			for (; i < toWhere; i++){
-				// this does not seem to be used, beause threads = 1
-				(*divvs)[i] = tt[i-done].get()->div;// does this actually do anything? values are not returned to R
-				string curS = Mo->getSampleName(i);
-				//cout << "bob" << tt[i-done].get()->retCnts.size();
-				//(*divvs)[i-done]->print2file(outF + curS + ".estimates");
+				cDR* CDrAsync;
+				CDrAsync = tt[i-done].get();
+				// append diversity measures
+				divvs->push_back(CDrAsync->div);
+
+				// append vector to matrix
+				int repI = 0;
+				while(repI < CDrAsync->RareSample.size()){
+					retCnts[repI].push_back(CDrAsync->RareSample[repI]);
+					repI++;
+				}
 			}
+
+			// main thread
+			divvs->push_back(tmpCDr->div);
+			int repI = 0;
+			while(repI < tmpCDr->RareSample.size()){
+				retCnts[repI].push_back(tmpCDr->RareSample[repI]);
+				repI++;
+
+			}
+			//retCnts 	= tmpCDr->retCnts; // Here the RAM grows and grows !is this correct or am I loosing values here?
+			retCntsSampleNames = tmpCDr->retCntsSampleNames;
+			delete tmpCDr;
+
+
+
 			i++;
 			done = i;
 		}
-		//printDivMat(outF + "all.txt", divvs);
-		/* do not delete my divvs, paul
-		for (size_t i = 0; i < divvs.size(); i++){
-			delete divvs[i];
-		}
-		*/
-		//cout << "Finished\n";
-		//std::exit(0);
+
 	}
 
 
-
-
-	//DivEsts * div = new DivEsts();
-
-	// is this relevant? if this line is missing no dd is created
-	//smplVec* cur = new smplVec(inF,4); // what if inF == NULL?, also does not work with matrix input
-	//cur->rarefy(rareDep, outF, repeats, dd, retCnts, NoOfMatrices, writeFiles, true);
-	//div->print2file(outF+"_estimates");
 	return 0;
 }

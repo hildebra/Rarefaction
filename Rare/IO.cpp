@@ -52,17 +52,23 @@ num_threads(nt), richness(-1), Shannon(-1.f){
 	arr.resize((long)cumSum);
 	if (verbose){ cerr << "memory"; }
 	totSum = cumSum;
-	long k(0); uint posInVec(0);
+	long k(0); uint posInVec(-1);
+	//numFeatures = 0;
 	for (size_t i = 0; i< vec.size(); i++){
 		//if (vec.size()-i<10000){cerr<<i<<" ";}
 		long maxG = (long)vec[i];
+
+		posInVec++;
+		if (maxG == 0){ continue; }//not really a feature, doesnt need ot be counted as cat
+
 		maxG += k; //bring up to current level
-		//if (maxG == 0){ continue; }//not really a feature, doesnt need ot be counted as cat
 		for (; k<maxG; k++){
 			arr[k] = posInVec;
 		}
-		posInVec++;
+		//numFeatures++;
+
 	}
+	posInVec++;
 	numFeatures = posInVec;
 	if (verbose){ cerr << "..\n"; }
 }
@@ -103,7 +109,7 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 }
 
 void smplVec::rarefy(long dep, string ofile, int rep,
-					DivEsts* divs, std::vector<vector<vector<uint>>>& retCnts,
+					DivEsts* divs, std::vector<vector<uint>> & RareSample,
 					std::vector<string>& retCntsSampleNames,
 					int writes,bool write, bool fillret){
 	if (dep>totSum){return;}
@@ -131,7 +137,8 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			print2File(cnts,t_out);
 		}
 		if (curRep < writes && fillret) {
-			retCnts[curRep].push_back(cnts);					// save rarefied counts
+			RareSample.push_back(cnts);
+
 			if(curRep == 0){
 				retCntsSampleNames.push_back(divs->SampleName); // safe the sample name as well
 			}

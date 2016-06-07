@@ -2,7 +2,7 @@
 
 rare <- function(input, repeats=10, depth = 1000,
 				NoOfMatrices = 1, returnObject=TRUE,
-				margin = 2, verbose=TRUE ){
+				margin = 2, verbose=TRUE, threads=1 ){
 
     # empty return object
     result <- list()
@@ -42,7 +42,7 @@ rare <- function(input, repeats=10, depth = 1000,
 						rownames(input),
                         repeats, depth,
 						NoOfMatrices,
-                        verbose, returnObject,
+                        verbose, threads, returnObject,
 						margin)
   }else if(class(input) == "character"){
     rare.status("A path to a matrix file was supplied", verbose)
@@ -56,7 +56,7 @@ rare <- function(input, repeats=10, depth = 1000,
 						c(NA),c(NA), # col and rownames
                         repeats, depth,
 						NoOfMatrices,
-                        verbose, returnObject,
+                        verbose, threads, returnObject,
 						margin)
 
 
