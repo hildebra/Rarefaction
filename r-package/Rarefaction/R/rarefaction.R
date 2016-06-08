@@ -42,7 +42,7 @@ rare <- function(input, repeats=10, depth = 1000,
 						rownames(input),
                         repeats, depth,
 						NoOfMatrices,
-                        verbose, threads, returnObject,
+                        verbose, threads,
 						margin)
   }else if(class(input) == "character"){
     rare.status("A path to a matrix file was supplied", verbose)
@@ -56,7 +56,7 @@ rare <- function(input, repeats=10, depth = 1000,
 						c(NA),c(NA), # col and rownames
                         repeats, depth,
 						NoOfMatrices,
-                        verbose, threads, returnObject,
+                        verbose, threads,
 						margin)
 
 

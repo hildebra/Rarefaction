@@ -15,6 +15,7 @@ output1 <- rare(path,  verbose = T, depth = 1000,
 str(output1)
 
 
+
 print("Test: Rarefaction with matrix")
 print(" Read table")
 table     <- read.table(file = path, header = TRUE, row.names = 1)

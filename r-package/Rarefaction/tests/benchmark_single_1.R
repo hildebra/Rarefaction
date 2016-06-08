@@ -15,7 +15,6 @@ result.rarefy   <- rarefaction::rare(input = args[2],
                                      depth = as.numeric(args[1]),
                                      repeats = 1,
                                      NoOfMatrices = 1,
-                                     returnObject = T,
                                      verbose = T,
                                  margin = 2)
 str(result.rarefy$raremat)

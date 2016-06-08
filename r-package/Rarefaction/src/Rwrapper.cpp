@@ -1,6 +1,6 @@
 #include "Rwrapper.h"
 //#include "IO.h"
-#include "Rare.h"
+#include "RRare.h"
 
 
 
@@ -54,7 +54,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 						StringVector inRowNames,
 						int repeats, long depth, int NoOfMatrices,
 						bool verbose = false, unsigned int threads = 1,
-						bool returnObject = true, int margin=2)
+						 int margin=2)
 						{
 
 	// initialize variables
@@ -93,7 +93,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 
 	// call the rarefaction main function
 	rarefyMain(input, output, "rare_inmat", repeats, depth,  threads, verbose,
-				returnObject, rmat, incolnames, inrownames ,
+				 rmat, incolnames, inrownames ,
 				 divvs, retCnts, retCntsSampleNames,
 				rowNames, NoOfMatrices, transpose);
 
@@ -117,9 +117,16 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 		List tmpDivLst = createDivList((*divvs)[i]);
 		majorLst.push_back(tmpDivLst);
 	}
+	// make RAM free
+	for(int i = 0; i < (*divvs).size(); i++){
+		delete (*divvs)[i];
+	}
+	delete divvs;
+
 
 	std::vector<Rcpp::IntegerMatrix> RrarefyMatrices(NoOfMatrices); // vector to hold te matrices
-    if(returnObject == true){
+
+    if(NoOfMatrices > 0){
       // matrices with all the counts
 	  if(verbose == true){
 		  cout << "Will now prepare rarefied matrices for R\n";
@@ -133,22 +140,20 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 		cout << "All R objects were produced\n";
 	}
     // create R object to return to R
-    List returnList;
-	if(returnObject == true){
-		List retMatDF = wrap(RrarefyMatrices);
 
+    List returnList;
+
+	if(NoOfMatrices > 0){
+		List retMatDF = wrap(RrarefyMatrices);
 		returnList            = List::create(Named("divvs", majorLst),
 											Named("raremat",retMatDF));
       // add more objects here
     }else{
       returnList            = List::create(Named("divvs", majorLst));
-    }
+  }
 
     // clean up variables
-	for(int i = 0; i < (*divvs).size(); i++){
-		delete (*divvs)[i];
-	}
-	delete divvs;
+
 
     return returnList;
 }
