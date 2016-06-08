@@ -14,6 +14,10 @@ output1 <- rare(path,  verbose = T, depth = 1000,
                 repeats = 5, returnObject = T, NoOfMatrices = 3)
 str(output1)
 
+# diversity median
+
+
+
 
 
 print("Test: Rarefaction with matrix")

@@ -1,5 +1,8 @@
-# this is the rarefy function
+r.median <- function(n, x){
+  median(unlist(sapply(x, function(x){x[[n]]}), F, F))
+}
 
+# this is the rarefy function
 rare <- function(input, repeats=10, depth = 1000,
 				NoOfMatrices = 1, returnObject=TRUE,
 				margin = 2, verbose=TRUE, threads=1 ){
@@ -51,7 +54,7 @@ rare <- function(input, repeats=10, depth = 1000,
     if(!file.exists(input)){
       warning("The file can not be found.")
     }
-    result <- rcpp_rarefaction(   input, output,
+    result <- rcpp_rarefaction(  input, output,
                         matrix(1,1,c(1)),
 						c(NA),c(NA), # col and rownames
                         repeats, depth,
@@ -63,6 +66,12 @@ rare <- function(input, repeats=10, depth = 1000,
   }else{
     warning("Unknown input type. Path to a file (character) or a numeric matrix are accepted types.")
   }
+
+  # calculate median for diversity measures
+  measures <- c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')
+  result$div.median <- lapply(measures, r.median, x=result$divvs)
+  names(result$div.median) <- paste("median.", measures, sep = "")
+
 
   return(result)
 
