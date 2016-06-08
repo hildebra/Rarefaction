@@ -23,6 +23,7 @@ while(i < repeats){
   simpson         <- diversity(x = data, index = "simpson")
   invsimpson      <- diversity(x = data, index = "invsimpson")
   richness        <- rarefy(x = data, sample = samplesize)
+  cat(i)
   i <- i + 1
 }
 
