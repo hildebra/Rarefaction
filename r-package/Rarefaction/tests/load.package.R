@@ -11,8 +11,8 @@ output  <- "/Users/saary/Rtest_fri"
 
 print("Test: Rarefaction with path")
 output1 <- rare(path,  verbose = T, depth = 1000,
-                repeats = 5, returnObject = T, NoOfMatrices = 1)
-str(output1$raremat)
+                repeats = 5, returnObject = T, NoOfMatrices = 3)
+str(output1)
 
 
 print("Test: Rarefaction with matrix")

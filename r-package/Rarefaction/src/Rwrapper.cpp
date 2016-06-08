@@ -83,13 +83,10 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 	}
 
     // create variables to be filled
-    DivEsts * dd(NULL);
-    dd 				= new DivEsts();
     vector<DivEsts*> * divvs;
     divvs 			=  new vector<DivEsts*>;
 
 	// return vector for counts
-	//std::vector<vector<unsigned int>> retCnts;
 	std::vector<vector<vector<unsigned int>>> retCnts(NoOfMatrices); // initialize a vector of matrices with the number of repeats
 	std::vector<string> retCntsSampleNames;
 	std::vector<string> rowNames;
@@ -97,7 +94,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 	// call the rarefaction main function
 	rarefyMain(input, output, "rare_inmat", repeats, depth,  threads, verbose,
 				returnObject, rmat, incolnames, inrownames ,
-				dd, divvs, retCnts, retCntsSampleNames,
+				 divvs, retCnts, retCntsSampleNames,
 				rowNames, NoOfMatrices, transpose);
 
 
@@ -107,27 +104,22 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 	}
 
     // convert output to R
-    List divLst = createDivList(dd);
+    //List divLst = createDivList(dd);
 
     // list of all divs of each sample
     std::list<Rcpp::List> majorLst;
-	//DataFrame DFdivvs(divvs->size());
+	if(verbose == true){
+		cout << "Will now prepare diversity measures for R\n";
+	}
+	int i;
+	for(i=0; i<divvs->size(); i++){
+		// create a Lst from div pointer
+		List tmpDivLst = createDivList((*divvs)[i]);
+		majorLst.push_back(tmpDivLst);
+	}
+
 	std::vector<Rcpp::IntegerMatrix> RrarefyMatrices(NoOfMatrices); // vector to hold te matrices
     if(returnObject == true){
-      // only create these objects if needed
-      // all divvs
-		if(verbose == true){
-			cout << "Will now prepare diversity measures for R\n";
-		}
-		int i;
-      for(i=0; i<divvs->size(); i++){
-        // create a Lst from div pointer
-        List tmpDivLst = createDivList((*divvs)[i]);
-        majorLst.push_back(tmpDivLst);
-		//DFdivvs[i] = createDivVec((*divvs)[i]);
-      }
-
-
       // matrices with all the counts
 	  if(verbose == true){
 		  cout << "Will now prepare rarefied matrices for R\n";
@@ -145,18 +137,18 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 	if(returnObject == true){
 		List retMatDF = wrap(RrarefyMatrices);
 
-		returnList            = List::create(Named("div", divLst),
-                                            Named("divvs", majorLst),
+		returnList            = List::create(Named("divvs", majorLst),
 											Named("raremat",retMatDF));
       // add more objects here
     }else{
-      returnList            = List::create(Named("div", divLst));
+      returnList            = List::create(Named("divvs", majorLst));
     }
 
     // clean up variables
-    delete dd;
-	//for v in divvs:
-	//	delete v;
+	for(int i = 0; i < (*divvs).size(); i++){
+		delete (*divvs)[i];
+	}
+	delete divvs;
 
     return returnList;
 }
