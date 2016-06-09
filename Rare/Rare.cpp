@@ -13,8 +13,8 @@ DivEsts* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, 
 	smplVec* cur = Mo->getSampleVec(i);
 	string curS = Mo->getSampleName(i);
 	div->SampleName = curS;
-	std::vector<vector<vector<uint>>> emptyRet;
-	std::vector<string> emptySmp;
+	std::vector<vector<uint>> emptyRet;
+	string emptySmp;
 	cur->rarefy(rareDep, outF, repeats,
 					div, emptyRet, emptySmp,
 					writeFiles, false,false);
@@ -177,8 +177,8 @@ int main(int argc, char* argv[])
 	DivEsts * div = new DivEsts();
 
 	//placeholder for R function, not to be filled here
-	std::vector<vector<vector<uint>>> emptyRet;
-	std::vector<string> emptySmp;
+	std::vector<vector<uint>> emptyRet;
+	string emptySmp;
 	cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, writeFiles,true,false);
 
 	div->print2file(outF+"_estimates");
