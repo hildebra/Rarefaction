@@ -1,8 +1,8 @@
 Package: rarefaction
 Type: Package
 Title: rarefaction
-Version: 0.1.1
-Date: 2016-05-10
+Version: 0.1.2
+Date: 2016-06-09
 Author: Falk Hildebrand, Paul Saary
 Maintainer: Paul Saary <rwinbuilder@paulsaary.de>
 Description: Rarefy data quickly and calculate richness, shannon, invsimpson and chao (TODO: Begriffe besser verwenden).
