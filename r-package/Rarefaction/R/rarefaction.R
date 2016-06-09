@@ -4,7 +4,7 @@ r.median <- function(n, x){
 
 # this is the rarefy function
 rare <- function(input, repeats=10, depth = 1000,
-				NoOfMatrices = 1, returnObject=TRUE,
+				NoOfMatrices = 1,
 				margin = 2, verbose=TRUE, threads=1 ){
 
     # empty return object
@@ -15,7 +15,6 @@ rare <- function(input, repeats=10, depth = 1000,
 	if(repeats < NoOfMatrices){
 		repeats <- NoOfMatrices
 		warning("Repeats can not be smaller than number of matrices to return. How else would we calculate those values, if not repeating the calculations? Repeats set to match NoOfMatrices.")
-
 	}
 
 	# convert dataframes
@@ -33,11 +32,15 @@ rare <- function(input, repeats=10, depth = 1000,
     }
 
 	# pass 1:x to Cpp as colnames
+	removeCnames <- FALSE
+	removeRnames <- FALSE
 	if(is.null(colnames(input))){
 		colnames(input) <- paste("col ", seq(1:ncol(input)), sep="")
+		removeCnames <- TRUE
 	}
 	if(is.null(rownames(input))){
 		rownames(input) <- paste("row ", seq(1:nrow(input)), sep="")
+		removeRnames <- TRUE
 	}
 
     result <- rcpp_rarefaction("", output,
@@ -47,6 +50,19 @@ rare <- function(input, repeats=10, depth = 1000,
 						NoOfMatrices,
                         verbose, threads,
 						margin)
+	if(removeRnames == TRUE && removeRnames == TRUE){
+		result$raremat <- lapply(result$raremat, unname)
+	}else{
+		if(removeRnames == TRUE){
+			# workaround, to remove the colnames again,
+			# as somehow the C function, seems to need them internally
+			result$raremat <- lapply(result$raremat, function(x) {rownames(x) <- NULL; return (x)})
+
+		}
+		if(removeCnames == TRUE){
+			result$raremat <- lapply(result$raremat, function(x) {colnames(x) <- NULL; return (x)})
+		}
+	}
   }else if(class(input) == "character"){
     rare.status("A path to a matrix file was supplied", verbose)
 

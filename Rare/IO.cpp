@@ -110,7 +110,7 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 
 void smplVec::rarefy(long dep, string ofile, int rep,
 					DivEsts* divs, std::vector<vector<uint>> & RareSample,
-					std::vector<string>& retCntsSampleNames,
+					string& retCntsSampleName,
 					int writes,bool write, bool fillret){
 	if (dep>totSum){return;}
 	long curIdx=(long)totSum+1;
@@ -140,7 +140,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			RareSample.push_back(cnts);
 
 			if(curRep == 0){
-				retCntsSampleNames.push_back(divs->SampleName); // safe the sample name as well
+				retCntsSampleName = divs->SampleName; // safe the sample name as well
 			}
 		}
 		richness = 0;

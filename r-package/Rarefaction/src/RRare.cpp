@@ -12,12 +12,12 @@ const char* rar_ver="0.63		 alpha R";
 struct cDR{
 	DivEsts* div;
 	std::vector<vector<vector<uint>>> retCnts;
-	std::vector<string> retCntsSampleNames;
+	string retCntsSampleName;
 	std::vector<vector<uint>> RareSample;
 };
 cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 	int repeats, int writeFiles,
-	std::vector<string> retCntsSampleNames, int NoOfMatrices){
+	int NoOfMatrices){
 
 	smplVec* cur 	= Mo->getSampleVec(i);
 	string curS 	= Mo->getSampleName(i);
@@ -26,14 +26,14 @@ cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 	// vector holding the rarefaction results for this sample
 	// repeat times
 	std::vector<vector<uint>> RareSample;
-
-	cur->rarefy(rareDep, outF, repeats, div, RareSample, retCntsSampleNames,
+	string retCntsSampleName;
+	cur->rarefy(rareDep, outF, repeats, div, RareSample, retCntsSampleName,
 				NoOfMatrices, writeFiles, true);
 
 	cDR* tmpCDR 				= new cDR();// 	= {*div, retCnts};
 	tmpCDR->div 				= div;
 	tmpCDR->RareSample 			= RareSample;
-	tmpCDR->retCntsSampleNames 	= retCntsSampleNames;
+	tmpCDR->retCntsSampleName 	= retCntsSampleName;
 
 	delete cur;
 	return tmpCDR;
@@ -123,7 +123,7 @@ int rarefyMain(string inF, string outF, string mode,
 			for (; i < toWhere; i++){ // with just one thread this is not used?
 				DivEsts * div = new DivEsts();
 				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, outF,
-									repeats, writeFiles, retCntsSampleNames, NoOfMatrices);
+									repeats, writeFiles, NoOfMatrices);
 
 			}
 
@@ -133,7 +133,7 @@ int rarefyMain(string inF, string outF, string mode,
 			cDR* tmpCDr;
 			//tmpCDr = new cDR;
 			tmpCDr 		= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles,
-									retCntsSampleNames, NoOfMatrices);
+									 NoOfMatrices);
 
 
 
@@ -153,6 +153,10 @@ int rarefyMain(string inF, string outF, string mode,
 						retCnts[repI].push_back(CDrAsync->RareSample[repI]);
 						repI++;
 					}
+					// save sample name for naming purposes
+					if(CDrAsync->retCntsSampleName.size() != 0){
+						retCntsSampleNames.push_back(CDrAsync->retCntsSampleName);
+					}
 				}
 				delete CDrAsync;
 			}
@@ -165,9 +169,14 @@ int rarefyMain(string inF, string outF, string mode,
 					retCnts[repI].push_back(tmpCDr->RareSample[repI]);
 					repI++;
 				}
+				// save sample name for naming purposes
+				if(tmpCDr->retCntsSampleName.size() != 0){
+					retCntsSampleNames.push_back(tmpCDr->retCntsSampleName);
+				}
+
 			}
 
-			retCntsSampleNames = tmpCDr->retCntsSampleNames;
+
 			delete tmpCDr;
 
 

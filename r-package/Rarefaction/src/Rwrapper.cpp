@@ -31,17 +31,28 @@ List createDivList(DivEsts * div){
 }
 
 IntegerMatrix matrix2Mat(std::vector<vector<unsigned int>> dfMat,
-						std::vector<string> colnames, std::vector<string> rownames ){
+						std::vector<string> colnames, std::vector<string> rownames, bool transpose=false ){
 	// create a mat from a vector vector uint
-	IntegerMatrix NM 	= Rcpp::IntegerMatrix( dfMat[0].size(), dfMat.size());
-	for (int i = 0; i < NM.ncol(); i++) {
-		Rcpp::NumericVector  v = wrap(dfMat[i]);
-		NM(_,i) = v;
+	IntegerMatrix NM;
+	Rcpp::List dimnms;
+	if(transpose == false){
+		NM 	= Rcpp::IntegerMatrix( dfMat[0].size(), dfMat.size());
+		for (int i = 0; i < NM.ncol(); i++) {
+			Rcpp::NumericVector  v = wrap(dfMat[i]);
+			NM(_,i) = v;
+		}
+		dimnms =  Rcpp::List::create(rownames, colnames);
+	}else{
+		NM 	= Rcpp::IntegerMatrix( dfMat.size(), dfMat[0].size());
+		for (int i = 0; i < NM.nrow(); i++) {
+			Rcpp::NumericVector  v = wrap(dfMat[i]);
+			NM(i,_) = v;
+		}
+		dimnms =  Rcpp::List::create( colnames, rownames);
 	}
 
 	// assign dimnames
-	Rcpp::List dimnms =  Rcpp::List::create(rownames, colnames);
-	//NM.attr("dimnames") = dimnms;
+	NM.attr("dimnames") = dimnms;
 
 	return(NM);
 }
@@ -132,7 +143,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 		  cout << "Will now prepare rarefied matrices for R\n";
 	  }
 	  for(i=0; i < NoOfMatrices; i++){
-		  IntegerMatrix RdfTmp 		= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames);
+		  IntegerMatrix RdfTmp 		= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames, transpose);
 		  RrarefyMatrices[i]		= RdfTmp;
 	  }
     }
