@@ -12,15 +12,12 @@ rare <- function(input, repeats=10, depth = 1000,
 				NoOfMatrices = 0,
 				margin = 2, verbose=TRUE, threads=1 ){
 
-    # empty return object
-    #result <- list()
-
-	#output <- "." # no ouput
 
 	if(repeats < NoOfMatrices){
 		repeats <- NoOfMatrices
 		warning(paste("Repeats can not be smaller than number of matrices to return. Repeats set to match NoOfMatrices. repeats = NoOfMatrices =", repeats, sep=" "))
 	}
+
 
 	# convert dataframes
 	if(class(input) == "data.frame"){
@@ -48,25 +45,30 @@ rare <- function(input, repeats=10, depth = 1000,
 		}
 
 		# call the actual software
-		result <- rcpp_rarefaction("", input, colnames(input),
-							rownames(input),
-		                    repeats, depth,
-							NoOfMatrices,
-		                    verbose, threads,
-							margin)
 
-		# remove col and/or row names, as we've added them for
-		# the Cpp software to work well
-		if(removeRnames == TRUE && removeRnames == TRUE){
-			result$raremat <- lapply(result$raremat, unname)
-		}else{
-			if(removeRnames == TRUE){
-				result$raremat <- lapply(result$raremat, function(x) {rownames(x) <- NULL; return (x)})
-			}
-			if(removeCnames == TRUE){
-				result$raremat <- lapply(result$raremat, function(x) {colnames(x) <- NULL; return (x)})
-			}
-		}
+		result <- lapply(depth, function(d){
+						res <- rcpp_rarefaction("", input, colnames(input),
+								rownames(input),
+			                    repeats, d,
+								NoOfMatrices,
+			                    verbose, threads,
+								margin)
+
+						# remove col and/or row names, as we've added them for
+						# the Cpp software to work well
+						if(removeRnames == TRUE && removeRnames == TRUE){
+							res$raremat <- lapply(res$raremat, unname)
+						}else{
+							if(removeRnames == TRUE){
+								res$raremat <- lapply(res$raremat, function(x) {rownames(x) <- NULL; return (x)})
+							}
+							if(removeCnames == TRUE){
+								res$raremat <- lapply(res$raremat, function(x) {colnames(x) <- NULL; return (x)})
+							}
+						}
+						return(res)
+					})
+
 
 	}else if(class(input) == "character"){
 	  rare.status("A path to a matrix file was supplied", verbose)
@@ -75,26 +77,38 @@ rare <- function(input, repeats=10, depth = 1000,
 		if(!file.exists(input)){
 			stop(paste("The file can not be found. Please verify that the file exists in the given location. The path given is:", input, sep = " "))
 		}
-	    result <- rcpp_rarefaction( input,
+		result <- lapply(depth, function(d){
+							res <- rcpp_rarefaction( input,
 	                        matrix(1,1,c(1)),
 							c(NA),c(NA), # col and rownames
-	                        repeats, depth,
+	                        repeats, d,
 							NoOfMatrices,
 	                        verbose, threads,
 							margin)
+							return(res)
+						})
   }else{
     stop("Unknown input type. Path to a file (character) or a numeric matrix are accepted types.")
   }
-  if(length(result$skipped) > 0){
-	  warning(paste(length(result$skipped), "samples where skipped because the depth was greater than the number of elements in the sample."))
-  }
+  	result <- lapply(result, function(res){
 
-  # calculate median for diversity measures
-  measures 					<- c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')
-  result$div.median 		<- lapply(measures, r.median, x=result$divvs)
-  names(result$div.median) 	<- paste("median.", measures, sep = "")
+		if(length(res$skipped) > 0){
+			warning(paste(length(res$skipped), "samples where skipped because the depth was greater than the number of elements in the sample."))
+		}
 
+	  # calculate median for diversity measures
+	  measures 					<- c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')
+	  res$div.median 			<- lapply(measures, r.median, x=res$divvs)
+	  names(res$div.median) 	<- paste("median.", measures, sep = "")
 
+	  return(res)
+	})
+
+	if(length(depth) == 1){
+		result <- result[[1]]
+	}
+
+	result$depths <- depth
 	# set our class
 	class(result) <- "rarefaction";
 	return(result)

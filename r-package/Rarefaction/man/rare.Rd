@@ -13,7 +13,7 @@ rare(x, sample, .. options with defaults MARGIN = 2)
 \arguments{
   \item{input}{Either a R object like a numeric matrix or a path to a \code{.csv}-file. (\code{required})}
   \item{repeats}{Number of times to compute diversity measures. (\code{default: 10})}
-  \item{depth}{Number of elements per row/column to rarefy to. The so called rarefaction depth or samplesize. (\code{default: 1000})}
+  \item{depth}{Number of elements per row/column to rarefy to. The so called rarefaction depth or samplesize. Can also be a vector of ints. (\code{default: 1000})}
   \item{NoOfMatrices}{Number of rarefied matrices which are returned to R. Set to zero to only measure diversity. (\code{default: 1})}
   \item{margin}{In which direction the dataset will be rarefied.
   Default is to rarefy all columns (margin=2). Can be set to rows by
