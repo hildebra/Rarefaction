@@ -1,9 +1,4 @@
-// rarefaction.cpp
-// usage: rarefaction in_matrix outfile
-//outfile contains richness and sample sum; in same dir several files are created
-//C:\Users\Falk\SkyDrive\science\data\test\test.mat.subs
 
-//#include "Matrix.h"
 #include "RRare.h"
 
 
@@ -39,19 +34,6 @@ cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 	return tmpCDR;
 }
 
-/*
-DivEsts* calcDivRarLegacy(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
-	int repeats, int writeFiles, std::vector<vector<uint>> retCnts, int NoOfMatrices){
-	cout << i << " ";
-	smplVec* cur = Mo->getSampleVec(i);
-	string curS = Mo->getSampleName(i);
-	div->SampleName = curS;
-	cur->rarefy(rareDep, outF, repeats, div, retCnts, NoOfMatrices, writeFiles, true);
-	delete cur;
-	return div;
-}*/
-
-
 
 void helpMsg(){
 	string  AvailableModes = "Available run modes:\nnormalize\nsplitMat\nlineExtr\nmergeMat\nsumMat\nrarefaction\nrare_inmat\nmodule\n";
@@ -61,7 +43,7 @@ void helpMsg(){
 }
 
 //int main(int argc, char* argv[])
-int rarefyMain(string inF, string outF, string mode,
+int rarefyMain(string inF, string mode,
 	int repeats, long rareDep, unsigned int numThr , bool verbose,
 	vector<vector<mat_fl>> rmatrix,
 	vector< string > cnames , vector< string > rnames ,
@@ -71,8 +53,9 @@ int rarefyMain(string inF, string outF, string mode,
 	std::vector<string>& rowNames, int NoOfMatrices,
 	bool transpose)
 {
-	//int writeFiles = repeats;
+	// compatibility to main rare software
 	bool writeFiles = false;
+	string outF = "";
 
 	MyRNG rng;
 

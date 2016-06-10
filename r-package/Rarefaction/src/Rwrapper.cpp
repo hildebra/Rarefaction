@@ -60,7 +60,7 @@ IntegerMatrix matrix2Mat(std::vector<vector<unsigned int>> dfMat,
 
 // here we define what R passes on and returns to the C++ code
 // [[Rcpp::export]]
-List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
+List rcpp_rarefaction(Rcpp::String input,
 						NumericMatrix rMatrix, StringVector inColNames,
 						StringVector inRowNames,
 						int repeats, long depth, int NoOfMatrices,
@@ -103,7 +103,7 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 	std::vector<string> rowNames;
 
 	// call the rarefaction main function
-	rarefyMain(input, output, "rare_inmat", repeats, depth,  threads, verbose,
+	rarefyMain(input, "rare_inmat", repeats, depth,  threads, verbose,
 				 rmat, incolnames, inrownames ,
 				 divvs, retCnts, retCntsSampleNames,
 				rowNames, NoOfMatrices, transpose);
@@ -123,13 +123,10 @@ List rcpp_rarefaction(Rcpp::String input, Rcpp::String output,
 		cout << "Will now prepare diversity measures for R\n";
 	}
 	int i;
-	for(i=0; i<divvs->size(); i++){
+	for(i = 0; i < divvs->size(); i++){
 		// create a Lst from div pointer
 		List tmpDivLst = createDivList((*divvs)[i]);
 		majorLst.push_back(tmpDivLst);
-	}
-	// make RAM free
-	for(int i = 0; i < (*divvs).size(); i++){
 		delete (*divvs)[i];
 	}
 	delete divvs;
