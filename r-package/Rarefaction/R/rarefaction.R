@@ -9,7 +9,7 @@ rare.status <- function(msg, verbose=TRUE){
 }
 # this is the rarefy function
 rare <- function(input, repeats=10, depth = 1000,
-				NoOfMatrices = 1,
+				NoOfMatrices = 0,
 				margin = 2, verbose=TRUE, threads=1 ){
 
     # empty return object
@@ -85,12 +85,18 @@ rare <- function(input, repeats=10, depth = 1000,
   }else{
     stop("Unknown input type. Path to a file (character) or a numeric matrix are accepted types.")
   }
+  if(length(result$skipped) > 0){
+	  warning(paste(length(result$skipped), "samples where skipped because the depth was greater than the number of elements in the sample."))
+  }
 
   # calculate median for diversity measures
   measures 					<- c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')
   result$div.median 		<- lapply(measures, r.median, x=result$divvs)
   names(result$div.median) 	<- paste("median.", measures, sep = "")
 
-  return(result)
+
+	# set our class
+	class(result) <- "rarefaction";
+	return(result)
 
 }

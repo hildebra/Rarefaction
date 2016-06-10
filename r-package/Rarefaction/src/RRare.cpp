@@ -9,6 +9,7 @@ struct cDR{
 	std::vector<vector<vector<uint>>> retCnts;
 	string retCntsSampleName;
 	std::vector<vector<uint>> RareSample;
+	string skippedSample;
 };
 cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 	int repeats, int writeFiles,
@@ -22,13 +23,15 @@ cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 	// repeat times
 	std::vector<vector<uint>> RareSample;
 	string retCntsSampleName;
-	cur->rarefy(rareDep, outF, repeats, div, RareSample, retCntsSampleName,
+	string skippedSample;
+	cur->rarefy(rareDep, outF, repeats, div, RareSample, retCntsSampleName, skippedSample,
 				NoOfMatrices, writeFiles, true);
 
 	cDR* tmpCDR 				= new cDR();// 	= {*div, retCnts};
 	tmpCDR->div 				= div;
 	tmpCDR->RareSample 			= RareSample;
 	tmpCDR->retCntsSampleName 	= retCntsSampleName;
+	tmpCDR->skippedSample		= skippedSample;
 
 	delete cur;
 	return tmpCDR;
@@ -50,6 +53,7 @@ int rarefyMain(string inF, string mode,
 	vector<DivEsts*> *  divvs,
 	std::vector<vector<vector<uint>>> &retCnts,
 	std::vector<string>& retCntsSampleNames,
+	std::vector<string>& skippedSamples,
 	std::vector<string>& rowNames, int NoOfMatrices,
 	bool transpose)
 {
@@ -156,6 +160,11 @@ int rarefyMain(string inF, string mode,
 				if(tmpCDr->retCntsSampleName.size() != 0){
 					retCntsSampleNames.push_back(tmpCDr->retCntsSampleName);
 				}
+				// skippedSample
+				if(tmpCDr->skippedSample.size() > 0){
+					skippedSamples.push_back(tmpCDr->skippedSample);
+				}
+
 
 			}
 

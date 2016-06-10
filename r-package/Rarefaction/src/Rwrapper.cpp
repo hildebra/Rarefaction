@@ -101,11 +101,13 @@ List rcpp_rarefaction(Rcpp::String input,
 	std::vector<vector<vector<unsigned int>>> retCnts(NoOfMatrices); // initialize a vector of matrices with the number of repeats
 	std::vector<string> retCntsSampleNames;
 	std::vector<string> rowNames;
+	std::vector<string> skippedSamples;
 
 	// call the rarefaction main function
 	rarefyMain(input, "rare_inmat", repeats, depth,  threads, verbose,
 				 rmat, incolnames, inrownames ,
 				 divvs, retCnts, retCntsSampleNames,
+				 skippedSamples,
 				rowNames, NoOfMatrices, transpose);
 
 
@@ -140,27 +142,28 @@ List rcpp_rarefaction(Rcpp::String input,
 		  cout << "Will now prepare rarefied matrices for R\n";
 	  }
 	  for(i=0; i < NoOfMatrices; i++){
-		  IntegerMatrix RdfTmp 		= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames, transpose);
-		  RrarefyMatrices[i]		= RdfTmp;
+		  if(retCnts[i].size() > 0){
+			  IntegerMatrix RdfTmp 		= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames, transpose);
+			  RrarefyMatrices[i]		= RdfTmp;
+		  }
 	  }
     }
 	if(verbose == true){
 		cout << "All R objects were produced\n";
 	}
-    // create R object to return to R
 
+    // create R object to return to R
     List returnList;
 
-	if(NoOfMatrices > 0){
-		List retMatDF = wrap(RrarefyMatrices);
-		returnList            = List::create(Named("divvs", majorLst),
-											Named("raremat",retMatDF));
-      // add more objects here
+	if(NoOfMatrices > 0 ){
+		List retMatDF;
+		retMatDF 			= wrap(RrarefyMatrices);
+		returnList			= List::create(	Named("divvs", majorLst),
+											Named("raremat",retMatDF),
+											Named("skipped", wrap(skippedSamples)));
     }else{
-      returnList            = List::create(Named("divvs", majorLst));
+		returnList			= List::create(Named("divvs", majorLst));
   }
-
-    // clean up variables
 
 
     return returnList;

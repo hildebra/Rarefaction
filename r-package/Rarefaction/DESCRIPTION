@@ -1,7 +1,7 @@
 Package: rarefaction
 Type: Package
 Title: rarefaction
-Version: 0.1.2
+Version: 0.1.3
 Date: 2016-06-09
 Author: Falk Hildebrand, Paul Saary
 Maintainer: Paul Saary <rwinbuilder@paulsaary.de>

@@ -110,9 +110,13 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 
 void smplVec::rarefy(long dep, string ofile, int rep,
 					DivEsts* divs, std::vector<vector<uint>> & RareSample,
-					string& retCntsSampleName,
+					string& retCntsSampleName, string& skippedSample,
 					int writes,bool write, bool fillret){
-	if (dep>totSum){return;}
+	if (dep>totSum){
+		skippedSample = divs->SampleName;
+		if (verbose){cout<<"skipped sample, because rowSums < depth \n";}	
+		return;
+	}
 	long curIdx=(long)totSum+1;
 
 	for (int curRep=0;curRep<rep;curRep++){
