@@ -1,5 +1,5 @@
 
-plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, legend = TRUE, legend.pos = "topleft", ...){
+plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, legend = TRUE, legend.pos = "topleft", log.dim = "x", ...){
   
   if(!div%in% c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')){
     stop(paste("Not a possible plotting option for div:", div))
@@ -11,7 +11,7 @@ plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL,
     # by default make rainbow colors
     if(is.null(col)){col <-  rainbow(length(obj[[1]]$divvs))}
     # call the correct plot function for multiple rarefaction curves
-	  multiPlot(obj, div, groups, col, lty, pch, legend, legend.pos, ...)
+	  multiPlot(obj, div, groups, col, lty, pch, legend, legend.pos, log.dim, ...)
 	}else{
     warning("No depths provided")
 	}
@@ -74,7 +74,7 @@ singlePlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos , ..
 
 
 
-multiPlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos,  ...){
+multiPlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos, log.dim, ...){
 	# takethe obj when there are more than one repeat
   depths <- obj$depths
   ydata <-  matrix(sapply(seq(1, length(depths), by=1), getDivvs, obj=obj, divName=div), ncol=length(depths), byrow = FALSE)
@@ -108,7 +108,7 @@ multiPlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos,  ...
   
   
   # initial plot
-  plot(1,type="n",log="x", ylim=c(ymin,ymax), xlim=c(min(depths),max(depths)), ...) # ,xlab=xlabel,ylab=ylabel,ylim=ylime,xlim=c(min(rarepoints),max(rarepoints)))
+  plot(1,type="n",log = log.dim, ylim=c(ymin,ymax), xlim=c(min(depths),max(depths)), ...) # ,xlab=xlabel,ylab=ylabel,ylim=ylime,xlim=c(min(rarepoints),max(rarepoints)))
   
   # plot the lines, one at a time
   legendcolors <- mapply(function(y, col, lty, pch, depths ){
