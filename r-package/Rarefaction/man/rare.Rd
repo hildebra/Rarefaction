@@ -7,7 +7,7 @@
 \description{ Rarefy datasets in R or from a path. }
 
 \usage{
-rare(x, sample, .. options with defaults MARGIN = 2)
+rare(input, repeats=10, depth = 1000, NoOfMatrices = 0, margin = 2, verbose=TRUE, threads=1 )
 }
 
 \arguments{
@@ -38,7 +38,7 @@ A median for all measurements is also returned.
 
 }
 
-\seealso{Nowhere? or vegan}
+\seealso{Use \code{\link{plot.rarefaction}} for how to plot your results.}
 
 \author{Falk Hildebrand, Paul Saary}
 

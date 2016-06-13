@@ -162,7 +162,8 @@ List rcpp_rarefaction(Rcpp::String input,
 											Named("raremat",retMatDF),
 											Named("skipped", wrap(skippedSamples)));
     }else{
-		returnList			= List::create(Named("divvs", majorLst));
+		returnList			= List::create(Named("divvs", majorLst),
+										  Named("skipped", wrap(skippedSamples)));
   }
 
 

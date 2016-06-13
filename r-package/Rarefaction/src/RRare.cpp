@@ -140,10 +140,11 @@ int rarefyMain(string inF, string mode,
 						retCnts[repI].push_back(CDrAsync->RareSample[repI]);
 						repI++;
 					}
-					// save sample name for naming purposes
-					if(CDrAsync->retCntsSampleName.size() != 0){
-						retCntsSampleNames.push_back(CDrAsync->retCntsSampleName);
-					}
+
+				}
+				// save sample name for naming purposes
+				if(CDrAsync->retCntsSampleName.size() != 0){
+					retCntsSampleNames.push_back(CDrAsync->retCntsSampleName);
 				}
 				delete CDrAsync;
 			}
@@ -160,12 +161,10 @@ int rarefyMain(string inF, string mode,
 				if(tmpCDr->retCntsSampleName.size() != 0){
 					retCntsSampleNames.push_back(tmpCDr->retCntsSampleName);
 				}
-				// skippedSample
-				if(tmpCDr->skippedSample.size() > 0){
-					skippedSamples.push_back(tmpCDr->skippedSample);
-				}
-
-
+			}
+			// skippedSample
+			if(tmpCDr->skippedSample.size() > 0){
+				skippedSamples.push_back(tmpCDr->skippedSample);
 			}
 
 
