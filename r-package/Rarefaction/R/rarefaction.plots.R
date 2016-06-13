@@ -1,20 +1,25 @@
 
-plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, ...){
-    
+plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, legend = TRUE, legend.pos = "topleft", ...){
+  
+  if(!div%in% c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')){
+    stop(paste("Not a possible plotting option for div:", div))
+  }
+  
 	if(length(obj$depth) == 1){
-	  singlePlot(obj,div, groups, col, lty, pch, ...)
+	  singlePlot(obj,div, groups, col, lty, pch, legend, legend.pos,  ...)
 	}else if(length(obj$depth) > 1){
     # by default make rainbow colors
     if(is.null(col)){col <-  rainbow(length(obj[[1]]$divvs))}
     # call the correct plot function for multiple rarefaction curves
-	  multiPlot(obj, div, groups, col, lty, pch, ...)
+	  multiPlot(obj, div, groups, col, lty, pch, legend, legend.pos, ...)
 	}else{
     warning("No depths provided")
 	}
+  return()
 }
 
 
-singlePlot <- function(obj, div, groups, col , lty, pch, ...){
+singlePlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos , ...){
   
   # remove empty samples
   emptys <- sapply(obj$divvs, function(x){
@@ -57,13 +62,19 @@ singlePlot <- function(obj, div, groups, col , lty, pch, ...){
     
   # boxplot the data
   boxplot(df, col=col, pch=pch, ...)
-
+  
+  if(legend){
+    legend(legend.pos, inset=.02,names(df) , fill=col, horiz=FALSE, cex=0.8)
+  }
+  
+  
+  return()
 }
 
 
 
 
-multiPlot <- function(obj, div, groups, col , lty, pch, ...){
+multiPlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos,  ...){
 	# takethe obj when there are more than one repeat
   depths <- obj$depths
   ydata <-  matrix(sapply(seq(1, length(depths), by=1), getDivvs, obj=obj, divName=div), ncol=length(depths), byrow = FALSE)
@@ -82,10 +93,10 @@ multiPlot <- function(obj, div, groups, col , lty, pch, ...){
     ydata <- ydata[-which(rownames(ydata)=="groups"),]
     colnames(ydata) <- unique(groups)
   }else{
-    ydata <- as.data.frame(t(ydata))
+  ydata <- as.data.frame(t(ydata))
   }
   
-  # get the y and x ranges
+
   ymax <- max(apply(ydata,1, function(x){max(x[!is.na(x)])}))
   ymin <- min(apply(ydata,1, function(x){min(x[!is.na(x)])}))
  
@@ -101,7 +112,7 @@ multiPlot <- function(obj, div, groups, col , lty, pch, ...){
   
   # plot the lines, one at a time
   legendcolors <- mapply(function(y, col, lty, pch, depths ){
-  str(y)
+
     lines(depths, y, lwd=1, col=col, lty = lty)
     if(!is.na(pch)){
       points(depths, y, col=col, lty = lty, pch = pch)  
@@ -109,9 +120,13 @@ multiPlot <- function(obj, div, groups, col , lty, pch, ...){
     
     return(col)
   }, y=ydata,col=col, lty, pch, MoreArgs=list(depths=depths))
-
+  
+  if(legend){
+    legend(legend.pos, inset=.02,names(ydata) , fill=legendcolors, horiz=FALSE, cex=0.8)
+  }
+  
+  return(NULL)
 }
-
 
 
 getDivMedians <- function(i, obj, divName){
@@ -124,3 +139,5 @@ getDivvs <- function(i, obj, divName){
   })
   return(y)
 }
+
+
