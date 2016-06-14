@@ -1,5 +1,5 @@
 
-plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, legend = TRUE, legend.pos = "topleft", log.dim = "x", ...){
+plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = TRUE, legend = TRUE, legend.pos = "topleft", log.dim = "", ...){
   
   if(!div%in% c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')){
     stop(paste("Not a possible plotting option for div:", div))
@@ -11,7 +11,7 @@ plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL,
     # by default make rainbow colors
     if(is.null(col)){col <-  rainbow(length(obj[[1]]$divvs))}
     # call the correct plot function for multiple rarefaction curves
-	  multiPlot(obj, div, groups, col, lty, pch, legend, legend.pos, log.dim, ...)
+	  multiPlot(obj, div, groups, col, lty, pch, fit, legend, legend.pos, log.dim, ...)
 	}else{
     warning("No depths provided")
 	}
@@ -59,9 +59,17 @@ singlePlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos , ..
   }
   
   pch <- rep_len(pch, length(df))  
-    
+  
+
+  
   # boxplot the data
   boxplot(df, col=col, pch=pch, ...)
+  usr <- par( "usr" )
+  # kuskal test
+  if(ncol(df) > 1){
+    k <- kruskal.test(df)
+    text((usr[2]-usr[1])/2, usr[4], adj = c(0.5,1.5), labels = paste("Kruskal-Wallis p-value = ", round(k$p.value,5)))
+  }
   
   if(legend){
     legend(legend.pos, inset=.02,names(df) , fill=col, horiz=FALSE, cex=0.8)
@@ -74,7 +82,7 @@ singlePlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos , ..
 
 
 
-multiPlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos, log.dim, ...){
+multiPlot <- function(obj, div, groups, col , lty, pch, fit,  legend, legend.pos, log.dim, ...){
 	# takethe obj when there are more than one repeat
   depths <- obj$depths
   ydata <-  matrix(sapply(seq(1, length(depths), by=1), getDivvs, obj=obj, divName=div), ncol=length(depths), byrow = FALSE)
@@ -83,43 +91,53 @@ multiPlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos, log.
   
   # merge samples if grouping should be done
   if(!is.na(groups) && length(groups) == nrow(ydata)){
-    ydata <- as.data.frame(cbind(ydata, groups))
+    ydata <- as.data.frame(ydata)
     
-    ydata <- lapply((split(ydata, ydata$groups)), function(g){
-      sapply(g, median, na.rm=TRUE)
+    ydata <- lapply((split(ydata, groups)), function(g){
+        return(sapply(g, median, na.rm=TRUE))      
     })
     ydata <- as.data.frame(ydata)
-    # remove groups again from DF object, so we have pure data
-    ydata <- ydata[-which(rownames(ydata)=="groups"),]
-    colnames(ydata) <- unique(groups)
+    
   }else{
   ydata <- as.data.frame(t(ydata))
   }
   
 
-  ymax <- max(apply(ydata,1, function(x){max(x[!is.na(x)])}))
-  ymin <- min(apply(ydata,1, function(x){min(x[!is.na(x)])}))
- 
+  ymax <- max(unlist(ydata)[!is.na(unlist(ydata))])
+  ymin <- min(unlist(ydata)[!is.na(unlist(ydata))])
+  
   # set the pch and col to same length as ncol(ydata)
   col <- rep_len(col, ncol(ydata))
-  if(all(is.na(pch))){
-    pch <- rep_len(pch, ncol(ydata))  
-  }
+  pch <- rep_len(pch, ncol(ydata))  
+  
   
   
   # initial plot
   plot(1,type="n",log = log.dim, ylim=c(ymin,ymax), xlim=c(min(depths),max(depths)), ...) # ,xlab=xlabel,ylab=ylabel,ylim=ylime,xlim=c(min(rarepoints),max(rarepoints)))
-  
+  usr <- par( "usr" )
   # plot the lines, one at a time
   legendcolors <- mapply(function(y, col, lty, pch, depths ){
+    
+    if(fit == TRUE){
+      m <- nls(y ~ fit.arrhenius(x,a,b), data = data.frame(x=depths, y = y), start = list(a = 1, b = 100))
+      xD <- seq(from = min(depths), to = max(depths), length.out = 2000)
+      lines(xD, predict(m, list(x = xD)), col = col)
+    }else{
+      lines(depths, y, lwd=1, col=col, lty = lty)  
+    }
 
-    lines(depths, y, lwd=1, col=col, lty = lty)
     if(!is.na(pch)){
       points(depths, y, col=col, lty = lty, pch = pch)  
     }
     
     return(col)
   }, y=ydata,col=col, lty, pch, MoreArgs=list(depths=depths))
+  
+  
+  if(ncol(ydata) > 1){
+    k <- kruskal.test(ydata[apply(ydata, 1, function(x){all(!is.na(x))}),])
+    legend("top",  paste("Kruskal-Wallis p-value = ", round(k$p.value,5)), bty ="n", pch=NA)
+  }
   
   if(legend){
     legend(legend.pos, inset=.02,names(ydata) , fill=legendcolors, horiz=FALSE, cex=0.8)
@@ -139,5 +157,12 @@ getDivvs <- function(i, obj, divName){
   })
   return(y)
 }
+
+
+fit.arrhenius <- function(x, a, b){
+  v <- b * x^a
+  return(v)
+}
+
 
 
