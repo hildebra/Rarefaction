@@ -7,30 +7,27 @@
 \description{ Rarefy datasets in R or from a path. }
 
 \usage{
-rare(input, repeats=10, depth = 1000, NoOfMatrices = 0, margin = 2, verbose=TRUE, threads=1 )
+rare(input, repeats=10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose=TRUE, threads=1 )
 }
 
 \arguments{
-  \item{input}{Either a R object like a numeric matrix or a path to a \code{.csv}-file. (\code{required})}
+  \item{input}{This can be either a numeric matrix or a path to a text file in tab-delimited format on the harddrive. The later option is for very big matrices, to avoid unnecessary memory consumption in R. (required)}
   \item{repeats}{Number of times to compute diversity measures. (\code{default: 10})}
   \item{depth}{Number of elements per row/column to rarefy to. The so called rarefaction depth or samplesize. Can also be a vector of ints. (\code{default: 1000})}
-  \item{NoOfMatrices}{Number of rarefied matrices which are returned to R. Set to zero to only measure diversity. (\code{default: 1})}
-  \item{margin}{In which direction the dataset will be rarefied.
-  Default is to rarefy all columns (margin=2). Can be set to rows by
-  \code{margin=1} to get the same number of species in each row instead. (\code{default: 2 (columns)})}
+  \item{ReturnMatrix}{Number of rarefied matrices which are returned to R. Set to zero to only measure diversity. (\code{default: 1})}
+  \item{margin}{Indicates which margin in the matrix represents the Samples and Species. Default is to rarefy assuming columns represent single samples (margin=2). If margin=1, rows are assumed to be samples. (default: 2 (columns))}
   \item{verbose}{If extra output should be printed to std::out or not to see progress of rarefaction. (\code{default: TRUE)}}
 
 }
 \details{
-
-  Function \code{rare} takes a datset and calcualtes the diversity measures, namely the shaonnon diversity, richness,  simpson index, the inverse simpson index, chao1 and eve.
+Function \code{rare} takes a datset and calcualtes the diversity measures, namely the shannon diversity, richness, simpson index, the inverse simpson index, chao1 and eve.
+The returned diversity indexes are:
+-	Shannon diversity – this is.. blab la, formulat
+-	Richness – bla bla
 
 }
 
-\value{
-The function \code{rare} returns an list containing a list of matrices with the length specified in the options. All matrices are rarefied to the desired depth.
-Moreover it always returns the diversity measures for all samples (depending on the margin setting) with the number of repeats specified in repeats.
-A median for all measurements is also returned.
+\value{The function \code{rare} returns an object of class 'rarefaction',  containing the following objects: $divvs with sublists of the different diversity indexes with N repeats (N being controlled by parameter "repeats"), $raremat are the returned  different rarefied matrices as specified by parameter ReturnMatrix. A median for all diversity measurements is also returned in $div.median.
 }
 
 \references{

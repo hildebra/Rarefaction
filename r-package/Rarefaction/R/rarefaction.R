@@ -9,13 +9,13 @@ rare.status <- function(msg, verbose=TRUE){
 }
 # this is the rarefy function
 rare <- function(input, repeats=10, depth = 1000,
-				NoOfMatrices = 0,
+				ReturnMatrix  = 0,
 				margin = 2, verbose=TRUE, threads=1 ){
 
 
-	if(repeats < NoOfMatrices){
-		repeats <- NoOfMatrices
-		warning(paste("Repeats can not be smaller than number of matrices to return. Repeats set to match NoOfMatrices. repeats = NoOfMatrices =", repeats, sep=" "))
+	if(repeats < ReturnMatrix ){
+		repeats <- ReturnMatrix
+		warning(paste("Repeats can not be smaller than number of matrices to return. Repeats set to match ReturnMatrix. repeats = ReturnMatrix =", repeats, sep=" "))
 	}
 
 
@@ -50,7 +50,7 @@ rare <- function(input, repeats=10, depth = 1000,
 						res <- rcpp_rarefaction("", input, colnames(input),
 								rownames(input),
 			                    repeats, d,
-								NoOfMatrices,
+								ReturnMatrix,
 			                    verbose, threads,
 								margin)
 
@@ -82,7 +82,7 @@ rare <- function(input, repeats=10, depth = 1000,
 	                        matrix(1,1,c(1)),
 							c(NA),c(NA), # col and rownames
 	                        repeats, d,
-							NoOfMatrices,
+							ReturnMatrix,
 	                        verbose, threads,
 							margin)
 							return(res)
