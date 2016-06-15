@@ -114,7 +114,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 					int writes,bool write, bool fillret){
 	if (dep>totSum){
 		skippedSample = divs->SampleName;
-		if (verbose){cout<<"skipped sample, because rowSums < depth \n";}	
+		if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
 		return;
 	}
 	long curIdx=(long)totSum+1;

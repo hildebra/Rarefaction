@@ -18,6 +18,10 @@ rare <- function(input, repeats=10, depth = 1000,
 		warning(paste("Repeats can not be smaller than number of matrices to return. Repeats set to match ReturnMatrix. repeats = ReturnMatrix =", repeats, sep=" "))
 	}
 
+	if(!all(depths > 0)){
+		warning("You should not rarefy to a depth of zero. Please rarefy to a minimum of 1. You might have problems later on.")
+	}
+
 
 	# convert dataframes
 	if(class(input) == "data.frame"){

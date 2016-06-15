@@ -27,7 +27,13 @@ The returned diversity indexes are:
 
 }
 
-\value{The function \code{rare} returns an object of class 'rarefaction',  containing the following objects: $divvs with sublists of the different diversity indexes with N repeats (N being controlled by parameter "repeats"), $raremat are the returned  different rarefied matrices as specified by parameter ReturnMatrix. A median for all diversity measurements is also returned in $div.median.
+\value{The function \code{rare} returns an object of class 'rarefaction',  containing the  objects \code{divvs}, \code{raremat}, \code{skipped}, \code{div.median} and \code{depths}. If more than one depth was computed the elements 1-4 are inside a list themself and can be acessed by the index of the desired depth.
+
+The object \code{divvs} contains a list of diversity measures for each sample provieded.
+
+\code{raremat} is one or multiple rarefied matrices. Samples with not enough counts are removed, thus not all \code{raremat}-matrices for different depths might be of the same size. If and which sampels where excluded is denoted in the element \code{skipped} using the names of the respective samples.
+
+\code{depths} just contains the input variable and might be usefull for further analysis of the results.
 }
 
 \references{
