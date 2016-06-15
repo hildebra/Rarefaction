@@ -1,8 +1,13 @@
 
-plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = TRUE, legend = TRUE, legend.pos = "topleft", log.dim = "", ...){
+plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", ...){
   
   if(!div%in% c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')){
     stop(paste("Not a possible plotting option for div:", div))
+  }
+
+  
+  if(!fit%in%c("arrhenius", "michaelis-menten", "logis", FALSE)){
+    warning(paste("Not a valid fitting model:", div,  "No fitting will be done."))
   }
   
 	if(length(obj$depth) == 1){
@@ -118,11 +123,23 @@ multiPlot <- function(obj, div, groups, col , lty, pch, fit,  legend, legend.pos
   # plot the lines, one at a time
   legendcolors <- mapply(function(y, col, lty, pch, depths ){
     
-    if(fit == TRUE){
-      m <- nls(y ~ fit.arrhenius(x,a,b), data = data.frame(x=depths, y = y), start = list(a = 1, b = 100))
+    if(fit%in%c("arrhenius", "michaelis-menten", "logis")){
+      
+      # find the fitting model
+      FITM <- function(fit, depths, y) {
+        df <-  data.frame(x=depths, y = y)
+        switch(fit,
+          "arrhenius" = nls(y ~ fit.arrhenius(x,a,b), data = df, start = list(a = 1, b = 100)),
+          "michaelis-menten"  = nls(y ~ SSmicmen(x, Vm, k), data = df),
+          "logis" = nls(y ~ SSlogis(x, Asym, xmid, scal), data = df)
+        )
+      }
+      
+      # plot a smooth line with n = 2000 datapoints, experimanetally set number, might be valid as a parameter?
       xD <- seq(from = min(depths), to = max(depths), length.out = 2000)
-      lines(xD, predict(m, list(x = xD)), col = col)
+      lines(xD, predict(FITM(fit, depths, y), list(x = xD)), col = col)
     }else{
+      # no fitting
       lines(depths, y, lwd=1, col=col, lty = lty)  
     }
 
