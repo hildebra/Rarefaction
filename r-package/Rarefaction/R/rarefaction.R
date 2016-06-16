@@ -113,6 +113,7 @@ rare <- function(input, repeats=10, depth = 1000,
 	}
 
 	result$depths <- depth
+	result$repeats <- repeats
 	# set our class
 	class(result) <- "rarefaction";
 	return(result)

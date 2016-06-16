@@ -1,4 +1,4 @@
-collectorscurve <- function(x,  ...){
+collectorscurveold <- function(x,  ...){
   if(class(x) != "rarefaction"){
     stop("Not a rarefaction object")
   }
@@ -30,7 +30,7 @@ collectorscurve <- function(x,  ...){
 }
 
 
-samplercurve <- function(x, col = 0, times = 10, ...){
+collectors.curve <- function(x, col = 0, times = 10, ...){
   if(class(x) == "rarefaction"){
     cum.sample.rare(x, col, times, ...)
   }else{

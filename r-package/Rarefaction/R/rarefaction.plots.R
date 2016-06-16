@@ -1,5 +1,5 @@
 
-plot.rarefaction <- function(x, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", ...){
+plot.rarefaction <- function(x, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", boxplot = FALSE, ...){
   
   if(!div%in% c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eveness')){
     stop(paste("Not a possible plotting option for div:", div))
@@ -16,7 +16,7 @@ plot.rarefaction <- function(x, div = c("richness"),  groups = NA, col = NULL, l
     # by default make rainbow colors
     if(is.null(col)){col <-  rainbow(length(x[[1]]$divvs))}
     # call the correct plot function for multiple rarefaction curves
-	  multiPlot(x, div, groups, col, lty, pch, fit, legend, legend.pos, log.dim, ...)
+    rarefaction.curve(x, div, groups, col, lty, pch, fit, legend, legend.pos, log.dim,boxplot,  ...)
 	}else{
     warning("No depths provided")
 	}
@@ -87,10 +87,10 @@ singlePlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos , ..
 
 
 
-multiPlot <- function(obj, div, groups, col , lty, pch, fit,  legend, legend.pos, log.dim, ...){
-	# takethe obj when there are more than one repeat
+rarefaction.curve <- function(obj, div, groups, col , lty, pch, fit,  legend, legend.pos, log.dim,boxplot, ...){
+	# takethe obj when there are more than one depth
   depths <- obj$depths
-  ydata <-  matrix(sapply(seq(1, length(depths), by=1), getDivvs, obj=obj, divName=div), ncol=length(depths), byrow = FALSE)
+  ydata <-  matrix(sapply(seq(1, length(depths), by=1), getDivvs.median, obj=obj, divName=div), ncol=length(depths), byrow = FALSE)
   colnames(ydata) <- paste("depth",depths)
   rownames(ydata) <- sapply(obj[[1]]$divvs, function(x){return(x$samplename)})
   
@@ -107,6 +107,8 @@ multiPlot <- function(obj, div, groups, col , lty, pch, fit,  legend, legend.pos
   ydata <- as.data.frame(t(ydata))
   }
   
+  # sort data 
+  ydata <- as.data.frame(ydata[order(depths),])
 
   ymax <- max(unlist(ydata)[!is.na(unlist(ydata))])
   ymin <- min(unlist(ydata)[!is.na(unlist(ydata))])
@@ -148,7 +150,41 @@ multiPlot <- function(obj, div, groups, col , lty, pch, fit,  legend, legend.pos
     }
     
     return(col)
-  }, y=ydata,col=col, lty, pch, MoreArgs=list(depths=depths))
+  }, y=ydata,col=col, lty, pch, MoreArgs=list(depths=sort(depths)))
+  
+  
+  
+  
+  if(boxplot == TRUE){
+    ydataB <-  lapply(seq(1, length(depths), by=1), getDivvs.raw, obj=obj, divName=div, rep=obj$repeats)
+    # grouping here:
+    groupsB <- groups
+    if(is.na(groupsB)){
+      # make groups for everything, so each group is size 1. 
+      groupsB <- 1:ncol(ydata)
+    }
+      a <- sapply(ydataB, function(y){
+ 
+        y <- as.data.frame(t(y))
+        y <- lapply(split(y, groupsB), function(g){
+          return(apply(g,2, median, na.rm=TRUE))      
+        })
+        
+        return(y)
+      })
+      
+      # plot the groupsB
+      a2 <- apply(a, 1, function(x){
+        x <- as.data.frame(x)
+        names(x) <- depths
+        return(x)
+      })
+      mapply(function(x, color){
+        boxplot(x, add= TRUE, fill = color, border = color, at = depths, axes=FALSE )
+      }, x = a2, color = col)
+       
+  }
+  
   
   
   if(ncol(ydata) > 1){
@@ -164,13 +200,71 @@ multiPlot <- function(obj, div, groups, col , lty, pch, fit,  legend, legend.pos
 }
 
 
+
+
+
+
+rarefaction.curve.boxplot <- function(x,  ...){
+  if(class(x) != "rarefaction"){
+    stop("Not a rarefaction object")
+  }
+  
+  depths <- x$depths
+  
+  a <- sapply(seq(1, length(depths), by=1), function(i, ...){
+    b <- sapply(x[[i]]$raremat, function(j){
+      s <- rowSums(j)
+      length(s[s != 0])
+    })
+    return(b)
+  }, x = x)
+  
+  
+  df <- as.data.frame(a)
+  
+  
+  if(length(df) == 1){
+    rownames(df) <- depths
+    colnames(df) <- "V1"
+    plot(depths, a , ...)
+  }else if(length(df) > 1){
+    colnames(df) <- depths
+    boxplot(df, at = depths, ...)
+  }
+  
+  return(df)
+}
+
+
+
+
+
+
+
+
+
+
+
+
 getDivMedians <- function(i, obj, divName){
   return(obj[[i]]$div.median[[paste("median.",divName, sep="")]])
 }
 
-getDivvs <- function(i, obj, divName){
+getDivvs.median <- function(i, obj, divName){
   y <- sapply(obj[[i]]$divvs, function(x){
     median(x[[divName]])
+  })
+  return(y)
+}
+getDivvs.raw <- function(i, obj, divName, reps){
+  y <- sapply(obj[[i]]$divvs, function(x){
+    r <- x[[divName]]
+
+    if(length(r) != reps){
+      r <- rep_len(0, reps)
+    }
+    return(r)
+    
   })
   return(y)
 }

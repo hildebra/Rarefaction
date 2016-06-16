@@ -1,6 +1,6 @@
 Package: rarefaction
 Type: Package
-Title: rarefaction
+Title: Fast rarefaction
 Version: 0.1.5
 Date: 2016-06-09
 Author: Falk Hildebrand, Paul Saary
