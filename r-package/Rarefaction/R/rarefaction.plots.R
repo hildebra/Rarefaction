@@ -1,7 +1,7 @@
 
-plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", ...){
+plot.rarefaction <- function(x, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", ...){
   
-  if(!div%in% c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')){
+  if(!div%in% c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eveness')){
     stop(paste("Not a possible plotting option for div:", div))
   }
 
@@ -10,13 +10,13 @@ plot.rarefaction <- function(obj, div = c("richness"),  groups = NA, col = NULL,
     warning(paste("Not a valid fitting model:", div,  "No fitting will be done."))
   }
   
-	if(length(obj$depth) == 1){
-	  singlePlot(obj,div, groups, col, lty, pch, legend, legend.pos,  ...)
-	}else if(length(obj$depth) > 1){
+	if(length(x$depth) == 1){
+	  singlePlot(x,div, groups, col, lty, pch, legend, legend.pos,  ...)
+	}else if(length(x$depth) > 1){
     # by default make rainbow colors
-    if(is.null(col)){col <-  rainbow(length(obj[[1]]$divvs))}
+    if(is.null(col)){col <-  rainbow(length(x[[1]]$divvs))}
     # call the correct plot function for multiple rarefaction curves
-	  multiPlot(obj, div, groups, col, lty, pch, fit, legend, legend.pos, log.dim, ...)
+	  multiPlot(x, div, groups, col, lty, pch, fit, legend, legend.pos, log.dim, ...)
 	}else{
     warning("No depths provided")
 	}

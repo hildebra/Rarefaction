@@ -7,7 +7,7 @@
 \description{ Rarefy datasets in R or from a path. }
 
 \usage{
-rare(input, repeats=10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose=TRUE, threads=1 )
+rare(input, repeats=10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose=FALSE, threads=1 )
 }
 
 \arguments{
@@ -17,14 +17,18 @@ rare(input, repeats=10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose=TRU
   \item{ReturnMatrix}{Number of rarefied matrices which are returned to R. Set to zero to only measure diversity. (\code{default: 1})}
   \item{margin}{Indicates which margin in the matrix represents the Samples and Species. Default is to rarefy assuming columns represent single samples (margin=2). If margin=1, rows are assumed to be samples. (default: 2 (columns))}
   \item{verbose}{If extra output should be printed to std::out or not to see progress of rarefaction. (\code{default: TRUE)}}
+  \item{threads}{Number of cores to use during rarefaction}
 
 }
 \details{
-Function \code{rare} takes a datset and calcualtes the diversity measures, namely the shannon diversity, richness, simpson index, the inverse simpson index, chao1 and eve.
+Function \code{rare} takes a datset and calcualtes the diversity measures, namely the shannon diversity, richness, simpson index, the inverse simpson index, chao1 and evenness.
 The returned diversity indexes are:
--	Shannon diversity – this is.. blab la, formulat
--	Richness – bla bla
-
+\item{Shannon diversity}{Describes the complexity withing a given sample.}
+\item{Richness}{The number of species observed in each sample.}
+\item{simpson index}{Describes the propability that two individual from the same dataset are of the same type.}
+\item{Inverse simpson index}{... ?}
+\item{Chao1}{???}
+\item{Eveness}{Describes the relative distribution of species in a sample.}
 }
 
 \value{The function \code{rare} returns an object of class 'rarefaction',  containing the  objects \code{divvs}, \code{raremat}, \code{skipped}, \code{div.median} and \code{depths}. If more than one depth was computed the elements 1-4 are inside a list themself and can be acessed by the index of the desired depth.
@@ -47,16 +51,11 @@ The object \code{divvs} contains a list of diversity measures for each sample pr
 
 \examples{
 require("rarefaction")
-
 # generate semi sparse example data
 data            <- matrix(sample(x = c(rep(0, 1500),rep(1:10, 500),1:1000),size = 120, replace = TRUE), 10)
 # find the column with the lowest aboundance
 samplesize      <- min(colSums(data))
 # rarefy the dataset, so each column contains the same number of samples
-data.rarefied   <- rare(input = data, depth = samplesize, NoOfMatrices = 1, verbose=FALSE)
-
-#path 		<- "/path/to/a/file.csv"
-#data.rarefied   <- rare(input = path, depth = 1000)
-
+data.rarefied   <- rare(input = data, depth = samplesize, ReturnMatrix = 1)
 
 }

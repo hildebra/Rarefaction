@@ -10,7 +10,7 @@ rare.status <- function(msg, verbose=TRUE){
 # this is the rarefy function
 rare <- function(input, repeats=10, depth = 1000,
 				ReturnMatrix  = 0,
-				margin = 2, verbose=TRUE, threads=1 ){
+				margin = 2, verbose=FALSE, threads=1 ){
 
 
 	if(repeats < ReturnMatrix ){
@@ -18,7 +18,7 @@ rare <- function(input, repeats=10, depth = 1000,
 		warning(paste("Repeats can not be smaller than number of matrices to return. Repeats set to match ReturnMatrix. repeats = ReturnMatrix =", repeats, sep=" "))
 	}
 
-	if(!all(depths > 0)){
+	if(!all(depth > 0)){
 		warning("You should not rarefy to a depth of zero. Please rarefy to a minimum of 1. You might have problems later on.")
 	}
 
@@ -101,7 +101,7 @@ rare <- function(input, repeats=10, depth = 1000,
 		}
 
 	  # calculate median for diversity measures
-	  measures 					<- c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eve')
+	  measures 					<- c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eveness')
 	  res$div.median 			<- lapply(measures, r.median, x=res$divvs)
 	  names(res$div.median) 	<- paste("median.", measures, sep = "")
 

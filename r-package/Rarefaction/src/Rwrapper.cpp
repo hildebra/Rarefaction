@@ -26,7 +26,7 @@ List createDivList(DivEsts * div){
 		                      Named("simpson",      div->simpson),
 		                      Named("invsimpson",   div->invsimpson),
 		                      Named("chao1",        div->chao1),
-		                      Named("eve",          div->eve));
+		                      Named("eveness",      div->eve));
     return divLst;
 }
 

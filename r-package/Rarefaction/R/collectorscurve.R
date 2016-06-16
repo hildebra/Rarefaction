@@ -36,6 +36,7 @@ samplercurve <- function(x, col = 0, times = 10, ...){
   }else{
     cum.sample(x, col, times, ...)
   }
+  return()
 }
 
 
