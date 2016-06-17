@@ -23,12 +23,13 @@ rare(input, repeats=10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose=FAL
 \details{
 Function \code{rare} takes a dataset and calcualtes the diversity measures, namely the shannon diversity, richness, simpson index, the inverse simpson index, chao1 and evenness.
 The returned diversity indexes are:
-\item{Shannon diversity}{Describes the complexity withing a given sample.}
-\item{Richness}{The number of species observed in each sample.}
-\item{simpson index}{Describes the propability that two individual from the same dataset are of the same type.}
-\item{Inverse simpson index}{... ?}
-\item{Chao1}{???}
-\item{Eveness}{Describes the relative distribution of species in a sample.}
+
+Shannon diversity: Describes the complexity withing a given sample.
+Richness: The number of species observed in each sample.
+simpson index: Describes the propability that two individual from the same dataset are of the same type.
+Inverse simpson index: ... ?
+Chao1: ???
+Eveness: Describes the relative distribution of species in a sample.
 
 If wished for the function can also return one or multiple rarefied matrices rarefied to one or multiple depths. Those can then also be used to create collectorcurves (see \code{\link{collectors.curve}}).
 }
