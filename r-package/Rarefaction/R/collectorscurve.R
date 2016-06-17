@@ -13,7 +13,6 @@ cum.sample.rare <- function(x, col = 1, times = 10,  ...){
   if(class(x) != "rarefaction"){
     stop("Not a rarefaction object")
   }
-
   depths <- x$depths
 
   if(length(depths) > 1){
