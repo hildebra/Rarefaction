@@ -22,6 +22,9 @@ rare <- function(input, repeats=10, depth = 1000,
 		warning("You should not rarefy to a depth of zero. Please rarefy to a minimum of 1. You might have problems later on.")
 	}
 
+	# sort depths
+	depth <- sort(as.numeric(depth))
+
 
 	# convert dataframes
 	if(class(input) == "data.frame"){

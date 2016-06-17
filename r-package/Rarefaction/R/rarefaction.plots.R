@@ -62,7 +62,6 @@ singlePlot <- function(obj, div, groups, col , lty, pch, legend, legend.pos , ..
   }else{
     col <- rep_len(col, length(df))
   }
-  
   pch <- rep_len(pch, length(df))  
   
 
@@ -107,11 +106,9 @@ rarefaction.curve <- function(obj, div, groups, col , lty, pch, fit,  legend, le
   ydata <- as.data.frame(t(ydata))
   }
   
-  # sort data 
-  ydata <- as.data.frame(ydata[order(depths),])
 
-  ymax <- max(unlist(ydata)[!is.na(unlist(ydata))])
-  ymin <- min(unlist(ydata)[!is.na(unlist(ydata))])
+  ymax <- max(unlist(ydata, F,F)[!is.na(unlist(ydata,F,F))])
+  ymin <- min(unlist(ydata, F,F)[!is.na(unlist(ydata,F,F))])
   
   # set the pch and col to same length as ncol(ydata)
   col <- rep_len(col, ncol(ydata))
@@ -159,7 +156,7 @@ rarefaction.curve <- function(obj, div, groups, col , lty, pch, fit,  legend, le
     ydataB <-  lapply(seq(1, length(depths), by=1), getDivvs.raw, obj=obj, divName=div, rep=obj$repeats)
     # grouping here:
     groupsB <- groups
-    if(is.na(groupsB)){
+    if(all(is.na(groupsB))){
       # make groups for everything, so each group is size 1. 
       groupsB <- 1:ncol(ydata)
     }
@@ -174,11 +171,15 @@ rarefaction.curve <- function(obj, div, groups, col , lty, pch, fit,  legend, le
       })
       
       # plot the groupsB
+    if(!is.null(dim(a))){
       a2 <- apply(a, 1, function(x){
         x <- as.data.frame(x)
         names(x) <- depths
         return(x)
       })
+    }else{
+      a2 <- list(a=as.data.frame(a))
+    }
       mapply(function(x, color){
         boxplot(x, add= TRUE, fill = color, border = color, at = depths, axes=FALSE )
       }, x = a2, color = col)
