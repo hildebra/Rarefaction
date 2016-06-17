@@ -21,7 +21,7 @@ rare(input, repeats=10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose=FAL
 
 }
 \details{
-Function \code{rare} takes a datset and calcualtes the diversity measures, namely the shannon diversity, richness, simpson index, the inverse simpson index, chao1 and evenness.
+Function \code{rare} takes a dataset and calcualtes the diversity measures, namely the shannon diversity, richness, simpson index, the inverse simpson index, chao1 and evenness.
 The returned diversity indexes are:
 \item{Shannon diversity}{Describes the complexity withing a given sample.}
 \item{Richness}{The number of species observed in each sample.}
@@ -29,6 +29,8 @@ The returned diversity indexes are:
 \item{Inverse simpson index}{... ?}
 \item{Chao1}{???}
 \item{Eveness}{Describes the relative distribution of species in a sample.}
+
+If wished for the function can also return one or multiple rarefied matrices rarefied to one or multiple depths. Those can then also be used to create collectorcurves (see \code{\link{collectors.curve}}).
 }
 
 \value{The function \code{rare} returns an object of class 'rarefaction',  containing the  objects \code{divvs}, \code{raremat}, \code{skipped}, \code{div.median} and \code{depths}. If more than one depth was computed the elements 1-4 are inside a list themself and can be acessed by the index of the desired depth.
@@ -38,6 +40,8 @@ The object \code{divvs} contains a list of diversity measures for each sample pr
 \code{raremat} is one or multiple rarefied matrices. Samples with not enough counts are removed, thus not all \code{raremat}-matrices for different depths might be of the same size. If and which sampels where excluded is denoted in the element \code{skipped} using the names of the respective samples.
 
 \code{depths} just contains the input variable and might be usefull for further analysis of the results.
+
+It is possible to plot the resulsts of the rarefaction, depending on the parameters passed to \code{rare}. See \code{\link{plot.rarefaction}} for examples.
 }
 
 \references{
@@ -45,7 +49,7 @@ The object \code{divvs} contains a list of diversity measures for each sample pr
 
 }
 
-\seealso{Use \code{\link{plot.rarefaction}} for how to plot your results.}
+\seealso{\code{\link{plot.rarefaction}}, \code{\link{collectors.curve}}}
 
 \author{Falk Hildebrand, Paul Saary}
 

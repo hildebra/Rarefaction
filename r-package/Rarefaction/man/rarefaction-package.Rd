@@ -31,6 +31,6 @@ Maintainer: \packageMaintainer{rarefaction}
 }
 
 \seealso{
-\code{\link{rare}}, \code{\link{plot.rarefaction}}, \code{\link{collectorscurve}
+\code{\link{rare}}, \code{\link{plot.rarefaction}}, \code{\link{collectors.curve}
 }
 }

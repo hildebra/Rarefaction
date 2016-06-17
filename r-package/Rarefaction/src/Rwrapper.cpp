@@ -68,6 +68,9 @@ List rcpp_rarefaction(Rcpp::String input,
 						 int margin=2)
 						{
 
+	// check for user interrup
+	Rcpp::checkUserInterrupt();
+
 	// initialize variables
 	std::vector< std::vector < double > > rmat;
 	vector < string > incolnames;
@@ -103,6 +106,9 @@ List rcpp_rarefaction(Rcpp::String input,
 	std::vector<string> rowNames;
 	std::vector<string> skippedSamples;
 
+	// check for user interrup
+	Rcpp::checkUserInterrupt();
+
 	// call the rarefaction main function
 	rarefyMain(input, "rare_inmat", repeats, depth,  threads, verbose,
 				 rmat, incolnames, inrownames ,
@@ -110,7 +116,8 @@ List rcpp_rarefaction(Rcpp::String input,
 				 skippedSamples,
 				rowNames, NoOfMatrices, transpose);
 
-
+	// check for user interrup
+	Rcpp::checkUserInterrupt();
 	if(verbose == true){
 		cout << "Done rarefying, will now produce R objects in Cpp\n";
 		cout << "and pass them to R\n";
