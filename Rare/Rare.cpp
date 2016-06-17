@@ -1,4 +1,4 @@
-// rarefaction.cpp 
+// rarefaction.cpp
 // usage: rarefaction in_matrix outfile
 //outfile contains richness and sample sum; in same dir several files are created
 //C:\Users\Falk\SkyDrive\science\data\test\test.mat.subs
@@ -6,7 +6,7 @@
 //#include "Matrix.h"
 #include "ClStr2Mat.h"
 
-const char* rar_ver="0.63		 alpha";
+const char* rar_ver="0.63 alpha";
 
 DivEsts* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
 	cout << i << " ";
@@ -19,20 +19,57 @@ DivEsts* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, 
 	return div;
 }
 
-void helpMsg(){
+void helpMsglegacy(){
 	string  AvailableModes = "Available run modes:\nnormalize\nsplitMat\nlineExtr\nmergeMat\nsumMat\nrarefaction\nrare_inmat\nmodule\n";
 	cerr << AvailableModes << "Provide two arguments\nexiting..\n";
 	cerr << "------------------------------\nAuthor: falk.hildebrand@gmail.com\n";
 	std::exit(2);
 }
 
+void stateVersion(){
+	printf("rare %s\n", rar_ver);
+}
+
+void helpMsg(){
+	stateVersion();
+	printf("\n");
+	printf("usage: rare mode input output [options] \n");
+	printf("\n");
+	printf("Available run modes:\n");
+	printf("    normalize     TODO\n");
+	printf("    splitMat      TODO\n");
+	printf("    lineExtr      TODO\n");
+	printf("    mergeMat      TODO\n");
+	printf("    sumMat        TODO\n");
+	printf("    rarefaction   TODO\n");
+	printf("    rare_inmat    rarefy a matrix and compute diversity measures\n");
+	printf("    module        TODO\n");
+	printf("\n");
+	printf("Details:\n");
+	printf("\n");
+	printf("Mode:   rare_inmat\n");
+	printf("        usage: rare rare_inmat input output depth repeats write threads\n");
+	printf("\n");
+	printf("        input     path to a .csv file\n");
+	printf("        output    path to the ouput dir and/or file prefix\n");
+	printf("        depth     rarefaction depth\n");
+	printf("        repeats   number of times to compute diversity\n");
+	printf("        write     if the program should write the file (1 or 0)\n");
+	printf("        threads   number of CPU's to use\n");
+	printf("\n");
+
+
+	std::exit(2);
+}
+
+
 int main(int argc, char* argv[])
 {
-	//changed the interface: argv3 is now argv1 (mode), 
-	cout<<"Rarefaction analysis ver "<<rar_ver<<endl;
 	if (argc < 3) {
 		helpMsg();
 	}
+	stateVersion();
+
 	long rareDep = 1000;	int repeats (1);
 	//bool splitMode(false),mergeMode(false),sumUpMode(false);
 	string inF = argv[2];
@@ -40,7 +77,7 @@ int main(int argc, char* argv[])
 	string mode = argv[1];
 	string arg4 = "";
 	uint numThr = 1; //number of threads to use
-	
+
 	if (argc>=5){
 		arg4 = argv[4];
 	}
@@ -80,7 +117,7 @@ int main(int argc, char* argv[])
 			}
 			Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
 			Mo->normalize();
-			Mo->writeMatrix(outF); 
+			Mo->writeMatrix(outF);
 			delete Mo;
 			std::exit(0);
 		} else if (mode == "help" || mode == "-help" || mode == "-h" || mode == "--help"){
@@ -125,10 +162,10 @@ int main(int argc, char* argv[])
 	MyRNG rng;
 	//test rand numbers.. check
 	//std::uniform_int_distribution<unsigned long> uint_distx(0,2223951715);	for (int i=0;i<100;i++){cout<<uint_distx(rng)<<" ";}	int i;	cin>>i;	std::exit(2);
-	
+
 	//testing max mem
 	//int maxSiz = 1;if (verbose){		for(std::vector<char>::size_type sz = 1;   ;  sz *= 2)		{			break;			std::cerr << "attempting sz = " << sz << '\n';			std::vector<unsigned short> v(sz);		}		//cout<<"Max vec size: "<<maxSiz<<endl;	}
-	
+
 
 
 	if (mode == "rare_inmat"){
@@ -145,7 +182,7 @@ int main(int argc, char* argv[])
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
 				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, outF, repeats, writeFiles);
-				
+
 			}
 			//use main thread to calc one sample as well
 			DivEsts * div = new DivEsts();
@@ -172,12 +209,11 @@ int main(int argc, char* argv[])
 	//old way of reading single samples..
 	smplVec* cur = new smplVec(inF,4);
 	DivEsts * div = new DivEsts();
-	
+
 	vector<vector<uint>> emptyRet;//placeholder for R function, not to be filled here
 	cur->rarefy(rareDep,outF,repeats,div, emptyRet,writeFiles,true,false);
-	
+
 	div->print2file(outF+"_estimates");
-	
+
 	return 0;
 }
-
