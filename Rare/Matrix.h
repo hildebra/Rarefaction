@@ -14,7 +14,7 @@ typedef std::unordered_map<string, int> SmplOccur;
 typedef std::unordered_map<string, int> ModOccur;
 
 
-mat_fl median(std::vector<mat_fl>& vec,bool ignoreZeros=false);
+mat_fl median(std::vector<mat_fl> vec,bool ignoreZeros=false);
 void vecPurge(vector<vector<mat_fl>>& vec, mat_fl val);//removes val from each entry in vec<vec<>>
 string join(const vector<string>& in, const string &X);
 
@@ -76,7 +76,7 @@ public:
 	ModStep(const string&);
 	void getAllKOs(list<string>&);
 	void setRedund(ModOccur& m);
-	vector<bool> abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>&, 
+	void abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>&, vector<bool>&,
 		float hitComplRatio =0.8, int redund=0);
 
 
@@ -94,7 +94,7 @@ public:
 	void getAllKOs(list<string>& r) { for (size_t i = 0; i < steps.size(); i++) { steps[i].getAllKOs(r); } }
 	void setReddundancy(ModOccur& m) { for (size_t i = 0; i < steps.size(); i++) { steps[i].setRedund(m); } }
 	mat_fl pathAbundance(const vector<mat_fl>& v, const unordered_map<string, int>& IDX,
-		const int redun, const float PathwCompl, const float enzymCompl, string & savedNmsKO);
+		const int redun, const float PathwCompl, const float enzymCompl, string & savedNmsKO,float & modScoreOut);
 	string name;
 	string description;
 	vector<ModStep> steps;
@@ -110,7 +110,8 @@ public:
 	void setPathwCompl(float x) { PathwCompl = x; }
 	void setEnzymCompl(float x) { enzymCompl = x; }
 	
-	vector<mat_fl> calcModAbund(const vector<mat_fl>&, const unordered_map<string, int>&, vector<string>& );
+	vector<mat_fl> calcModAbund(const vector<mat_fl>&, const unordered_map<string, int>&, 
+		vector<string>&, vector<float>& );
 	vector<string> & modNms() { return moduleNames; }
 	vector<string> & modDescr() { return moduleDescriptions; }
 
@@ -154,7 +155,7 @@ public:
 		if (mat.size() >= 1) { return (int)mat[0].size(); }
 		else { return 0; }
 	}
-	void estimateModuleAbund(char ** args);
+	void estimateModuleAbund(char ** args, int argc);
 	//for the R module, all used for rarefactions only
 	void addRow(vector<mat_fl>);//idea is that a single row is added on to the matrix
 	void setSampleNames(vector<string> in) { colIDs = in; }

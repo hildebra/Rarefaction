@@ -21,9 +21,10 @@
 bld/
 [Bb]in/
 [Oo]bj/
+[Mm]odCAG/
 
 #moduleCall (why is it not in here anyways??)
-ModuleCall/
+[mM]oduleCall/
 
 #rand.cpp
 rand.*

@@ -6,7 +6,7 @@
 //#include "Matrix.h"
 #include "ClStr2Mat.h"
 
-const char* rar_ver="0.63		 alpha";
+const char* rar_ver="0.65		 alpha";
 
 DivEsts* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
 	cout << i << " ";
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 			}
 			Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
 			cerr << "Estimate mod AB\n";
-			Mo->estimateModuleAbund(argv);// arg4, outF); //arg4 needs to be module file, outF makes the (several) matrices
+			Mo->estimateModuleAbund(argv,argc);// arg4, outF); //arg4 needs to be module file, outF makes the (several) matrices
 			delete Mo;
 			std::exit(0);
 		}

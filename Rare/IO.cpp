@@ -424,6 +424,7 @@ std::istream& safeGetline(std::istream& is, std::string& t)
 	std::istream::sentry se(is, true);
 	std::streambuf* sb = is.rdbuf();
 
+
 	for (;;) {
 		int c = sb->sbumpc();
 		switch (c) {

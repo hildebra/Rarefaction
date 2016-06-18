@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rare", "Rare\Rare.vcxproj", "{22D81CAB-88EA-4794-A8CA-3C7919882358}"
 EndProject
@@ -17,6 +17,8 @@ Global
 		HigherLvl|x64 = HigherLvl|x64
 		mat2ko|Win32 = mat2ko|Win32
 		mat2ko|x64 = mat2ko|x64
+		ModCAG|Win32 = ModCAG|Win32
+		ModCAG|x64 = ModCAG|x64
 		ModuleCall|Win32 = ModuleCall|Win32
 		ModuleCall|x64 = ModuleCall|x64
 		normalize|Win32 = normalize|Win32
@@ -51,6 +53,10 @@ Global
 		{22D81CAB-88EA-4794-A8CA-3C7919882358}.mat2ko|Win32.Build.0 = mat2ko|Win32
 		{22D81CAB-88EA-4794-A8CA-3C7919882358}.mat2ko|x64.ActiveCfg = mat2ko|x64
 		{22D81CAB-88EA-4794-A8CA-3C7919882358}.mat2ko|x64.Build.0 = mat2ko|x64
+		{22D81CAB-88EA-4794-A8CA-3C7919882358}.ModCAG|Win32.ActiveCfg = ModCAG|Win32
+		{22D81CAB-88EA-4794-A8CA-3C7919882358}.ModCAG|Win32.Build.0 = ModCAG|Win32
+		{22D81CAB-88EA-4794-A8CA-3C7919882358}.ModCAG|x64.ActiveCfg = ModCAG|x64
+		{22D81CAB-88EA-4794-A8CA-3C7919882358}.ModCAG|x64.Build.0 = ModCAG|x64
 		{22D81CAB-88EA-4794-A8CA-3C7919882358}.ModuleCall|Win32.ActiveCfg = ModuleCall|Win32
 		{22D81CAB-88EA-4794-A8CA-3C7919882358}.ModuleCall|Win32.Build.0 = ModuleCall|Win32
 		{22D81CAB-88EA-4794-A8CA-3C7919882358}.ModuleCall|x64.ActiveCfg = ModuleCall|x64
