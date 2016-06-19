@@ -140,13 +140,15 @@ void ModStep::getAllKOs(list<string>& ret) {
 		}
 	}
 }
-void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>& abund, 
-	vector<bool>& active, float hitComplRatio, int redund) {
+void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, 
+	vector<mat_fl>& abund, vector<bool>& active, vector<string>& KOdescr,
+	float hitComplRatio, int redund) {
 	//some params, should be fine tuned if possible
 	//float hitComplRatio(0.8f);
 
 	active.resize(alternates.size(), false);
 	abund.resize(alternates.size(), (mat_fl)0);
+	KOdescr.resize(alternates.size(), "");
 	//actual deep routine to determine if KOs in this step satisfy presence conditions
 	for (size_t i = 0; i < alternates.size(); i++) {
 		size_t altS = alternates[i].size(); float hits(0);
@@ -165,6 +167,7 @@ void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, in
 			} else {
 				hits++;
 				tmpAB[j] = v[fn->second];
+				KOdescr[i] += alternates[i][j] + ",";
 			}
 		}
 		if (altS == 0) {
@@ -206,15 +209,17 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 	vector< vector< mat_fl >> abunds(steps.size(), vector<mat_fl>(0));//contains abundance
 	vector< vector< bool >> active(steps.size());//contains info if path was even active
 	vector<mat_fl> preMed(steps.size(), (mat_fl)0), postMed(steps.size(), (mat_fl)0);
+	vector<vector<string>> altKOs(steps.size(),vector<string>(0));//just for saving which KO's were exactly active
+
 	//auto t = IDX.find("xx");
 	for (size_t i = 0; i < steps.size(); i++) {
-		steps[i].abundParts(v, IDX,abunds[i], active[i], enzymCompl, redund);
+		steps[i].abundParts(v, IDX,abunds[i], active[i], altKOs[i], enzymCompl,  redund);
 		//determine median overall value
 		preMed[i] = median(abunds[i]);
 	}
 	mat_fl pm = median(preMed);
 	mat_fl retval(0);
-
+	
 
 	if (0) {
 		//VAR 1
@@ -252,7 +257,7 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 				if (abunds[i][decIdx[i]] > 0 && active[i][decIdx[i]]) {
 					curP [i] = abunds[i][ decIdx[i] ]; act++;
 					if (saveKOnames) {
-						savedNmsKO += join(steps[i].alternates[decIdx[i]],",")+",";
+						savedNmsKO += altKOs[i][decIdx[i]];// +",";
 					}
 				} /*else if (!active[i][decIdx[i]]) {
 					shldAct--;
