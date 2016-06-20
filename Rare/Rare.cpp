@@ -6,7 +6,9 @@
 //#include "Matrix.h"
 #include "ClStr2Mat.h"
 
-const char* rar_ver="0.65		 alpha";
+
+const char* rar_ver="0.63 alpha";
+
 
 DivEsts* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
 	cout << i << " ";
@@ -23,20 +25,58 @@ DivEsts* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, 
 	return div;
 }
 
-void helpMsg(){
+void helpMsglegacy(){
 	string  AvailableModes = "Available run modes:\nnormalize\nsplitMat\nlineExtr\nmergeMat\nsumMat\nrarefaction\nrare_inmat\nmodule\n";
 	cerr << AvailableModes << "Provide two arguments\nexiting..\n";
 	cerr << "------------------------------\nAuthor: falk.hildebrand@gmail.com\n";
 	std::exit(2);
 }
 
+void stateVersion(){
+	printf("rare %s\n", rar_ver);
+}
+
+void helpMsg(){
+	stateVersion();
+	printf("\n");
+	printf("usage: rare mode input output [options] \n");
+	printf("\n");
+	printf("Available run modes:\n");
+	printf("    normalize     TODO\n");
+	printf("    splitMat      TODO\n");
+	printf("    lineExtr      TODO\n");
+	printf("    mergeMat      TODO\n");
+	printf("    sumMat        TODO\n");
+	printf("    rarefaction   TODO\n");
+	printf("    rare_inmat    rarefy a matrix and compute diversity measures\n");
+	printf("    module        TODO\n");
+	printf("\n");
+	printf("Details:\n");
+	printf("\n");
+	printf("Mode:   rare_inmat\n");
+	printf("        usage: rare rare_inmat input output depth repeats write threads\n");
+	printf("\n");
+	printf("        input     path to a .csv file\n");
+	printf("        output    path to the ouput dir and/or file prefix\n");
+	printf("        depth     rarefaction depth\n");
+	printf("        repeats   number of times to compute diversity\n");
+	printf("        write     if the program should write the file (1 or 0)\n");
+	printf("        threads   number of CPU's to use\n");
+	printf("\n");
+
+
+	std::exit(2);
+}
+
+
 int main(int argc, char* argv[])
 {
-	//changed the interface: argv3 is now argv1 (mode),
-	cout<<"Rarefaction analysis ver "<<rar_ver<<endl;
+
 	if (argc < 3) {
 		helpMsg();
 	}
+	stateVersion();
+
 	long rareDep = 1000;	int repeats (1);
 	//bool splitMode(false),mergeMode(false),sumUpMode(false);
 	string inF = argv[2];
@@ -177,11 +217,13 @@ int main(int argc, char* argv[])
 	smplVec* cur = new smplVec(inF,4);
 	DivEsts * div = new DivEsts();
 
+
 	//placeholder for R function, not to be filled here
 	std::vector<vector<uint>> emptyRet;
 	string emptySmp;
 	string skippedSample;
 	cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, writeFiles,true,false);
+
 
 	div->print2file(outF+"_estimates");
 
