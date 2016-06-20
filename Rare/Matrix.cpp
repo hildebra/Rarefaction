@@ -35,8 +35,8 @@ Matrix::Matrix(const string inF):rowIDs(0),colIDs(0),sampleNameSep("")
 	rowIDs.resize(cnt-1,"");
 	int lineCnt= cnt;
 	//reset input stream
-	in.clear();              
-	in.seekg(0, ios::beg);   
+	in.clear();
+	in.seekg(0, ios::beg);
 	cnt=-2;
 	string segments;
 
@@ -98,8 +98,8 @@ void vecPurge(vector<vector<mat_fl>>& vec, mat_fl val) {
 		}
 	}
 }
-string join(const vector<string>& in, const string &X) { 
-	string ret(in[0]); for (size_t i = 1; i < in.size(); i++) { ret += X + in[i]; } return ret; 
+string join(const vector<string>& in, const string &X) {
+	string ret(in[0]); for (size_t i = 1; i < in.size(); i++) { ret += X + in[i]; } return ret;
 }
 
 
@@ -133,14 +133,14 @@ void ModStep::setRedund(ModOccur& m) {
 	}
 }
 void ModStep::getAllKOs(list<string>& ret) {
-	
+
 	for (size_t i = 0; i < alternates.size(); i++) {
 		for (size_t j = 0; j < alternates[i].size(); j++) {
 			ret.push_back(alternates[i][j]);
 		}
 	}
 }
-void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>& abund, 
+void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>& abund,
 	vector<bool>& active, float hitComplRatio, int redund) {
 	//some params, should be fine tuned if possible
 	//float hitComplRatio(0.8f);
@@ -155,7 +155,7 @@ void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, in
 			//redundant???
 			if (redundancy[i][j] > redund) {
 				altS--; //reduce size of this set
-				
+
 				continue;
 			}
 			//check for actual abundance in matrix-vector subpart
@@ -198,9 +198,10 @@ Module::Module(vector<string>& n) :name(""), description(""), steps(0){
 }
 mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<string, int>& IDX,
 		const int redund, const float PathwCompl, const float enzymCompl, string & savedNmsKO, float& modScoreOut) {
+
 	//initial parameters
-	//float PathwCompl(0.6f); //corresponds to -c 
-	//float enzymCompl(0.8f); 
+	//float PathwCompl(0.6f); //corresponds to -c
+	//float enzymCompl(0.8f);
 	//int redund(0);
 
 	vector< vector< mat_fl >> abunds(steps.size(), vector<mat_fl>(0));//contains abundance
@@ -231,8 +232,8 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 		//VAR 2
 		//calc abundance for each possible (active) path and substract from others, but add remainders up
 		//vector<mat_fl> tmp(steps.size(), (mat_fl)0);
-		vector<mat_fl> curP(steps.size(),(mat_fl)0); 
-		float act(0.f),shldAct((float)steps.size()); 
+		vector<mat_fl> curP(steps.size(),(mat_fl)0);
+		float act(0.f),shldAct((float)steps.size());
 		vector<int> decIdx(steps.size(), 0);
 //ini decIdx
 		for (size_t i = 0; i < steps.size(); i++) {
@@ -245,7 +246,7 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 				dI++;
 			}
 		}
-		bool saveKOnames(true);// save names of KOs used in extra file?
+		bool saveKOnames(true);
 
 		while (1) { // this loop goes over every possible path combination
 			for (size_t i = 0; i < steps.size(); i++) {
@@ -260,7 +261,7 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 			}
 			if ( (act / shldAct) >= PathwCompl) { //shldAct > 0 &&
 				//this part parses out the KOs that are actually active
-				mat_fl curM = median(curP,true); 
+				mat_fl curM = median(curP,true);
 				retval += curM;
 				vecPurge(abunds,curM);
 				modScoreOut = act / shldAct;
@@ -353,17 +354,16 @@ void Modules::calc_redund() {
 
 }
 
-vector<mat_fl> Modules::calcModAbund(const vector<mat_fl>& v, const unordered_map<string, 
+vector<mat_fl> Modules::calcModAbund(const vector<mat_fl>& v, const unordered_map<string,
 	int>& IDX, vector<string> &retStr, vector<float> &retScore) {
 	vector<mat_fl> ret(mods.size(),(mat_fl)0);
 	retStr.resize(mods.size(), ""); retScore.resize(mods.size(), 0.f);
 	mat_fl unass_cnt(0.f);//TOGO
 	//vector<bool> usedKOs(v.size()); //initial idea to save KOs used to estimated unassigned fraction - better to scale by seq depth external
+
 	for (size_t i = 0; i < mods.size(); i++) {
 		ret[i] = mods[i].pathAbundance(v,IDX, redund, PathwCompl, enzymCompl, retStr[i], retScore[i]);
 	}
-	//add unkowns
-	ret.push_back(unass_cnt);
 	return ret;
 }
 
@@ -374,7 +374,7 @@ Matrix::Matrix(void)
 {
 }
 
-Matrix::Matrix(const string inF, const string outF, const string xtra, bool highLvl) 
+Matrix::Matrix(const string inF, const string outF, const string xtra, bool highLvl)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
@@ -388,7 +388,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, bool high
 	ifstream in(inF.c_str());
 	if (!in){ cerr << "Cant open file " << inF << endl; std::exit(11); }
 	int ini_ColPerRow(0),cnt(0);
-	
+
 
 	//check MAP format
 	//while (safeGetline(in, line)) {
@@ -419,8 +419,8 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, bool high
 	vector<string> outStr(ini_ColPerRow-1);
 	//int lineCnt= cnt;
 	//reset input stream
-	in.clear();              
-	in.seekg(0, ios::beg);   
+	in.clear();
+	in.seekg(0, ios::beg);
 	cnt=-1;
 	string segments;
 	safeGetline(in, line);
@@ -436,7 +436,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, bool high
 		if (segments.length() > 150){
 			cerr << segments << " error!\n"; std::exit(5);
 		}
-		if (cnt2==-1){continue;}		
+		if (cnt2==-1){continue;}
 		colIDs[cnt2] = segments;
 		string oF2 = outF + sampleNameSep + colIDs[cnt2];
 		if (!doHigh){
@@ -449,7 +449,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, bool high
 			HI.push_back(new HMat(LvlNms[i], colIDs, vector<string>(0)));
 		}
 	}
-	string rowID="";	
+	string rowID="";
 	int geneCnt(0);
 	int cntNA(0);
 	while (safeGetline(in, line)) {
@@ -464,7 +464,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, bool high
 		bool breaker(false);
 		std::map<std::string, vector<string>>::iterator fnd;
 		while (getline(ss, segments, '\t')) {
-			cnt2++; 
+			cnt2++;
 			if (cnt2 == -1){
 				rowID = segments;
 				if (doSubsets && subset.find(rowID) == subset.end()){
@@ -497,7 +497,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, bool high
 				continue;
 			}
 			mat_fl tmp =  atof(segments.c_str());
-			if (doHigh){//1:finds relevant rowID, extracts taxa; 2:add on all HighLvl mats			
+			if (doHigh){//1:finds relevant rowID, extracts taxa; 2:add on all HighLvl mats
 				for (int tt = 0; tt< maxLvl; tt++){
 					HI[tt]->set(taxa[tt], cnt2, tmp);
 				}
@@ -541,7 +541,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, bool high
 	}
 	//write colSums
 	string oF2 = outF + sampleNameSep + "sums.txt";
-	
+
 	out.open(oF2.c_str(),ios_base::out);
 	out.precision(12);
 	for (size_t smpl=0;smpl<(colIDs.size()); smpl++){
@@ -688,7 +688,7 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 				continue;
 			}
 			mat_fl tmp = atof(segments.c_str());
-			if (doHigh){//1:finds relevant rowID, extracts taxa; 2:add on all HighLvl mats			
+			if (doHigh){//1:finds relevant rowID, extracts taxa; 2:add on all HighLvl mats
 				for (int tt = 0; tt< maxLvl; tt++){
 					HI[tt]->set(taxa[tt], cnt2, tmp);
 				}
@@ -745,8 +745,9 @@ void Matrix::estimateModuleAbund(char ** argv, int argc) {
 	for (int i = 0; i < maxCols; i++) {
 //		cerr << i << " ";
 		//TODO: add unknown counts
-		modMat.addTtlSmpl( 
+		modMat.addTtlSmpl(
 			modDB->calcModAbund(mat[i], rowID_hash, modStr[i], modScore[i])
+
 			,i );
 	}
 	//write description
@@ -808,7 +809,7 @@ Matrix::~Matrix(void)
 	for (unsigned int i = 0; i < HI.size(); i++){
 		delete HI[i];
 	}
-	
+
 }
 void Matrix::addRow(vector<mat_fl> x) {
 	mat.push_back(x);
@@ -840,6 +841,26 @@ void Matrix::normalize() {
 	*/
 }
 
+void Matrix::transpose(){
+	// takes the matrix and transposes it
+	// column ID and row ID have to be swapped as well
+	vector< vector< mat_fl > >  transpMat(mat[0].size(), vector< mat_fl >(mat.size()));
+
+	for(int i = 0; i < mat.size(); i++){
+		for(int j = 0; j < mat[i].size(); j++){
+			transpMat[j][i] = mat[i][j];
+		}
+	}
+
+	// switch column and row names
+	vector< string >  rowIDst 	= rowIDs;
+	rowIDs 						= colIDs;
+	colIDs						= rowIDst;
+
+	// swap the matrices
+	mat = transpMat;
+}
+
 vector<mat_fl> Matrix::getRowSums() {
 	vector<mat_fl> rowSums(rowIDs.size(), 0);
 	for (size_t i = 0; i < rowIDs.size(); i++) {
@@ -851,7 +872,7 @@ vector<mat_fl> Matrix::getRowSums() {
 }
 
 void Matrix::writeMatrix(const string of, bool onlyFilled) {
-	ofstream out; 
+	ofstream out;
 	out.open(of.c_str(), ios_base::out);
 	out.precision(8); out << "Gene";
 	for (size_t smpl = 0; smpl < (colIDs.size() ); smpl++) {
@@ -901,7 +922,7 @@ void Matrix::read_hierachy(const string xtra){
 		//string tmp = ;
 		LvlNms.push_back("L" + stringify((double)k));
 	}
-		
+
 	while (getline(in, line, '\n')) {
 		if (line.substr(0, 1) == "#"){ continue; }
 		vector<string> pseudo(maxHir, "?");
@@ -953,7 +974,7 @@ void Matrix::writeSums(string out_seed){
 	out.precision(12);
 	//for (OTUid = colID_hash.begin(); OTUid != colID_hash.end(); OTUid++) {
 	for (size_t smpl = 0; smpl<(colIDs.size() - 1); smpl++) {
-		mat_fl sums(0); 
+		mat_fl sums(0);
 		for (size_t i=0;i<rowIDs.size();i++){
 			sums+=mat[i][smpl];
 		}
@@ -974,7 +995,7 @@ void SparseMatrix::addCount(string smpl, int row, smat_fl abund) {
 	} else {
 		(*tar).second += abund;
 	}
-	
+
 //keep track of listed samples
 	SmplOccurIT tar2 = colNames.find(smpl);
 	if (tar2 == colNames.end()) {
@@ -1050,10 +1071,10 @@ int VecFiles::getIdx(const string&){
 void VecFiles::readVecFile(const string inF){
 	string line;
 	ifstream in(inF.c_str());
-	
+
 	//int ini_ColPerRow(0),cnt(0);
 
-	//string rowID="";		
+	//string rowID="";
 	while(getline(in,line,'\n')) {
 		if(line.substr(0,1) == "#" || line.length()<2){continue;}
 		string segments;

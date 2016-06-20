@@ -7,7 +7,7 @@ void lineCntOut(const string inF, const string outF, const string arg4){
 	if (!in){ cerr << "Can't open infile " << inF << endl; std::exit(99); }
 	if (!out){ cerr << "Can't open outfile " << outF << endl; std::exit(99); }
 	//read file that contains nicely ordered all indexes of lines to be extracted
-	string line; 
+	string line;
 	vector<uint> srtTar;
 	ifstream idxS(arg4.c_str());
 	if (!idxS){ cerr << "Can't open outfile " << arg4 << endl; std::exit(99); }
@@ -26,14 +26,14 @@ void lineCntOut(const string inF, const string outF, const string arg4){
 	int cnt(1); uint j(0);
 	while (getline(in, line, '\n')) {
 		if (cnt == srtTar[j]){
-			out << line << endl; 
+			out << line << endl;
 			uint cur = srtTar[j];
 			while (srtTar[j] == cur){ j++; }
 			if (j == srtTar.size()){ break; }
 		}
 		cnt++;
 	}
-	
+
 	in.close(); out.close();
 	if (j != srtTar.size()){
 		cerr << "Missed " << (srtTar.size() - j) << " entries." << endl;
@@ -52,17 +52,23 @@ num_threads(nt), richness(-1), Shannon(-1.f){
 	arr.resize((long)cumSum);
 	if (verbose){ cerr << "memory"; }
 	totSum = cumSum;
-	long k(0); uint posInVec(0);
+	long k(0); uint posInVec(-1);
+	//numFeatures = 0;
 	for (size_t i = 0; i< vec.size(); i++){
 		//if (vec.size()-i<10000){cerr<<i<<" ";}
 		long maxG = (long)vec[i];
-		maxG += k; //bring up to current level
+
+		posInVec++;
 		if (maxG == 0){ continue; }//not really a feature, doesnt need ot be counted as cat
+
+		maxG += k; //bring up to current level
 		for (; k<maxG; k++){
 			arr[k] = posInVec;
 		}
-		posInVec++;
+		//numFeatures++;
+
 	}
+	posInVec++;
 	numFeatures = posInVec;
 	if (verbose){ cerr << "..\n"; }
 }
@@ -103,14 +109,19 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 }
 
 void smplVec::rarefy(long dep, string ofile, int rep,
-					DivEsts* divs, vector<vector<uint>>& retCnts, 
+					DivEsts* divs, std::vector<vector<uint>> & RareSample,
+					string& retCntsSampleName, string& skippedSample,
 					int writes,bool write, bool fillret){
-	if (dep>totSum){return;}
+	if (dep>totSum){
+		skippedSample = divs->SampleName;
+		if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
+		return;
+	}
 	long curIdx=(long)totSum+1;
-	
+
 	for (int curRep=0;curRep<rep;curRep++){
 		if(curIdx+dep >= (long) totSum){
-			if (verbose){cerr<<"shuffle ";}		shuffle_singl();		if (verbose){cerr<<"shed\n";}
+			if (verbose){cerr<<"shuffle \n";}		shuffle_singl();		if (verbose){cerr<<"shed\n";}
 			curIdx=0;
 		}
 
@@ -130,7 +141,11 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			print2File(cnts,t_out);
 		}
 		if (curRep < writes && fillret) {
-			retCnts.push_back(cnts);
+			RareSample.push_back(cnts);
+
+			if(curRep == 0){
+				retCntsSampleName = divs->SampleName; // safe the sample name as well
+			}
 		}
 		richness = 0;
 		divs->richness.push_back(this->getRichness(cnts));
@@ -212,7 +227,7 @@ void smplVec::shuffle(){
 void smplVec::shuffle_singl(){
 	time_t seed_val=time(NULL);           // populate somehow
 	rng.seed((long)seed_val);
-	
+
 	for (unsigned long i = (unsigned long)totSum- 1; i > 0; i--) {
 		std::uniform_int_distribution<unsigned long> uint_distx(0,i);
 		unsigned long j = uint_distx(rng);
@@ -226,7 +241,7 @@ void smplVec::shuffle_singl(){
 
 
 
-int smplVec::binarySearch( vector<float> vec, const float toFind) 
+int smplVec::binarySearch( vector<float> vec, const float toFind)
 {
 	int len =(int) vec.size();
     // Returns index of toFind in sortedArray, or -1 if not found
@@ -289,7 +304,7 @@ int smplVec::binarySearch( vector<float> vec, const float toFind)
 			low[idx] = Sobs[idx]
 			hi = P1 + P2
 		}
-		
+
 		return (est)
 	}
 	/*/
@@ -339,17 +354,17 @@ vector<double> smplVec::calc_div(const vector<uint>& vec,int meth=1, float base)
 			for (size_t i = 0; i<x.size(); i++){ if (x[i]>0){ H1 += x[i] * log10(x[i]) / div; } }
 		}
 		Shannon = H1;
-	} 
+	}
 	if (meth == 3 || meth == 4 || meth == 2) {
 		for (size_t i = 0; i<x.size(); i++){ H2 += x[i] * x[i]; }
 		H3 = H2;
 		H2 = 1 - H2;//simpson
-		H3 = 1 / H3; //invsimpson 
+		H3 = 1 / H3; //invsimpson
 	}
 	//for (size_t i=0; i<x.size();i++){H += x[i];}
 	//if (meth == (int)2) {		H = 1 - H;	}else if (meth == 3)		H = 1/H;	}
 	H[0] = H1; H[1] = H2; H[2] = H3;
-	
+
 	return(H);
 }
 double smplVec::calc_eveness(const vector<uint>& vec){
@@ -395,9 +410,9 @@ void printDivMat(const string outF, vector<DivEsts*>& inD){
 	if (!out){ cerr << "Couldn't open diversity estimate matrix " << outF << endl; std::exit(99); }
 	out << "Smpl\tRichness\tShannon\tSimpson\tInv. Simpson\tChao1\tEveness\n";
 	for (size_t i = 0; i < inD.size(); i++){
-		if (inD[i] == NULL){ cerr << "Empty vector at index " << i << "in div mat building.\n"; 
+		if (inD[i] == NULL){ cerr << "Empty vector at index " << i << "in div mat building.\n";
 			out << "-1\t-1\t-1\t-1\t-1\t-1\n";
-			continue; 
+			continue;
 		}
 		out << inD[i]->SampleName << "\t";
 		out << getMedian(inD[i]->richness) << "\t";
