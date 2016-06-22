@@ -1,15 +1,15 @@
-collectors.curve <- function(x, col = 0, times = 10, ...){
+collectors.curve <- function(x, col = 0, times = 10, bin = 5, ...){
   if(class(x) == "rarefaction"){
-    cum.sample.rare(x, col, times, ...)
+    cum.sample.rare(x, col, times, bin, ...)
   }else{
-    cum.sample(x, col, times, ...)
+    cum.sample(x, col, times, bin, ...)
   }
   return()
 }
 
 
 
-cum.sample.rare <- function(x, col = 1, times = 10,  ...){
+cum.sample.rare <- function(x, col = 1, times = 10,  bin , ...){
   if(class(x) != "rarefaction"){
     stop("Not a rarefaction object")
   }
@@ -21,9 +21,9 @@ cum.sample.rare <- function(x, col = 1, times = 10,  ...){
 
   a <- lapply(seq(1, length(depths), by=1), function(i, x){
     if(length(depths) == 1){
-      b <- cum.sample(x$raremat[[1]], times = times, do.plot  = F)
+      b <- cum.sample(x$raremat[[1]], times = times, bin = bin, do.plot  = F)
     }else{
-      b <- cum.sample(x[[i]]$raremat[[1]],  times = times, do.plot  = F)
+      b <- cum.sample(x[[i]]$raremat[[1]],  times = times, bin= bin, do.plot  = F)
     }
     return(b)
   }, x = x)
@@ -42,10 +42,10 @@ cum.sample.rare <- function(x, col = 1, times = 10,  ...){
 }
 
 
-cum.sample <- function(df, col= 0, times = 10, do.plot = TRUE, ...){
+cum.sample <- function(df, col= 0, times = 10, bin, do.plot = TRUE, ...){
   # plot the diversity when picking random samples
   #s <- seq(1, ncol(df), 1)
-  m <- t(sapply(seq(1, times, 1), sample.diversity, df))
+  m <- t(sapply(seq(1, times, 1), sample.diversity, df, bin))
   if(do.plot ){
     boxplot(m, col = col , ...)
   }
@@ -54,17 +54,20 @@ cum.sample <- function(df, col= 0, times = 10, do.plot = TRUE, ...){
   return(m)
 }
 
-sample.diversity <- function(i,df){
-  n <- ncol(df)
-  sn <- seq(1, n, 1)
-  d <- sapply(sn,function(j, sn){
+sample.diversity <- function(i,df, bin = 5){
+  n 		<- ncol(df)
+  sn 		<- seq(1, n, 1)
+  steps 	<- seq(1, n, bin)
+  d <- sapply(steps,function(j, sn){
+
     n <- sample(sn, j, replace = FALSE, prob = NULL)
-    if(j >1){
+	if(j >1){
       m <- rowSums(df[,n])
     }else{
       m <- n
     }
     length(which(m != 0))
   }, sn = sn)
+  names(d) <- steps
   return(d)
 }

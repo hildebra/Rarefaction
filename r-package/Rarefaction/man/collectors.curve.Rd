@@ -8,13 +8,14 @@
 \description{ Collectorscurves visualize the richness gained by picking more samples.}
 
 \usage{
-	collectors.curve(x, col = 0, times = 10, ...)
+	collectors.curve(x, col = 0, times = 10, bin = 5 ...)
 }
 
 \arguments{
   \item{x}{Input a rarefaction object with one matrix and one depth or dataframe/matrix}
   \item{col}{color of the boxplots}
   \item{times}{Number of times the sampeling of samples should be perfomed}
+  \item{bin}{Number of samples to be added each step. Usefull to adjust for a quick glance.}
   \item{...}{Options passed to plot or boxplot }
 
 }
