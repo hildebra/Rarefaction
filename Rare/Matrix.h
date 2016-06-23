@@ -76,8 +76,8 @@ public:
 	ModStep(const string&);
 	void getAllKOs(list<string>&);
 	void setRedund(ModOccur& m);
-	void abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>&, vector<bool>&,
-
+	void abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX,
+		vector<mat_fl>&, vector<bool>&, vector<string>&,
 		float hitComplRatio =0.8, int redund=0);
 
 
@@ -110,7 +110,7 @@ public:
 	void setRedund(int x) { redund = x; }
 	void setPathwCompl(float x) { PathwCompl = x; }
 	void setEnzymCompl(float x) { enzymCompl = x; }
-	
+
 	vector<mat_fl> calcModAbund(const vector<mat_fl>&, const unordered_map<string, int>&,
 		vector<string>&, vector<float>& );
 

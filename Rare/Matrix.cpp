@@ -140,8 +140,9 @@ void ModStep::getAllKOs(list<string>& ret) {
 		}
 	}
 }
-void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX, vector<mat_fl>& abund,
-	vector<bool>& active, float hitComplRatio, int redund) {
+void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX,
+	vector<mat_fl>& abund, vector<bool>& active, vector<string>& KOdescr,
+	float hitComplRatio, int redund) {
 	//some params, should be fine tuned if possible
 	//float hitComplRatio(0.8f);
 
@@ -209,7 +210,7 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 	vector<mat_fl> preMed(steps.size(), (mat_fl)0), postMed(steps.size(), (mat_fl)0);
 	//auto t = IDX.find("xx");
 	for (size_t i = 0; i < steps.size(); i++) {
-		steps[i].abundParts(v, IDX,abunds[i], active[i], enzymCompl, redund);
+		steps[i].abundParts(v, IDX,abunds[i], active[i], altKOs[i], enzymCompl,  redund);
 		//determine median overall value
 		preMed[i] = median(abunds[i]);
 	}
@@ -246,14 +247,14 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 				dI++;
 			}
 		}
-		bool saveKOnames(true);
+		bool saveKOnames(true);// save names of KOs used in extra file?
 
 		while (1) { // this loop goes over every possible path combination
 			for (size_t i = 0; i < steps.size(); i++) {
 				if (abunds[i][decIdx[i]] > 0 && active[i][decIdx[i]]) {
 					curP [i] = abunds[i][ decIdx[i] ]; act++;
 					if (saveKOnames) {
-						savedNmsKO += join(steps[i].alternates[decIdx[i]],",")+",";
+						savedNmsKO += altKOs[i][decIdx[i]];// +",";
 					}
 				} /*else if (!active[i][decIdx[i]]) {
 					shldAct--;
