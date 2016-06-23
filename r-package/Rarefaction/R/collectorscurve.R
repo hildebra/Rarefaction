@@ -33,11 +33,10 @@ cum.sample.rare <- function(x, col = 1, times = 10,  bin , ...){
   ymin <- min(unlist(a), T, F)
   col <- rep_len(col, length(a))
 
-  plot(1,type="n", , ylim=c(ymin,ymax), xlim=c(1, ncol(a[[1]])), ...)
+  plot(1,type="n", , ylim=c(ymin,ymax), xlim=c(1, ncol(a[[1]])*bin), ...)
   mapply(function(ab, color){
-    boxplot(ab,  add = TRUE, axes = FALSE, col = color)
+    boxplot(ab,  add = TRUE, axes = FALSE, col = color, at = as.numeric(colnames(ab)))
   }, ab = a, color = col  )
-
   return()
 }
 
