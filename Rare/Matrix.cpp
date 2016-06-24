@@ -208,6 +208,7 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 	vector< vector< mat_fl >> abunds(steps.size(), vector<mat_fl>(0));//contains abundance
 	vector< vector< bool >> active(steps.size());//contains info if path was even active
 	vector<mat_fl> preMed(steps.size(), (mat_fl)0), postMed(steps.size(), (mat_fl)0);
+	vector<vector<string>> altKOs(steps.size(),vector<string>(0));//just for saving which KO's were exactly active
 	//auto t = IDX.find("xx");
 	for (size_t i = 0; i < steps.size(); i++) {
 		steps[i].abundParts(v, IDX,abunds[i], active[i], altKOs[i], enzymCompl,  redund);
