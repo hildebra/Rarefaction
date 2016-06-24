@@ -57,12 +57,12 @@ void helpMsg(){
 	printf("usage: rare mode input output depth repeats write threads\n");
 	printf("\n");
 	printf("       mode      rare_inmat (Other modes are not available at the moment. Can be any string.)\n");
-	printf("       input     path to a .csv file\n");
-	printf("       output    path to the ouput dir and/or file prefix\n");
-	printf("       depth     rarefaction depth\n");
-	printf("       repeats   number of times to compute diversity\n");
-	printf("       write     if the program should write the file (1 or 0)\n");
-	printf("       threads   number of threads to use in parallel\n");
+	printf("       input     path to a .csv file                   (required)\n");
+	printf("       output    path for the ouput                    (required)\n");
+	printf("       depth     rarefaction depth                     (default: 1000)\n");
+	printf("       repeats   number of times to compute diversity  (default: 1)\n");
+	printf("       write     number of files to write              (default: same as repeats)\n");
+	printf("       threads   number of threads to use in parallel  (default: 1)\n");
 	printf("\n");
 
 
