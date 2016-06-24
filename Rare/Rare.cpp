@@ -39,9 +39,9 @@ void stateVersion(){
 void helpMsg(){
 	stateVersion();
 	printf("\n");
-	printf("usage: rare mode input output [options] \n");
-	printf("\n");
-	printf("Available run modes:\n");
+	//printf("usage: rare mode input output [options] \n");
+	//printf("\n");
+	/*printf("Available run modes:\n");
 	printf("    normalize     TODO\n");
 	printf("    splitMat      TODO\n");
 	printf("    lineExtr      TODO\n");
@@ -53,15 +53,15 @@ void helpMsg(){
 	printf("\n");
 	printf("Details:\n");
 	printf("\n");
-	printf("Mode:   rare_inmat\n");
-	printf("        usage: rare rare_inmat input output depth repeats write threads\n");
+	printf("Mode:   rare_inmat\n");*/
+	printf("usage: rare input output depth repeats write threads\n");
 	printf("\n");
-	printf("        input     path to a .csv file\n");
-	printf("        output    path to the ouput dir and/or file prefix\n");
-	printf("        depth     rarefaction depth\n");
-	printf("        repeats   number of times to compute diversity\n");
-	printf("        write     if the program should write the file (1 or 0)\n");
-	printf("        threads   number of CPU's to use\n");
+	printf("       input     path to a .csv file\n");
+	printf("       output    path to the ouput dir and/or file prefix\n");
+	printf("       depth     rarefaction depth\n");
+	printf("       repeats   number of times to compute diversity\n");
+	printf("       write     if the program should write the file (1 or 0)\n");
+	printf("       threads   number of CPU's to use\n");
 	printf("\n");
 
 
@@ -81,7 +81,11 @@ int main(int argc, char* argv[])
 	//bool splitMode(false),mergeMode(false),sumUpMode(false);
 	string inF = argv[2];
 	string outF = argv[3];
-	string mode = argv[1];
+	// hardcode mode, as the others are excluded for newRow
+	// can be removed, as soon as other functionality is ready
+	// to be used. June 2016
+	//string mode = argv[1];
+	string mode = "rare_inmat";
 	string arg4 = "";
 	uint numThr = 1; //number of threads to use
 
