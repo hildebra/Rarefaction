@@ -165,9 +165,11 @@ void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, in
 			if (fn == IDX.end()) {
 				tmpAB[j] = 0;
 			} else {
-				hits++;
 				tmpAB[j] = v[fn->second];
-				KOdescr[i] += alternates[i][j] + ",";
+				if (tmpAB[j] > 0) {
+					hits++;
+					KOdescr[i] += alternates[i][j] + ",";
+				}
 			}
 		}
 		if (altS == 0) {
@@ -210,6 +212,9 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 	vector< vector< bool >> active(steps.size());//contains info if path was even active
 	vector<mat_fl> preMed(steps.size(), (mat_fl)0), postMed(steps.size(), (mat_fl)0);
 	vector<vector<string>> altKOs(steps.size(),vector<string>(0));//just for saving which KO's were exactly active
+	if (name == "M00236") {
+		int x = 0;
+	}
 
 	//auto t = IDX.find("xx");
 	for (size_t i = 0; i < steps.size(); i++) {
@@ -220,7 +225,6 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 	mat_fl pm = median(preMed);
 	mat_fl retval(0);
 	
-
 	if (0) {
 		//VAR 1
 		//select one median value per step only, for the final pathway median abundance
