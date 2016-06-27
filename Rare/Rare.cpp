@@ -47,10 +47,33 @@ int main(int argc, char* argv[])
 
 	if (argc>3){
 		if (mode == "splitMat") {
-			Matrix* Mo = new Matrix(inF, outF, arg4, false);
+			vector<string> empt;
+			Matrix* Mo = new Matrix(inF, outF, arg4, empt, false);
 			//Mo->splitOnHDD(outF);	//Mo->writeSums(outF);
 			delete Mo;
 			std::exit(0);
+		}
+		if (mode == "rare_lowMem") {
+			//split mat code
+			vector<string> fileNames;
+			Matrix* Mo = new Matrix(inF, outF, arg4, fileNames, false);
+			//Mo->splitOnHDD(outF);	//Mo->writeSums(outF);
+			delete Mo;
+
+
+			//rare code
+			/*vector<DivEsts*> XX
+			for (fileNames) {
+				smplVec* cur = new smplVec(inF, 4);
+
+				vector<vector<uint>> emptyRet;//placeholder for R function, not to be filled here
+				cur->rarefy(rareDep, outF, repeats, div, emptyRet, writeFiles, true, false);
+				XX TODO
+			}*/
+			//merge mat code
+			// **** TODO ****
+			//write merged mat
+			//write dive
 		}
 		else if (mode == "correl2"){
 			//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
