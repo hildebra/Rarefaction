@@ -853,8 +853,8 @@ void Matrix::normalize() {
 
 vector<mat_fl> Matrix::getRowSums() {
 	vector<mat_fl> rowSums(rowIDs.size(), 0);
-	for (size_t i = 0; i < rowIDs.size(); i++) {
-		for (size_t smpl = 0; smpl < (colIDs.size() ); smpl++) {
+	for (size_t smpl = 0; smpl < (colIDs.size() ); smpl++) {
+		for (size_t i = 0; i < rowIDs.size(); i++) {
 			rowSums[i] += mat[smpl][i];
 		}
 	}
@@ -872,6 +872,8 @@ void Matrix::writeMatrix(const string of, bool onlyFilled) {
 	vector<mat_fl> rowSums;
 	size_t cidS(colIDs.size());
 	if (onlyFilled) { rowSums = getRowSums(); }
+	//PAUL todo
+	vector<iterator> 
 	for (size_t i = 0; i<rowIDs.size(); i++) {
 		if (onlyFilled && rowSums[i]==0) {
 			continue;

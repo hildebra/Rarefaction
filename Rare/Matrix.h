@@ -173,7 +173,9 @@ private:
 
 
 	//storage
-	vector< vector< mat_fl > > mat;
+	vector< list< mat_fl > > mat;
+//zur not so:
+	//vector< list< mat_fl > > mat_l;
 	vector< string > rowIDs,colIDs;
 	unordered_map<string, int> colID_hash, rowID_hash;
 	int maxCols;//number samples

@@ -65,7 +65,8 @@ int main(int argc, char* argv[])
 			/*vector<DivEsts*> XX
 			for (fileNames) {
 				smplVec* cur = new smplVec(inF, 4);
-
+				list<uint> cnts; list<uint> idx;
+				
 				vector<vector<uint>> emptyRet;//placeholder for R function, not to be filled here
 				cur->rarefy(rareDep, outF, repeats, div, emptyRet, writeFiles, true, false);
 				XX TODO

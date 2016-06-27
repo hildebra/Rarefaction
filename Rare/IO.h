@@ -84,7 +84,7 @@ void printDivMat(const string outF, vector<DivEsts*>&);
 class smplVec{
 public:
 	smplVec(const string, const int);
-	smplVec(const vector<mat_fl>&, const int);
+	smplVec(const list<mat_fl>&, const int);
 	~smplVec(){
 		//delete[] arr;
 	}

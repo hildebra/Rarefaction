@@ -40,12 +40,16 @@ void lineCntOut(const string inF, const string outF, const string arg4){
 	}
 }
 //****************************  smplVec::smplVec ***********
-smplVec::smplVec(const vector<mat_fl>& vec, const int nt) :IDs(0),totSum(0),
+smplVec::smplVec(const list<mat_fl>& vec, const int nt) :IDs(0), arr(0),totSum(0),
 num_threads(nt), richness(-1), Shannon(-1.f){
 	double cumSum(0.f);
-	for (uint i = 0; i < vec.size(); i++){
-		cumSum += vec[i];
+	std::list<mat_fl>::const_iterator iterator;
+	for (iterator = vec.begin(); iterator != vec.end(); ++iterator) {
+		cumSum += *iterator;
 	}
+	/*	for (uint i = 0; i < vec.size(); i++){
+		cumSum += vec[i];
+	}*/
 	if (verbose){ cerr << (long)cumSum << " allocating "; }
 	//arr = (int*) malloc((int)cumSum * sizeof(int));
 	//arr = new unsigned short[(int)cumSum];
@@ -53,9 +57,11 @@ num_threads(nt), richness(-1), Shannon(-1.f){
 	if (verbose){ cerr << "memory"; }
 	totSum = cumSum;
 	long k(0); uint posInVec(0);
-	for (size_t i = 0; i< vec.size(); i++){
+	for (iterator = vec.begin(); iterator != vec.end(); ++iterator) {
+	//for (size_t i = 0; i< vec.size(); i++){
 		//if (vec.size()-i<10000){cerr<<i<<" ";}
-		long maxG = (long)vec[i];
+		//long maxG = (long)vec[i];
+		long maxG = (long) *iterator;
 		maxG += k; //bring up to current level
 		if (maxG == 0){ continue; }//not really a feature, doesnt need ot be counted as cat
 		for (; k<maxG; k++){
