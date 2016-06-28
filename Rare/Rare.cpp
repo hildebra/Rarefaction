@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 	// can be removed, as soon as other functionality is ready
 	// to be used. June 2016
 	//string mode = argv[1];
-	string mode = "rare_inmat";
+	string mode = argv[1];
 	string arg4 = "";
 	uint numThr = 1; //number of threads to use
 
