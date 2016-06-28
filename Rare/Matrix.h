@@ -154,6 +154,7 @@ public:
 	size_t smplNum(){ return colIDs.size(); }
 	smplVec* getSampleVec(uint which){ return new smplVec(mat[which],1); }
 	string getSampleName(uint which){ return colIDs[which]; }
+
 	int SmplNum() { return (int)mat.size(); }
 	int FtNum() {
 		if (mat.size() >= 1) { return (int)mat[0].size(); }

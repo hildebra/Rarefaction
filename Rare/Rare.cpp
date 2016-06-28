@@ -118,30 +118,32 @@ int main(int argc, char* argv[])
 			//split mat code
 			vector<string> fileNames;
 			Matrix* Mo = new Matrix(inF, outF, "", fileNames, false);
-
+			vector< string> SampleNames = Mo->getSampleNames();
 			delete Mo;
+
 			rareDep = atoi(arg4.c_str());
-			//rare code
+			//rarefection code
 			vector<DivEsts*> divvs(fileNames.size(),NULL);
 			for(int i = 0; i < fileNames.size(); i++){
 				smplVec* cur = new smplVec(fileNames[i], 4);
 				DivEsts * div = new DivEsts();
+				div->SampleName = SampleNames[i];
 				//placeholder for R function, not to be filled here
 				std::vector<vector<uint>> emptyRet;
 				string emptySmp;
 				string skippedSample;
-				cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, writeFiles,true,false);
+				cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, writeFiles,false,false);
 				divvs[i] = div;
+				delete cur;
+
 			}
 			// print the div estimates out into a file
-			//printDivMat(outF + "all.txt", divvs);
+			printDivMat(outF + "all.txt", divvs);
 			for (size_t i = 0; i < divvs.size(); i++){
 				delete divvs[i];
 			}
 			cout << "Finished\n";
-			// **** TODO ****
-			//write merged mat
-			//write dive*/
+
 			std::exit(0);
 		}
 		else if (mode == "correl2"){
@@ -229,7 +231,6 @@ int main(int argc, char* argv[])
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
 				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, outF, repeats, writeFiles);
-
 			}
 			//use main thread to calc one sample as well
 			DivEsts * div = new DivEsts();
