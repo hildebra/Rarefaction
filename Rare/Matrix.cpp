@@ -820,14 +820,14 @@ void Matrix::addRow(vector<mat_fl> x) {
 
 void Matrix::normalize() {
 	vector<mat_fl> allSums(colIDs.size(), (mat_fl)0);
-	for (size_t smpl = 0; smpl<(colIDs.size() - 1); smpl++) {
+	for (size_t smpl = 0; smpl<(colIDs.size()); smpl++) {
 		mat_fl sums(0);
 		for (size_t i = 0; i<rowIDs.size(); i++) {
 			sums += mat[smpl][i];
 		}
 		allSums[smpl] = sums;
 	}
-	for (size_t smpl = 0; smpl < (colIDs.size() - 1); smpl++) {
+	for (size_t smpl = 0; smpl < (colIDs.size()); smpl++) {
 		for (size_t i = 0; i < rowIDs.size(); i++) {
 			mat[smpl][i] /= allSums[smpl];
 		}
