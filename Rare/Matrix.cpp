@@ -376,7 +376,7 @@ Matrix::Matrix(void)
 {
 }
 
-Matrix::Matrix(const string inF, const string outF, const string xtra, bool highLvl)
+Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
@@ -441,6 +441,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, bool high
 		if (cnt2==-1){continue;}
 		colIDs[cnt2] = segments;
 		string oF2 = outF + sampleNameSep + colIDs[cnt2];
+		outFName.push_back(oF2);
 		if (!doHigh){
 			outFs[cnt2].open(oF2.c_str(), ios_base::out);
 			outFs[cnt2].precision(12);

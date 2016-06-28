@@ -140,7 +140,7 @@ class Matrix
 // convention: mat[smpl][feature]
 public:
 	//Matrix(const string inF);
-	Matrix(const string inF, const string, const string xtra, bool highLvl = false);
+	Matrix(const string inF, const string, const string xtra, vector<string>& outFName, bool highLvl = false);
 	Matrix(const string inF, const string xtra, bool highLvl = false); // this reads to mem
 	Matrix(const vector<string>& rnms, const vector<string>& cnms);//module abundance matrix
 	Matrix(void);

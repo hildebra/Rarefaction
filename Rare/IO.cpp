@@ -181,7 +181,7 @@ void smplVec::print2File(const vector<unsigned int>& cnts,const string t_out){
 		}
 	}
 	out.close();
-	cout<<"Richness: "<<richness<<endl;
+	//cout<<"Richness: "<<richness<<endl;
 	//return richness;
 }
 

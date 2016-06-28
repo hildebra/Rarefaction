@@ -94,11 +94,54 @@ int main(int argc, char* argv[])
 		arg4 = argv[4];
 	}
 
+	if (argc>5){
+		repeats = atoi(argv[5]);
+	}
+	int writeFiles = repeats;
+	if (argc>6){
+		writeFiles = atoi(argv[6]);
+	}
+	if (argc > 7){
+		numThr = atoi(argv[7]);
+	}
+
+	// start the modes
 	if (argc>3){
 		if (mode == "splitMat") {
-			Matrix* Mo = new Matrix(inF, outF, arg4, false);
+			vector<string> empt;
+			Matrix* Mo = new Matrix(inF, outF, arg4, empt, false);
 			//Mo->splitOnHDD(outF);	//Mo->writeSums(outF);
 			delete Mo;
+			std::exit(0);
+		}
+		else if (mode == "rare_lowMem") {
+			//split mat code
+			vector<string> fileNames;
+			Matrix* Mo = new Matrix(inF, outF, "", fileNames, false);
+
+			delete Mo;
+			rareDep = atoi(arg4.c_str());
+			//rare code
+			vector<DivEsts*> divvs(fileNames.size(),NULL);
+			for(int i = 0; i < fileNames.size(); i++){
+				smplVec* cur = new smplVec(fileNames[i], 4);
+				DivEsts * div = new DivEsts();
+				//placeholder for R function, not to be filled here
+				std::vector<vector<uint>> emptyRet;
+				string emptySmp;
+				string skippedSample;
+				cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, writeFiles,true,false);
+				divvs[i] = div;
+			}
+			// print the div estimates out into a file
+			//printDivMat(outF + "all.txt", divvs);
+			for (size_t i = 0; i < divvs.size(); i++){
+				delete divvs[i];
+			}
+			cout << "Finished\n";
+			// **** TODO ****
+			//write merged mat
+			//write dive*/
 			std::exit(0);
 		}
 		else if (mode == "correl2"){
@@ -142,7 +185,8 @@ int main(int argc, char* argv[])
 			delete VFs;
 			std::exit(0);
 		} else if (mode == "sumMat") {
-			Matrix* Mo = new Matrix(inF, outF, arg4, true);
+			vector<string> empt;
+			Matrix* Mo = new Matrix(inF, outF, arg4, empt, true);
 			delete Mo;
 			std::exit(0);
 		} else if (mode == "rarefaction" || mode == "rare_inmat") {
@@ -160,16 +204,7 @@ int main(int argc, char* argv[])
 	}
 
 
-	if (argc>5){
-		repeats = atoi(argv[5]);
-	}
-	int writeFiles = repeats;
-	if (argc>6){
-		writeFiles = atoi(argv[6]);
-	}
-	if (argc > 7){
-		numThr = atoi(argv[7]);
-	}
+
 
 	MyRNG rng;
 	//test rand numbers.. check
