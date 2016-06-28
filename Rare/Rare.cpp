@@ -115,25 +115,31 @@ int main(int argc, char* argv[])
 			std::exit(0);
 		}
 		else if (mode == "rare_lowMem") {
+			// this mode takes the file, reads it in memory
+			// prints the columns to their own files
+			// then it loads those files again and
+			// rarefies each column
+			// the measures are then combines again.
+
 			//split mat code
 			vector<string> fileNames;
-			Matrix* Mo = new Matrix(inF, outF, "", fileNames, false);
+			Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false);
 			vector< string> SampleNames = Mo->getSampleNames();
 			delete Mo;
 
-			rareDep = atoi(arg4.c_str());
+			rareDep 	= atoi(arg4.c_str());
 			//rarefection code
 			vector<DivEsts*> divvs(fileNames.size(),NULL);
 			for(int i = 0; i < fileNames.size(); i++){
-				smplVec* cur = new smplVec(fileNames[i], 4);
-				DivEsts * div = new DivEsts();
-				div->SampleName = SampleNames[i];
+				smplVec* cur 		= new smplVec(fileNames[i], 4);
+				DivEsts * div 		= new DivEsts();
+				div->SampleName 	= SampleNames[i];
 				//placeholder for R function, not to be filled here
 				std::vector<vector<uint>> emptyRet;
 				string emptySmp;
 				string skippedSample;
 				cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, writeFiles,false,false);
-				divvs[i] = div;
+				divvs[i] 			= div;
 				delete cur;
 
 			}
