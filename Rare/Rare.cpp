@@ -9,20 +9,33 @@
 
 const char* rar_ver="0.63 alpha";
 
-
-DivEsts* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
+struct rareStruct{
+	DivEsts* div;
+	string cntsName;
+	std::vector<vector<uint>> cnts;
+	string skippedNames;
+};
+rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
 	cout << i << " ";
 	smplVec* cur = Mo->getSampleVec(i);
 	string curS = Mo->getSampleName(i);
 	div->SampleName = curS;
-	std::vector<vector<uint>> emptyRet;
-	string emptySmp;
-	string skippedSample;
+	std::vector<vector<uint>> cnts;
+	string cntsName;
+	string skippedNames;
 	cur->rarefy(rareDep, outF, repeats,
-					div, emptyRet, emptySmp, skippedSample,
-					writeFiles, false,false);
+					div, cnts, cntsName, skippedNames,
+					writeFiles, false,writeFiles);
+	//delete cur;
+	//return div;
+	rareStruct* tmpRS 				= new rareStruct();// 	= {*div, retCnts};
+	tmpRS->div 				= div;
+	tmpRS->cnts 			= cnts;
+	tmpRS->cntsName 		= cntsName;
+	tmpRS->skippedNames		= skippedNames;
+
 	delete cur;
-	return div;
+	return tmpRS;
 }
 
 void helpMsglegacy(){
@@ -228,7 +241,7 @@ int main(int argc, char* argv[])
 		vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		cout << "Using " << numThr << " ";
 		//cerr << "TH";
-		std::future<DivEsts*> *tt = new std::future<DivEsts*>[numThr - 1];
+		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 		cout << "threads\n";
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
@@ -240,14 +253,22 @@ int main(int argc, char* argv[])
 			}
 			//use main thread to calc one sample as well
 			DivEsts * div = new DivEsts();
-			divvs[i] = calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
+			//divvs[i] = calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
+			rareStruct* tmpRS;
+			tmpRS 		= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
 			i++;
 			i = done;
 			for (; i < toWhere; i++){
-				divvs[i] = tt[i-done].get();
+				rareStruct* RSasync;
+				RSasync = tt[i-done].get();
+				divvs[i] = RSasync->div;
+				cout << RSasync->cntsName;
 				string curS = Mo->getSampleName(i);
 				divvs[i-done]->print2file(outF + curS + ".estimates");
 			}
+			// main thread divv push back
+			divvs[i] = tmpRS->div;
+
 			i++;
 			done = i;
 		}
