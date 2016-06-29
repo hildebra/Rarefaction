@@ -240,6 +240,15 @@ int main(int argc, char* argv[])
 		Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
 		vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		cout << "Using " << numThr << " ";
+
+		// hold rarefied matrices
+		// stores : repeats - sampels eg rows - vectors of columns
+		int NoOfMatrices = writeFiles;
+		vector< vector< vector< uint > > > MaRare (NoOfMatrices);
+		std::vector<string> cntsNames;
+
+
+
 		//cerr << "TH";
 		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 		cout << "threads\n";
@@ -252,29 +261,46 @@ int main(int argc, char* argv[])
 				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, outF, repeats, writeFiles);
 			}
 			//use main thread to calc one sample as well
-			DivEsts * div = new DivEsts();
-			//divvs[i] = calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
+			DivEsts * div 	= new DivEsts();
 			rareStruct* tmpRS;
-			tmpRS 		= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
+			tmpRS 			= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
 			i++;
 			i = done;
 			for (; i < toWhere; i++){
 				rareStruct* RSasync;
-				RSasync = tt[i-done].get();
-				divvs[i] = RSasync->div;
-				cout << RSasync->cntsName;
-				string curS = Mo->getSampleName(i);
-				divvs[i-done]->print2file(outF + curS + ".estimates");
+				RSasync 		= tt[i-done].get();
+				divvs[i] 		= RSasync->div;
+				string curS 	= Mo->getSampleName(i);
+				//divvs[i-done]->print2file(outF + curS + ".estimates");
+				delete RSasync;
 			}
 			// main thread divv push back
 			divvs[i] = tmpRS->div;
 
+			// add the matrices to the container
+			if(NoOfMatrices > 0){
+				int i = 0;
+				for(int i = 0; i < tmpRS->cnts.size(); i++){
+					MaRare[i].push_back(tmpRS->cnts[i]);
+				}
+				// save sample name for naming purposes
+				if(tmpRS->cntsName.size() != 0){
+					cntsNames.push_back(tmpRS->cntsName);
+				}
+			}
+			delete tmpRS;
 			i++;
 			done = i;
 		}
 		printDivMat(outF + "all.txt", divvs);
 		for (size_t i = 0; i < divvs.size(); i++){
 			delete divvs[i];
+		}
+		if(NoOfMatrices > 0){
+			vector < string > rowNames = Mo->getRowNames();
+			for(int i = 0; i < MaRare.size(); i++){
+				printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+			}
 		}
 		cout << "Finished\n";
 		std::exit(0);

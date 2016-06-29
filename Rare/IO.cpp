@@ -424,6 +424,36 @@ void printDivMat(const string outF, vector<DivEsts*>& inD){
 	}
 	out.close();
 }
+void printRareMat(const string outF, vector< vector< uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId){
+	ofstream out(outF.c_str());
+	if (!out){ cerr << "Couldn't open rarefy matrix file " << outF << endl; std::exit(99); }
+
+	// write the header
+	out << " \t";
+	for(int i = 0; i < sampleNames.size(); i++){
+		out << sampleNames[i];
+		if(i+1 < sampleNames.size()){
+			out << "\t";
+		}else{
+			out << "\n";
+		}
+	}
+
+	// write the tsv body
+	for(int i = 0; i < rowId.size(); i++){
+		out << rowId[i] << "\t";
+		for(int j = 0; j < rMat.size(); j++){
+			out << rMat[j][i];
+			if(j+1 < rMat.size()){
+				out << "\t";
+			}else{
+				out << "\n";
+			}
+		}
+	}
+
+	out.close();
+}
 
 
 std::istream& safeGetline(std::istream& is, std::string& t)

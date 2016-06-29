@@ -80,6 +80,7 @@ public:
 	string SampleName;
 };
 void printDivMat(const string outF, vector<DivEsts*>&);
+void printRareMat(const string outF, vector< vector< uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId);
 
 class smplVec{
 public:
