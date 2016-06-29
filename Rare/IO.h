@@ -93,6 +93,8 @@ public:
 		string& retCntsSampleName, string& skippedSample, int=0,bool=false, bool=false);
 	long getRichness(const vector<unsigned int>& cnts);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
+	vector < string > getRowNames(){ return(IDs); }
+
 private:
 	int binarySearch(vector<float>,const float x);
 	//void shuffle();

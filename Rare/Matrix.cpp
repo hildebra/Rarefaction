@@ -474,6 +474,8 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 					breaker = true;
 					break;
 				}
+				rowID_hash[rowID] = cnt;
+				rowIDs.push_back(rowID);
 				if (doHigh){
 					fnd = LUp.find(rowID);
 					if (fnd == LUp.end()){//needs to be added to HMat
