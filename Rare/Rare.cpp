@@ -83,6 +83,79 @@ void helpMsg(){
 }
 
 
+void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeats){
+	// this mode takes the file, reads it in memory
+	// prints the columns to their own files
+	// then it loads those files again and
+	// rarefies each column
+	// the measures are then combines again.
+
+	//split mat code
+	vector<string> fileNames;
+	Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true);
+	vector < string > SampleNames 	= Mo->getSampleNames();
+	vector < string > rowNames 		= Mo->getRowNames();
+	delete Mo;
+
+	int rareDep 	= atoi(arg4.c_str());
+
+	int NoOfMatrices = writeFiles;
+	vector< vector< vector< uint > > > MaRare (NoOfMatrices);
+	std::vector<string> cntsNames;
+
+	//rarefection code
+	vector<DivEsts*> divvs(fileNames.size(),NULL);
+	for(int i = 0; i < fileNames.size(); i++){
+		smplVec* cur 		= new smplVec(fileNames[i], 4);
+		DivEsts * div 		= new DivEsts();
+		div->SampleName 	= SampleNames[i];
+		//placeholder for R function, not to be filled here
+		std::vector<vector<uint>> cnts;
+		string cntsName;
+		string skippedSample;
+		cur->rarefy(rareDep,outF,repeats,div, cnts, cntsName, skippedSample, writeFiles,false,NoOfMatrices);
+		divvs[i] 			= div;
+
+
+
+		if(NoOfMatrices > 0){
+			vector < string > rowIDs = cur->getRowNames();
+			vector < uint > nrowIDs(rowIDs.size());
+			// convert ids into integer vector
+			for(int i = 0; i < rowIDs.size(); i++){
+				nrowIDs[i] = std::stoi(rowIDs[i]);
+			}
+			int i = 0;
+			for(int i = 0; i < cnts.size(); i++){
+				// reshape each vector, as some are zero, and we need to rematch values and rows
+				vector <uint> tmpVec(rowNames.size(), 0);
+				for(int j = 0; j < nrowIDs.size(); j++){
+					tmpVec[nrowIDs[j]] = cnts[i][j];
+				}
+				MaRare[i].push_back(tmpVec);
+			}
+			// save sample name for naming purposes
+			if(cntsName.size() != 0){
+				cntsNames.push_back(cntsName);
+			}
+		}
+
+		delete cur;
+	}
+	// print the div estimates out into a file
+	printDivMat(outF + "all.txt", divvs);
+	for (size_t i = 0; i < divvs.size(); i++){
+		delete divvs[i];
+	}
+	if(NoOfMatrices > 0){
+		for(int i = 0; i < MaRare.size(); i++){
+			printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+		}
+	}
+	cout << "Finished\n";
+}
+
+
 int main(int argc, char* argv[])
 {
 
@@ -128,77 +201,7 @@ int main(int argc, char* argv[])
 			std::exit(0);
 		}
 		else if (mode == "rare_lowMem") {
-			// this mode takes the file, reads it in memory
-			// prints the columns to their own files
-			// then it loads those files again and
-			// rarefies each column
-			// the measures are then combines again.
-
-			//split mat code
-			vector<string> fileNames;
-			Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false);
-			vector < string > SampleNames 	= Mo->getSampleNames();
-			vector < string > rowNames 		= Mo->getRowNames();
-			delete Mo;
-
-			rareDep 	= atoi(arg4.c_str());
-
-			int NoOfMatrices = writeFiles;
-			vector< vector< vector< uint > > > MaRare (NoOfMatrices);
-			std::vector<string> cntsNames;
-
-			//rarefection code
-			vector<DivEsts*> divvs(fileNames.size(),NULL);
-			for(int i = 0; i < fileNames.size(); i++){
-				smplVec* cur 		= new smplVec(fileNames[i], 4);
-				DivEsts * div 		= new DivEsts();
-				div->SampleName 	= SampleNames[i];
-				//placeholder for R function, not to be filled here
-				std::vector<vector<uint>> cnts;
-				string cntsName;
-				string skippedSample;
-				cur->rarefy(rareDep,outF,repeats,div, cnts, cntsName, skippedSample, writeFiles,false,NoOfMatrices);
-				divvs[i] 			= div;
-
-
-
-				if(NoOfMatrices > 0){
-					vector < string > rowIDs = cur->getRowNames();
-					int i = 0;
-					for(int i = 0; i < cnts.size(); i++){
-						// reshape each vector, as some are zero, and we need to rematch values and rows
-						vector <uint> tmpVec(rowNames.size(), 0);
-						for(int j = 0; j < rowIDs.size(); j++){
-							// iterateor
-							vector < string >::iterator iterator = rowNames.begin ();
-							iterator = std::find(rowNames.begin(), rowNames.end(), rowIDs[j]);
-
-							int pos = std::distance(rowNames.begin(), iterator);
-							tmpVec[pos] = cnts[i][j];
-						}
-						MaRare[i].push_back(tmpVec);
-					}
-					// save sample name for naming purposes
-					if(cntsName.size() != 0){
-						cntsNames.push_back(cntsName);
-					}
-				}
-
-				delete cur;
-
-			}
-			// print the div estimates out into a file
-			printDivMat(outF + "all.txt", divvs);
-			for (size_t i = 0; i < divvs.size(); i++){
-				delete divvs[i];
-			}
-			if(NoOfMatrices > 0){
-				for(int i = 0; i < MaRare.size(); i++){
-					printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
-				}
-			}
-			cout << "Finished\n";
-
+			rareLowMem(inF, outF, writeFiles,  arg4,  repeats);
 			std::exit(0);
 		}
 		else if (mode == "correl2"){

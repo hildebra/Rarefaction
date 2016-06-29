@@ -376,7 +376,7 @@ Matrix::Matrix(void)
 {
 }
 
-Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl)
+Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl, bool NumericRowId )
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
@@ -510,7 +510,12 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 			}
 			else if (tmp>0){//write to File
 				//outFs[cnt2]<<rowID<<"\t"<<tmp<<endl;
-				outStr[cnt2] += rowID+"\t"+segments.c_str()+"\n";
+				// if id is numeric (number of row) or the actual id as string
+				if(NumericRowId == true){
+					outStr[cnt2] += std::to_string(cnt)+"\t"+segments.c_str()+"\n";
+				}else{
+					outStr[cnt2] += rowID+"\t"+segments.c_str()+"\n";
+				}
 				colSum[cnt2] += (double)tmp;
 			}
 		}
