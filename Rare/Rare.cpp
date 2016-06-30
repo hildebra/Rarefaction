@@ -12,7 +12,8 @@ const char* rar_ver="0.63 alpha";
 struct rareStruct{
 	DivEsts* div;
 	string cntsName;
-	std::vector<vector<uint>> cnts;
+	//std::vector<vector<uint>> cnts;
+	vector< map< uint, uint>> cnts;
 	string skippedNames;
 };
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
@@ -21,16 +22,17 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string out
 	string curS = Mo->getSampleName(i);
 	div->SampleName = curS;
 	std::vector<vector<uint>> cnts;
+	vector< map< uint, uint>> cntsMap;
 	string cntsName;
 	string skippedNames;
 	cur->rarefy(rareDep, outF, repeats,
-					div, cnts, cntsName, skippedNames,
+					div, cntsMap, cntsName, skippedNames,
 					writeFiles, false,writeFiles);
 	//delete cur;
 	//return div;
 	rareStruct* tmpRS 				= new rareStruct();// 	= {*div, retCnts};
 	tmpRS->div 				= div;
-	tmpRS->cnts 			= cnts;
+	tmpRS->cnts 			= cntsMap;
 	tmpRS->cntsName 		= cntsName;
 	tmpRS->skippedNames		= skippedNames;
 
@@ -83,6 +85,7 @@ void helpMsg(){
 }
 
 
+
 void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeats){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
@@ -100,7 +103,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	int rareDep 	= atoi(arg4.c_str());
 
 	int NoOfMatrices = writeFiles;
-	vector< vector< vector< uint > > > MaRare (NoOfMatrices);
+	vector< vector< map< uint, uint > > > MaRare (NoOfMatrices);
 	std::vector<string> cntsNames;
 
 	//rarefection code
@@ -110,7 +113,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		DivEsts * div 		= new DivEsts();
 		div->SampleName 	= SampleNames[i];
 		//placeholder for R function, not to be filled here
-		std::vector<vector<uint>> cnts;
+		std::vector<map<uint, uint>> cnts;
 		string cntsName;
 		string skippedSample;
 		cur->rarefy(rareDep,outF,repeats,div, cnts, cntsName, skippedSample, writeFiles,false,NoOfMatrices);
@@ -128,10 +131,10 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 			int i = 0;
 			for(int i = 0; i < cnts.size(); i++){
 				// reshape each vector, as some are zero, and we need to rematch values and rows
-				vector <uint> tmpVec(rowNames.size(), 0);
-				for(int j = 0; j < nrowIDs.size(); j++){
-					tmpVec[nrowIDs[j]] = cnts[i][j];
-				}
+				std::map <uint, uint> tmpVec;
+					for (auto const& x : cnts[i]){
+						tmpVec[nrowIDs[x.first]] = x.second;
+					}
 				MaRare[i].push_back(tmpVec);
 			}
 			// save sample name for naming purposes
@@ -155,6 +158,13 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	cout << "Finished\n";
 	std::exit(0);
 }
+
+
+
+
+
+
+
 
 
 int main(int argc, char* argv[])
@@ -203,9 +213,7 @@ int main(int argc, char* argv[])
 		}
 		else if (mode == "rare_lowMem") {
 			rareLowMem(inF, outF, writeFiles,  arg4,  repeats);
-			std::exit(0);
-		}
-		else if (mode == "correl2"){
+		}else if (mode == "correl2"){
 			//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
 			//reads in signature matrix (e.g. 40 marker genes)
 			SigMatrix* Sig = new SigMatrix(inF);
@@ -284,7 +292,8 @@ int main(int argc, char* argv[])
 		// hold rarefied matrices
 		// stores : repeats - sampels eg rows - vectors of columns
 		int NoOfMatrices = writeFiles;
-		vector< vector< vector< uint > > > MaRare (NoOfMatrices);
+		//vector< vector< vector< uint > > > MaRare (NoOfMatrices);
+		vector< vector< map<uint, uint > > > MaRare (NoOfMatrices);
 		std::vector<string> cntsNames;
 
 
@@ -321,7 +330,7 @@ int main(int argc, char* argv[])
 			if(NoOfMatrices > 0){
 				int i = 0;
 				for(int i = 0; i < tmpRS->cnts.size(); i++){
-					MaRare[i].push_back(tmpRS->cnts[i]);
+					//MaRare[i].push_back(tmpRS->cnts[i]);
 				}
 				// save sample name for naming purposes
 				if(tmpRS->cntsName.size() != 0){
@@ -339,7 +348,7 @@ int main(int argc, char* argv[])
 		if(NoOfMatrices > 0){
 			vector < string > rowNames = Mo->getRowNames();
 			for(int i = 0; i < MaRare.size(); i++){
-				printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+				//printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 			}
 		}
 		cout << "Finished\n";
@@ -353,7 +362,7 @@ int main(int argc, char* argv[])
 
 
 	//placeholder for R function, not to be filled here
-	std::vector<vector<uint>> emptyRet;
+	std::vector<map<uint, uint>> emptyRet;
 	string emptySmp;
 	string skippedSample;
 	cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, writeFiles,true,false);

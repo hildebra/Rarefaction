@@ -80,7 +80,7 @@ public:
 	string SampleName;
 };
 void printDivMat(const string outF, vector<DivEsts*>&);
-void printRareMat(const string outF, vector< vector< uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId);
+void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId);
 
 class smplVec{
 public:
@@ -89,7 +89,7 @@ public:
 	~smplVec(){
 		//delete[] arr;
 	}
-	void rarefy(long,string o,int rep,DivEsts*, vector<vector<uint>>& RareSample,
+	void rarefy(long,string o,int rep,DivEsts*, vector<map<uint, uint>>& RareSample,
 		string& retCntsSampleName, string& skippedSample, int=0,bool=false, bool=false);
 	long getRichness(const vector<unsigned int>& cnts);
 	//int maxSiz(){return vector<unsigned short>::max_size();}

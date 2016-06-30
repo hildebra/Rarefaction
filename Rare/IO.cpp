@@ -109,7 +109,7 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 }
 
 void smplVec::rarefy(long dep, string ofile, int rep,
-					DivEsts* divs, std::vector<vector<uint>> & RareSample,
+					DivEsts* divs, std::vector<map<uint, uint>> & RareSample,
 					string& retCntsSampleName, string& skippedSample,
 					int writes,bool write, bool fillret){
 	if (dep>totSum){
@@ -127,9 +127,12 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 
 		//count up
 		vector<unsigned int> cnts(numFeatures, 0);
+		map<uint, uint> cntsMap;
 		for (long i=(0+curIdx);i<(dep+curIdx);i++){
 			cnts[arr[i]]++;
+			cntsMap[arr[i]]++;
 		}
+
 		curIdx += dep;
 		string t_out = ofile;
 		if (rep!=1){
@@ -141,7 +144,13 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			print2File(cnts,t_out);
 		}
 		if (curRep < writes && fillret) {
-			RareSample.push_back(cnts);
+			for(int m = 0; m < cnts.size(); m++){
+				if(cnts[m] != 0){
+					//cout << "Map "<< m << " val " << cnts[m] << std::endl;
+					//cntsMap[m] = cnts[m];
+				}
+			}
+			RareSample.push_back(cntsMap);
 
 			if(curRep == 0){
 				retCntsSampleName = divs->SampleName; // safe the sample name as well
@@ -424,7 +433,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD){
 	}
 	out.close();
 }
-void printRareMat(const string outF, vector< vector< uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId){
+void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId){
 	ofstream out(outF.c_str());
 	if (!out){ cerr << "Couldn't open rarefy matrix file " << outF << endl; std::exit(99); }
 
@@ -442,9 +451,14 @@ void printRareMat(const string outF, vector< vector< uint >>& rMat, vector< stri
 	// write the tsv body
 	for(int i = 0; i < rowId.size(); i++){
 		out << rowId[i] << "\t";
-		for(int j = 0; j < rMat.size(); j++){
-			out << rMat[j][i];
-			if(j+1 < rMat.size()){
+		for(int j = 0; j < sampleNames.size(); j++){
+			if(rMat[j].find(i) != rMat[j].end()){
+					out << rMat[j][i];
+			}else{
+				out << 0;
+			}
+
+			if(j+1 < sampleNames.size()){
 				out << "\t";
 			}else{
 				out << "\n";
