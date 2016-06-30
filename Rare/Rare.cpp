@@ -153,6 +153,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		}
 	}
 	cout << "Finished\n";
+	std::exit(0);
 }
 
 
