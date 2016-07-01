@@ -8,7 +8,7 @@ rare.status <- function(msg, verbose=TRUE){
   }
 }
 # this is the rarefy function
-rare <- function(input,repeats=10, depth = 1000,
+rare <- function(input, repeats=10, depth = 0,
 				ReturnMatrix  = 0,
 				margin = 2, verbose=FALSE, threads=1, tmpdir = NULL ){
 
