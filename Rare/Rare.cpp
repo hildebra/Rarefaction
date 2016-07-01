@@ -156,6 +156,14 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 			printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 		}
 	}
+
+	// delete tmp file we created
+	for(uint i = 0; i < fileNames.size(); i++){
+		if( remove( fileNames[i].c_str() ) != 0 ){
+			cerr << "Error deleting file: " << fileNames[i];
+		}
+	}
+
 	cout << "Finished\n";
 	std::exit(0);
 }
