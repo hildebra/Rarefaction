@@ -64,7 +64,7 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats)
 	int rareDep 	= arg4;
 	if(rareDep == 0){
 		// rarefy to smallest colSum
-		rareDep = Mo->getMinColSum();
+		rareDep = round(0.95 * Mo->getMinColSum());
 	}
 	delete Mo;
 
@@ -191,6 +191,10 @@ int rarefyMain(string inF, string mode,
 			}
 		}
 
+		if(rareDep == 0){
+			// rarefy to smallest colSum
+			rareDep = round(0.95 * Mo->getMinColSum());
+		}
 		rowNames = Mo->getRowNames();
 		//vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		//divvs->resize(0,NULL); // paul resize the vector

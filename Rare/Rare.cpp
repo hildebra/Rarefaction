@@ -102,7 +102,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	int rareDep 	= atoi(arg4.c_str());
 	if(rareDep == 0){
 		// rarefy to smallest colSum
-		rareDep = Mo->getMinColSum();
+		rareDep = round(0.95 * Mo->getMinColSum());
 	}
 	delete Mo;
 
@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
 
 		if(rareDep == 0){
 			// rarefy to smallest colSum
-			rareDep = Mo->getMinColSum();
+			rareDep = round(0.95 * Mo->getMinColSum());
 		}
 
 		// hold rarefied matrices
