@@ -144,12 +144,6 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			print2File(cnts,t_out);
 		}
 		if (curRep < writes && fillret) {
-			for(uint m = 0; m < cnts.size(); m++){
-				if(cnts[m] != 0){
-					//cout << "Map "<< m << " val " << cnts[m] << std::endl;
-					//cntsMap[m] = cnts[m];
-				}
-			}
 			RareSample.push_back(cntsMap);
 
 			if(curRep == 0){
