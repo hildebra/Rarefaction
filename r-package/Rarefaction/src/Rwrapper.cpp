@@ -65,7 +65,7 @@ List rcpp_rarefaction(Rcpp::String input,
 						StringVector inRowNames,
 						int repeats, long depth, int NoOfMatrices,
 						bool verbose = false, unsigned int threads = 1,
-						 int margin=2)
+						 int margin=2, string tmpDir = "", bool lowmem = false)
 						{
 
 	// check for user interrup
@@ -75,6 +75,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	std::vector< std::vector < double > > rmat;
 	vector < string > incolnames;
 	vector < string > inrownames;
+  string mode = "rare_inmat";
 
 	if(input == ""){
 		// use R matrix as input
@@ -88,6 +89,13 @@ List rcpp_rarefaction(Rcpp::String input,
 		incolnames =  Rcpp::as<vector < string > >(inColNames);
 		inrownames =  Rcpp::as<vector < string > >(inRowNames);
 	}
+
+  // switch to low mem if wanted
+  if(lowmem == true){
+    mode = "rare_loeMem";
+  }else{
+    mode = "rare_inmat";
+  }
 
 	// transpose matrix, yes or no
 	bool transpose = false;
@@ -110,7 +118,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	Rcpp::checkUserInterrupt();
 
 	// call the rarefaction main function
-	rarefyMain(input, "rare_inmat", repeats, depth,  threads, verbose,
+	rarefyMain(input, mode,  repeats, depth,  threads, verbose,
 				 rmat, incolnames, inrownames ,
 				 divvs, retCnts, retCntsSampleNames,
 				 skippedSamples,

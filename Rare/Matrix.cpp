@@ -416,7 +416,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		if (cnt>10){break;}
 	}
 	colIDs.resize(ini_ColPerRow-1,"");
-	vector<double> colSum(ini_ColPerRow-1,0.0);
+	colSum.resize(ini_ColPerRow-1,0.0);
 	vector<ofstream> outFs(ini_ColPerRow-1);
 	vector<string> outStr(ini_ColPerRow-1);
 	//int lineCnt= cnt;
@@ -613,7 +613,7 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 		return;
 	}
 	colIDs.resize(ini_ColPerRow - 1, "");
-	vector<double> colSum(ini_ColPerRow - 1, 0.0);
+	colSum.resize(ini_ColPerRow - 1, 0.0);
 	in.clear();
 	in.seekg(0, ios::beg);
 	cnt = -1;
@@ -856,8 +856,8 @@ void Matrix::transpose(){
 	// column ID and row ID have to be swapped as well
 	vector< vector< mat_fl > >  transpMat(mat[0].size(), vector< mat_fl >(mat.size()));
 
-	for(int i = 0; i < mat.size(); i++){
-		for(int j = 0; j < mat[i].size(); j++){
+	for(uint i = 0; i < mat.size(); i++){
+		for(uint j = 0; j < mat[i].size(); j++){
 			transpMat[j][i] = mat[i][j];
 		}
 	}

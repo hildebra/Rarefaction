@@ -98,9 +98,14 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true);
 	vector < string > SampleNames 	= Mo->getSampleNames();
 	vector < string > rowNames 		= Mo->getRowNames();
-	delete Mo;
 
 	int rareDep 	= atoi(arg4.c_str());
+	if(rareDep == 0){
+		// rarefy to smallest colSum
+		rareDep = Mo->getMinColSum();
+	}
+	delete Mo;
+
 
 	int NoOfMatrices = writeFiles;
 	vector< vector< map< uint, uint > > > MaRare (NoOfMatrices);
@@ -134,6 +139,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 					for (auto const& x : cnts[i]){
 						tmpVec[nrowIDs[x.first]] = x.second;
 					}
+
 				MaRare[i].push_back(tmpVec);
 			}
 			// save sample name for naming purposes
@@ -154,8 +160,15 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 			printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 		}
 	}
+
+	// delete tmp file we created
+	for(uint i = 0; i < fileNames.size(); i++){
+		if( remove( fileNames[i].c_str() ) != 0 ){
+			cerr << "Error deleting file: " << fileNames[i];
+		}
+	}
+
 	cout << "Finished\n";
-	std::exit(0);
 }
 
 
@@ -287,6 +300,11 @@ int main(int argc, char* argv[])
 		Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
 		vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		cout << "Using " << numThr << " ";
+
+		if(rareDep == 0){
+			// rarefy to smallest colSum
+			rareDep = Mo->getMinColSum();
+		}
 
 		// hold rarefied matrices
 		// stores : repeats - sampels eg rows - vectors of columns

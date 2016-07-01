@@ -8,9 +8,9 @@ rare.status <- function(msg, verbose=TRUE){
   }
 }
 # this is the rarefy function
-rare <- function(input, repeats=10, depth = 1000,
+rare <- function(input,repeats=10, depth = 1000,
 				ReturnMatrix  = 0,
-				margin = 2, verbose=FALSE, threads=1 ){
+				margin = 2, verbose=FALSE, threads=1, tmpdir = NULL ){
 
 
 	if(repeats < ReturnMatrix ){
@@ -59,7 +59,7 @@ rare <- function(input, repeats=10, depth = 1000,
 			                    repeats, d,
 								ReturnMatrix,
 			                    verbose, threads,
-								margin)
+								margin, "NULL", FALSE)
 
 						# remove col and/or row names, as we've added them for
 						# the Cpp software to work well
@@ -79,6 +79,13 @@ rare <- function(input, repeats=10, depth = 1000,
 
 	}else if(class(input) == "character"){
 	  rare.status("A path to a matrix file was supplied", verbose)
+    if(!is.null(tmpdir)){
+      uselowmem <- TRUE;
+      rare.status("Low memory mode will be used. Temporary files will be stored on storage medium", verbose)
+    }else{
+      uselowmem   <- FALSE;
+      tmpdir     <- "NULL";
+    }
 
 		# validate that the file exists
 		if(!file.exists(input)){
@@ -91,7 +98,7 @@ rare <- function(input, repeats=10, depth = 1000,
 	                        repeats, d,
 							ReturnMatrix,
 	                        verbose, threads,
-							margin)
+							margin, tmpdir, uselowmem)
 							return(res)
 						})
   }else{

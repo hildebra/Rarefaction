@@ -451,7 +451,6 @@ void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< s
 			}else{
 				out << 0;
 			}
-
 			if(j+1 < sampleNames.size()){
 				out << "\t";
 			}else{
