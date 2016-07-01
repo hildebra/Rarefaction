@@ -30,23 +30,27 @@ List createDivList(DivEsts * div){
     return divLst;
 }
 
-IntegerMatrix matrix2Mat(std::vector<vector<unsigned int>> dfMat,
+IntegerMatrix matrix2Mat(std::vector<map<uint, uint>> dfMat,
 						std::vector<string> colnames, std::vector<string> rownames, bool transpose=false ){
 	// create a mat from a vector vector uint
 	IntegerMatrix NM;
 	Rcpp::List dimnms;
 	if(transpose == false){
-		NM 	= Rcpp::IntegerMatrix( dfMat[0].size(), dfMat.size());
+		NM 	= Rcpp::IntegerMatrix( rownames.size(), colnames.size());
 		for (int i = 0; i < NM.ncol(); i++) {
-			Rcpp::NumericVector  v = wrap(dfMat[i]);
-			NM(_,i) = v;
+      for (auto const& x : dfMat[i]){
+        NM(x.first,i) = x.second;
+      }
+			//Rcpp::NumericVector  v = wrap(dfMat[i]);
+			//NM(_,i) = v;
 		}
 		dimnms =  Rcpp::List::create(rownames, colnames);
 	}else{
-		NM 	= Rcpp::IntegerMatrix( dfMat.size(), dfMat[0].size());
+    NM 	= Rcpp::IntegerMatrix( rownames.size(), colnames.size());
 		for (int i = 0; i < NM.nrow(); i++) {
-			Rcpp::NumericVector  v = wrap(dfMat[i]);
-			NM(i,_) = v;
+      for (auto const& x : dfMat[i]){
+        NM(i, x.first) = x.second;
+      }
 		}
 		dimnms =  Rcpp::List::create( colnames, rownames);
 	}
@@ -65,7 +69,7 @@ List rcpp_rarefaction(Rcpp::String input,
 						StringVector inRowNames,
 						int repeats, long depth, int NoOfMatrices,
 						bool verbose = false, unsigned int threads = 1,
-						 int margin=2, string tmpDir = "", bool lowmem = false)
+						 int margin=2, Rcpp::String tmpDir = "", bool lowmem = false)
 						{
 
 	// check for user interrup
@@ -109,7 +113,7 @@ List rcpp_rarefaction(Rcpp::String input,
     divvs 			=  new vector<DivEsts*>;
 
 	// return vector for counts
-	std::vector<vector<vector<unsigned int>>> retCnts(NoOfMatrices); // initialize a vector of matrices with the number of repeats
+	std::vector<vector<map<uint, uint>>> retCnts(NoOfMatrices); // initialize a vector of matrices with the number of repeats
 	std::vector<string> retCntsSampleNames;
 	std::vector<string> rowNames;
 	std::vector<string> skippedSamples;
@@ -139,8 +143,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	if(verbose == true){
 		cout << "Will now prepare diversity measures for R\n";
 	}
-	int i;
-	for(i = 0; i < divvs->size(); i++){
+	for(uint i = 0; i < divvs->size(); i++){
 		// create a Lst from div pointer
 		List tmpDivLst = createDivList((*divvs)[i]);
 		majorLst.push_back(tmpDivLst);
@@ -156,7 +159,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	  if(verbose == true){
 		  cout << "Will now prepare rarefied matrices for R\n";
 	  }
-	  for(i=0; i < NoOfMatrices; i++){
+	  for(int i=0; i < NoOfMatrices; i++){
 		  if(retCnts[i].size() > 0){
 			  IntegerMatrix RdfTmp 		= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames, transpose);
 			  RrarefyMatrices[i]		= RdfTmp;

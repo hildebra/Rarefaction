@@ -8,7 +8,7 @@ struct cDR{
 	DivEsts* div;
 	std::vector<vector<vector<uint>>> retCnts;
 	string retCntsSampleName;
-	std::vector<vector<uint>> RareSample;
+	vector<map<uint, uint>> RareSample;
 	string skippedSample;
 };
 
@@ -22,7 +22,7 @@ cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 
 	// vector holding the rarefaction results for this sample
 	// repeat times
-	std::vector<vector<uint>> RareSample;
+	std::vector<map<uint, uint>> RareSample;
 	string retCntsSampleName;
 	string skippedSample;
 	cur->rarefy(rareDep, outF, repeats, div, RareSample, retCntsSampleName, skippedSample,
@@ -48,7 +48,7 @@ void helpMsg(){
 
 
 
-void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeats){
+void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
 	// then it loads those files again and
@@ -61,7 +61,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	vector < string > SampleNames 	= Mo->getSampleNames();
 	vector < string > rowNames 		= Mo->getRowNames();
 
-	int rareDep 	= atoi(arg4.c_str());
+	int rareDep 	= arg4;
 	if(rareDep == 0){
 		// rarefy to smallest colSum
 		rareDep = Mo->getMinColSum();
@@ -80,7 +80,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		DivEsts * div 		= new DivEsts();
 		div->SampleName 	= SampleNames[i];
 		//placeholder for R function, not to be filled here
-		std::vector<vector<uint>> cnts;
+		std::vector<map<uint, uint>> cnts;
 		string cntsName;
 		string skippedSample;
 		cur->rarefy(rareDep,outF,repeats,div, cnts, cntsName, skippedSample, writeFiles,false,NoOfMatrices);
@@ -154,7 +154,7 @@ int rarefyMain(string inF, string mode,
 	vector<vector<mat_fl>> rmatrix,
 	vector< string > cnames , vector< string > rnames ,
 	vector<DivEsts*> *  divvs,
-	std::vector<vector<vector<uint>>> &retCnts,
+	std::vector<vector<map<uint, uint>>> &retCnts,
 	std::vector<string>& retCntsSampleNames,
 	std::vector<string>& skippedSamples,
 	std::vector<string>& rowNames, int NoOfMatrices,
@@ -278,7 +278,7 @@ int rarefyMain(string inF, string mode,
 		}
 		delete Mo;
 	}else if(mode == "rare_lowMem"){
-		rareLowMem(inF, outF, writeFiles,  arg4,  repeats);
+		rareLowMem(inF, outF, writeFiles,  rareDep,  repeats);
 	}
 
 
