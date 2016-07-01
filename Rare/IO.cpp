@@ -144,7 +144,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			print2File(cnts,t_out);
 		}
 		if (curRep < writes && fillret) {
-			for(int m = 0; m < cnts.size(); m++){
+			for(uint m = 0; m < cnts.size(); m++){
 				if(cnts[m] != 0){
 					//cout << "Map "<< m << " val " << cnts[m] << std::endl;
 					//cntsMap[m] = cnts[m];
@@ -439,7 +439,7 @@ void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< s
 
 	// write the header
 	out << " \t";
-	for(int i = 0; i < sampleNames.size(); i++){
+	for(uint i = 0; i < sampleNames.size(); i++){
 		out << sampleNames[i];
 		if(i+1 < sampleNames.size()){
 			out << "\t";
@@ -449,9 +449,9 @@ void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< s
 	}
 
 	// write the tsv body
-	for(int i = 0; i < rowId.size(); i++){
+	for(uint i = 0; i < rowId.size(); i++){
 		out << rowId[i] << "\t";
-		for(int j = 0; j < sampleNames.size(); j++){
+		for(uint j = 0; j < sampleNames.size(); j++){
 			if(rMat[j].find(i) != rMat[j].end()){
 					out << rMat[j][i];
 			}else{

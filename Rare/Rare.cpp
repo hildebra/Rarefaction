@@ -109,7 +109,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 
 	//rarefection code
 	vector<DivEsts*> divvs(fileNames.size(),NULL);
-	for(int i = 0; i < fileNames.size(); i++){
+	for(uint i = 0; i < fileNames.size(); i++){
 		smplVec* cur 		= new smplVec(fileNames[i], 4);
 		DivEsts * div 		= new DivEsts();
 		div->SampleName 	= SampleNames[i];
@@ -125,11 +125,10 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 			vector < string > rowIDs = cur->getRowNames();
 			vector < uint > nrowIDs(rowIDs.size());
 			// convert ids into integer vector
-			for(int i = 0; i < rowIDs.size(); i++){
+			for(uint i = 0; i < rowIDs.size(); i++){
 				nrowIDs[i] = std::stoi(rowIDs[i]);
 			}
-			int i = 0;
-			for(int i = 0; i < cnts.size(); i++){
+			for(uint i = 0; i < cnts.size(); i++){
 				// reshape each vector, as some are zero, and we need to rematch values and rows
 				std::map <uint, uint> tmpVec;
 					for (auto const& x : cnts[i]){
@@ -151,7 +150,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		delete divvs[i];
 	}
 	if(NoOfMatrices > 0){
-		for(int i = 0; i < MaRare.size(); i++){
+		for(uint i = 0; i < MaRare.size(); i++){
 			printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 		}
 	}
@@ -328,9 +327,8 @@ int main(int argc, char* argv[])
 
 			// add the matrices to the container
 			if(NoOfMatrices > 0){
-				int i = 0;
-				for(int i = 0; i < tmpRS->cnts.size(); i++){
-					//MaRare[i].push_back(tmpRS->cnts[i]);
+				for(uint i = 0; i < tmpRS->cnts.size(); i++){
+					MaRare[i].push_back(tmpRS->cnts[i]);
 				}
 				// save sample name for naming purposes
 				if(tmpRS->cntsName.size() != 0){
@@ -347,8 +345,8 @@ int main(int argc, char* argv[])
 		}
 		if(NoOfMatrices > 0){
 			vector < string > rowNames = Mo->getRowNames();
-			for(int i = 0; i < MaRare.size(); i++){
-				//printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+			for(uint i = 0; i < MaRare.size(); i++){
+				printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 			}
 		}
 		cout << "Finished\n";
