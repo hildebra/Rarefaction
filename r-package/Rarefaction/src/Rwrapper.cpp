@@ -46,7 +46,7 @@ IntegerMatrix matrix2Mat(std::vector<map<uint, uint>> dfMat,
 		}
 		dimnms =  Rcpp::List::create(rownames, colnames);
 	}else{
-    NM 	= Rcpp::IntegerMatrix( rownames.size(), colnames.size());
+    NM 	= Rcpp::IntegerMatrix( colnames.size(), rownames.size());
 		for (int i = 0; i < NM.nrow(); i++) {
       for (auto const& x : dfMat[i]){
         NM(i, x.first) = x.second;
