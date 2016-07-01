@@ -95,9 +95,14 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true);
 	vector < string > SampleNames 	= Mo->getSampleNames();
 	vector < string > rowNames 		= Mo->getRowNames();
-	delete Mo;
 
 	int rareDep 	= atoi(arg4.c_str());
+	if(rareDep == 0){
+		// rarefy to smallest colSum
+		rareDep = Mo->getMinColSum();
+	}
+	delete Mo;
+
 
 	int NoOfMatrices = writeFiles;
 	vector< vector< vector< uint > > > MaRare (NoOfMatrices);
@@ -105,7 +110,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 
 	//rarefection code
 	vector<DivEsts*> divvs(fileNames.size(),NULL);
-	for(int i = 0; i < fileNames.size(); i++){
+	for(uint i = 0; i < fileNames.size(); i++){
 		smplVec* cur 		= new smplVec(fileNames[i], 4);
 		DivEsts * div 		= new DivEsts();
 		div->SampleName 	= SampleNames[i];
@@ -122,14 +127,13 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 			vector < string > rowIDs = cur->getRowNames();
 			vector < uint > nrowIDs(rowIDs.size());
 			// convert ids into integer vector
-			for(int i = 0; i < rowIDs.size(); i++){
+			for(uint i = 0; i < rowIDs.size(); i++){
 				nrowIDs[i] = std::stoi(rowIDs[i]);
 			}
-			int i = 0;
-			for(int i = 0; i < cnts.size(); i++){
+			for(uint i = 0; i < cnts.size(); i++){
 				// reshape each vector, as some are zero, and we need to rematch values and rows
 				vector <uint> tmpVec(rowNames.size(), 0);
-				for(int j = 0; j < nrowIDs.size(); j++){
+				for(uint j = 0; j < nrowIDs.size(); j++){
 					tmpVec[nrowIDs[j]] = cnts[i][j];
 				}
 				MaRare[i].push_back(tmpVec);
@@ -148,7 +152,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		delete divvs[i];
 	}
 	if(NoOfMatrices > 0){
-		for(int i = 0; i < MaRare.size(); i++){
+		for(uint i = 0; i < MaRare.size(); i++){
 			printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 		}
 	}
@@ -281,6 +285,11 @@ int main(int argc, char* argv[])
 		vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		cout << "Using " << numThr << " ";
 
+		if(rareDep == 0){
+			// rarefy to smallest colSum
+			rareDep = Mo->getMinColSum();
+		}
+
 		// hold rarefied matrices
 		// stores : repeats - sampels eg rows - vectors of columns
 		int NoOfMatrices = writeFiles;
@@ -319,8 +328,7 @@ int main(int argc, char* argv[])
 
 			// add the matrices to the container
 			if(NoOfMatrices > 0){
-				int i = 0;
-				for(int i = 0; i < tmpRS->cnts.size(); i++){
+				for(uint i = 0; i < tmpRS->cnts.size(); i++){
 					MaRare[i].push_back(tmpRS->cnts[i]);
 				}
 				// save sample name for naming purposes
@@ -338,7 +346,7 @@ int main(int argc, char* argv[])
 		}
 		if(NoOfMatrices > 0){
 			vector < string > rowNames = Mo->getRowNames();
-			for(int i = 0; i < MaRare.size(); i++){
+			for(uint i = 0; i < MaRare.size(); i++){
 				printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 			}
 		}

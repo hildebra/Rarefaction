@@ -430,7 +430,7 @@ void printRareMat(const string outF, vector< vector< uint >>& rMat, vector< stri
 
 	// write the header
 	out << " \t";
-	for(int i = 0; i < sampleNames.size(); i++){
+	for(uint i = 0; i < sampleNames.size(); i++){
 		out << sampleNames[i];
 		if(i+1 < sampleNames.size()){
 			out << "\t";
@@ -440,9 +440,9 @@ void printRareMat(const string outF, vector< vector< uint >>& rMat, vector< stri
 	}
 
 	// write the tsv body
-	for(int i = 0; i < rowId.size(); i++){
+	for(uint i = 0; i < rowId.size(); i++){
 		out << rowId[i] << "\t";
-		for(int j = 0; j < rMat.size(); j++){
+		for(uint j = 0; j < rMat.size(); j++){
 			out << rMat[j][i];
 			if(j+1 < rMat.size()){
 				out << "\t";

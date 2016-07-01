@@ -168,6 +168,17 @@ public:
 	vector < string > getSampleNames(){ return(colIDs); }
 	vector < string > getRowNames(){ return(rowIDs); }
 	//void addCount(string, int, mat_fl);
+	double getMinColSum(){
+		if(colSum.size() > 0){
+			double minE = colSum[0];
+			for(uint i = 0; i < colSum.size(); i++){
+				if(minE > colSum[i]){minE = colSum[i];}
+			}
+			return minE;
+		}else{
+			return 0;
+		}
+	}
 
 private:
 	//subroutines
@@ -190,6 +201,7 @@ private:
 	string sampleNameSep;
 	GeneIDidx subset;
 	bool doSubsets, doHigh;
+	vector<double> colSum;
 };
 
 
