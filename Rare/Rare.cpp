@@ -106,6 +106,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	vector< vector< map< uint, uint > > > MaRare (NoOfMatrices);
 	std::vector<string> cntsNames;
 
+
 	//rarefection code
 	vector<DivEsts*> divvs(fileNames.size(),NULL);
 	for(int i = 0; i < fileNames.size(); i++){
@@ -119,9 +120,8 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		cur->rarefy(rareDep,outF,repeats,div, cnts, cntsName, skippedSample, writeFiles,false,NoOfMatrices);
 		divvs[i] 			= div;
 
-
-
 		if(NoOfMatrices > 0){
+			//cout << "make a matrix" << std::endl;
 			vector < string > rowIDs = cur->getRowNames();
 			vector < uint > nrowIDs(rowIDs.size());
 			// convert ids into integer vector
