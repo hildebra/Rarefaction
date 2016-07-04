@@ -18,9 +18,9 @@ rare <- function(input, repeats=10, depth = 0,
 		warning(paste("Repeats can not be smaller than number of matrices to return. Repeats set to match ReturnMatrix. repeats = ReturnMatrix =", repeats, sep=" "))
 	}
 
-	if(!all(depth > 0)){
-		warning("You should not rarefy to a depth of zero. Please rarefy to a minimum of 1. You might have problems later on.")
-	}
+	#if(!all(depth > 0)){
+	#	warning("Will now rarefy to 0.95 times the smallest column sum")
+	#}
 
 	# sort depths
 	depth <- sort(as.numeric(depth))
@@ -79,9 +79,11 @@ rare <- function(input, repeats=10, depth = 0,
 
 	}else if(class(input) == "character"){
 	  rare.status("A path to a matrix file was supplied", verbose)
-    if(!is.null(tmpdir)){
+    if(!is.null(tmpdir) & margin == 2){
       uselowmem <- TRUE;
       rare.status("Low memory mode will be used. Temporary files will be stored on storage medium", verbose)
+    }else if(!is.null(tmpdir) & margin != 2){
+      warning("Can not use low mem on margin = 1. Please consider transforming your input data, to use low mem mode.")
     }else{
       uselowmem   <- FALSE;
       tmpdir     <- "NULL";

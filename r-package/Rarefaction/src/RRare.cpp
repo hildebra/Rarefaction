@@ -48,7 +48,12 @@ void helpMsg(){
 
 
 
-void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats){
+void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
+	vector<DivEsts*> *  divvs,
+	std::vector<vector<map<uint, uint>>>& MaRare,
+	std::vector<string>& cntsNames,
+	std::vector<string>& skippedSamples,
+	std::vector<string>& rowNames ){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
 	// then it loads those files again and
@@ -56,10 +61,12 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats)
 	// the measures are then combines again.
 
 	//split mat code
+	cout << " Low mem test" << std::endl;
+	cout << "Tmp dir: " << outF << std::endl;
 	vector<string> fileNames;
 	Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true);
 	vector < string > SampleNames 	= Mo->getSampleNames();
-	vector < string > rowNames 		= Mo->getRowNames();
+	rowNames 		= Mo->getRowNames();
 
 	int rareDep 	= arg4;
 	if(rareDep == 0){
@@ -70,12 +77,13 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats)
 
 
 	int NoOfMatrices = writeFiles;
-	vector< vector< vector< uint > > > MaRare (NoOfMatrices);
-	std::vector<string> cntsNames;
 
 	//rarefection code
-	vector<DivEsts*> divvs(fileNames.size(),NULL);
+	//divvs->resize(fileNames.size());
 	for(uint i = 0; i < fileNames.size(); i++){
+		// check for user interrup
+		Rcpp::checkUserInterrupt();
+
 		smplVec* cur 		= new smplVec(fileNames[i], 4);
 		DivEsts * div 		= new DivEsts();
 		div->SampleName 	= SampleNames[i];
@@ -84,10 +92,16 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats)
 		string cntsName;
 		string skippedSample;
 		cur->rarefy(rareDep,outF,repeats,div, cnts, cntsName, skippedSample, writeFiles,false,NoOfMatrices);
-		divvs[i] 			= div;
+		divvs->push_back(div);
 
+		// push back skipped samples
+		// skippedSample
+		if(skippedSample.size() > 0){
+			skippedSamples.push_back(skippedSample);
+		}
 
-
+		// check for user interrup
+		Rcpp::checkUserInterrupt();
 		if(NoOfMatrices > 0){
 			vector < string > rowIDs = cur->getRowNames();
 			vector < uint > nrowIDs(rowIDs.size());
@@ -96,11 +110,13 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats)
 				nrowIDs[i] = std::stoi(rowIDs[i]);
 			}
 			for(uint i = 0; i < cnts.size(); i++){
+				// check for user interrup
+				Rcpp::checkUserInterrupt();
 				// reshape each vector, as some are zero, and we need to rematch values and rows
-				vector <uint> tmpVec(rowNames.size(), 0);
-				for(uint j = 0; j < nrowIDs.size(); j++){
-					tmpVec[nrowIDs[j]] = cnts[i][j];
-				}
+				std::map <uint, uint> tmpVec;
+					for (auto const& x : cnts[i]){
+						tmpVec[nrowIDs[x.first]] = x.second;
+					}
 				MaRare[i].push_back(tmpVec);
 			}
 			// save sample name for naming purposes
@@ -108,18 +124,10 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats)
 				cntsNames.push_back(cntsName);
 			}
 		}
+		// set sample names for R
+		cntsNames = cntsNames;
 
 		delete cur;
-	}
-	// print the div estimates out into a file
-//	printDivMat(outF + "all.txt", divvs);
-	for (size_t i = 0; i < divvs.size(); i++){
-		delete divvs[i];
-	}
-	if(NoOfMatrices > 0){
-		for(uint i = 0; i < MaRare.size(); i++){
-		//	printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
-		}
 	}
 
 	// delete tmp file we created
@@ -128,8 +136,8 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats)
 			cerr << "Error deleting file: " << fileNames[i];
 		}
 	}
-
-	cout << "Finished\n";
+	// check for user interrup
+	Rcpp::checkUserInterrupt();
 }
 
 
@@ -149,7 +157,7 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats)
 
 
 //int main(int argc, char* argv[])
-int rarefyMain(string inF, string mode,
+int rarefyMain(string inF, string outF, string mode,
 	int repeats, long rareDep, unsigned int numThr , bool verbose,
 	vector<vector<mat_fl>> rmatrix,
 	vector< string > cnames , vector< string > rnames ,
@@ -162,7 +170,6 @@ int rarefyMain(string inF, string mode,
 {
 	// compatibility to main rare software
 	bool writeFiles = false;
-	string outF = "";
 
 	MyRNG rng;
 
@@ -242,7 +249,7 @@ int rarefyMain(string inF, string mode,
 
 				if(NoOfMatrices > 0){
 					// append vector to matrix
-					int repI = 0;
+					uint repI = 0;
 					while(repI < CDrAsync->RareSample.size()){
 						retCnts[repI].push_back(CDrAsync->RareSample[repI]);
 						repI++;
@@ -252,13 +259,17 @@ int rarefyMain(string inF, string mode,
 						retCntsSampleNames.push_back(CDrAsync->retCntsSampleName);
 					}
 				}
+				// skippedSample
+				if(CDrAsync->skippedSample.size() > 0){
+					skippedSamples.push_back(CDrAsync->skippedSample);
+				}
 				delete CDrAsync;
 			}
 
 			// main thread
 			divvs->push_back(tmpCDr->div);
 			if(NoOfMatrices > 0){
-				int repI = 0;
+				uint repI = 0;
 				while(repI < tmpCDr->RareSample.size()){
 					retCnts[repI].push_back(tmpCDr->RareSample[repI]);
 					repI++;
@@ -267,9 +278,10 @@ int rarefyMain(string inF, string mode,
 				if(tmpCDr->retCntsSampleName.size() != 0){
 					retCntsSampleNames.push_back(tmpCDr->retCntsSampleName);
 				}
-
-
-
+			}
+			// skippedSample
+			if(tmpCDr->skippedSample.size() > 0){
+				skippedSamples.push_back(tmpCDr->skippedSample);
 			}
 
 
@@ -282,7 +294,8 @@ int rarefyMain(string inF, string mode,
 		}
 		delete Mo;
 	}else if(mode == "rare_lowMem"){
-		rareLowMem(inF, outF, writeFiles,  rareDep,  repeats);
+		rareLowMem(inF, outF, writeFiles,  rareDep,  repeats,
+		divvs, retCnts, retCntsSampleNames, skippedSamples, rowNames);
 	}
 
 

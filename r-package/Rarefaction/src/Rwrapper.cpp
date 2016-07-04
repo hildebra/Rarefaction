@@ -79,6 +79,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	std::vector< std::vector < double > > rmat;
 	vector < string > incolnames;
 	vector < string > inrownames;
+  string outF = "";
   string mode = "rare_inmat";
 
 	if(input == ""){
@@ -96,7 +97,8 @@ List rcpp_rarefaction(Rcpp::String input,
 
   // switch to low mem if wanted
   if(lowmem == true){
-    mode = "rare_loeMem";
+    mode = "rare_lowMem";
+    outF = tmpDir;
   }else{
     mode = "rare_inmat";
   }
@@ -122,7 +124,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	Rcpp::checkUserInterrupt();
 
 	// call the rarefaction main function
-	rarefyMain(input, mode,  repeats, depth,  threads, verbose,
+	rarefyMain(input, outF, mode,  repeats, depth,  threads, verbose,
 				 rmat, incolnames, inrownames ,
 				 divvs, retCnts, retCntsSampleNames,
 				 skippedSamples,
