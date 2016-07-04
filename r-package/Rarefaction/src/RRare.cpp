@@ -72,6 +72,10 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 	if(rareDep == 0){
 		// rarefy to smallest colSum
 		rareDep = round(0.95 * Mo->getMinColSum());
+		if(rareDep == 0){
+			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+			exit(1);
+		}
 	}
 	delete Mo;
 
@@ -81,8 +85,6 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 	//rarefection code
 	//divvs->resize(fileNames.size());
 	for(uint i = 0; i < fileNames.size(); i++){
-		// check for user interrup
-		Rcpp::checkUserInterrupt();
 
 		smplVec* cur 		= new smplVec(fileNames[i], 4);
 		DivEsts * div 		= new DivEsts();
@@ -100,8 +102,6 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 			skippedSamples.push_back(skippedSample);
 		}
 
-		// check for user interrup
-		Rcpp::checkUserInterrupt();
 		if(NoOfMatrices > 0){
 			vector < string > rowIDs = cur->getRowNames();
 			vector < uint > nrowIDs(rowIDs.size());
@@ -110,8 +110,7 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 				nrowIDs[i] = std::stoi(rowIDs[i]);
 			}
 			for(uint i = 0; i < cnts.size(); i++){
-				// check for user interrup
-				Rcpp::checkUserInterrupt();
+
 				// reshape each vector, as some are zero, and we need to rematch values and rows
 				std::map <uint, uint> tmpVec;
 					for (auto const& x : cnts[i]){
@@ -131,13 +130,13 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 	}
 
 	// delete tmp file we created
+	fileNames.push_back(outF + "sums.txt");
 	for(uint i = 0; i < fileNames.size(); i++){
 		if( remove( fileNames[i].c_str() ) != 0 ){
 			cerr << "Error deleting file: " << fileNames[i];
 		}
 	}
-	// check for user interrup
-	Rcpp::checkUserInterrupt();
+
 }
 
 
@@ -201,6 +200,10 @@ int rarefyMain(string inF, string outF, string mode,
 		if(rareDep == 0){
 			// rarefy to smallest colSum
 			rareDep = round(0.95 * Mo->getMinColSum());
+			if(rareDep == 0){
+				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+				exit(1);
+			}
 		}
 		rowNames = Mo->getRowNames();
 		//vector<DivEsts*> divvs(Mo->smplNum(),NULL);
