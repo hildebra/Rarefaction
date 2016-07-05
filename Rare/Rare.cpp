@@ -388,6 +388,7 @@ int main(int argc, char* argv[])
 				printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 			}
 		}
+		delete Mo;
 		cout << "Finished\n";
 		std::exit(0);
 	}

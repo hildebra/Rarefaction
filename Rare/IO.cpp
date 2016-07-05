@@ -432,31 +432,24 @@ void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< s
 	if (!out){ cerr << "Couldn't open rarefy matrix file " << outF << endl; std::exit(99); }
 
 	// write the header
-	out << " \t";
+	out << "Rarefied";
 	for(uint i = 0; i < sampleNames.size(); i++){
-		out << sampleNames[i];
-		if(i+1 < sampleNames.size()){
-			out << "\t";
-		}else{
-			out << "\n";
-		}
+		out << "\t"<<sampleNames[i];
 	}
+	out << "\n";
 
 	// write the tsv body
 	for(uint i = 0; i < rowId.size(); i++){
 		out << rowId[i] << "\t";
 		for(uint j = 0; j < sampleNames.size(); j++){
-			if(rMat[j].find(i) != rMat[j].end()){
-					out << rMat[j][i];
+			auto fnd = rMat[j].find(i);
+			if(fnd != rMat[j].end()){
+				out << "\t" << fnd->second;
 			}else{
-				out << 0;
-			}
-			if(j+1 < sampleNames.size()){
-				out << "\t";
-			}else{
-				out << "\n";
+				out << "\t0";
 			}
 		}
+		out << "\n";
 	}
 
 	out.close();
