@@ -379,7 +379,6 @@ double smplVec::calc_eveness(const vector<uint>& vec){
 
 
 void DivEsts::print2file(const string file){
-	cout << "irnt";
 	if (richness.size()<1){return;}
 	ofstream out(file.c_str());
 	if (!out){ cerr << "Couldn't open diversity estimate file " << file << endl; std::exit(99); }

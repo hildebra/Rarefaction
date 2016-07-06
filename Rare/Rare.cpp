@@ -125,6 +125,7 @@ void helpMsg(){
 
 
 
+
 void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeats, int numThr = 1){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
@@ -221,37 +222,6 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		i++;
 		done = i;
 	}
-		// TODO extracting data
-		/*
-		//placeholder for R function, not to be filled here
-		std::vector<map<uint, uint>> cnts;
-		string cntsName;
-		string skippedSample;
-		cur->rarefy(rareDep,outF,repeats,div, cnts, cntsName, skippedSample, writeFiles,false,NoOfMatrices);
-		divvs[i] 			= div;
-
-		if(NoOfMatrices > 0){
-			//cout << "make a matrix" << std::endl;
-			vector < string > rowIDs = cur->getRowNames();
-			vector < uint > nrowIDs(rowIDs.size());
-			// convert ids into integer vector
-			for(uint i = 0; i < rowIDs.size(); i++){
-				nrowIDs[i] = std::stoi(rowIDs[i]);
-			}
-			for(uint i = 0; i < cnts.size(); i++){
-				// reshape each vector, as some are zero, and we need to rematch values and rows
-				std::map <uint, uint> tmpVec;
-					for (auto const& x : cnts[i]){
-						tmpVec[nrowIDs[x.first]] = x.second;
-					}
-
-				MaRare[i].push_back(tmpVec);
-			}
-			// save sample name for naming purposes
-			if(cntsName.size() != 0){
-				cntsNames.push_back(cntsName);
-			}
-		}*/
 
 
 
