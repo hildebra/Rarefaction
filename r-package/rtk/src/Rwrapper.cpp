@@ -37,21 +37,29 @@ IntegerMatrix matrix2Mat(std::vector<map<uint, uint>> dfMat,
 	Rcpp::List dimnms;
 	if(transpose == false){
 		NM 	= Rcpp::IntegerMatrix( rownames.size(), colnames.size());
-		for (int i = 0; i < NM.ncol(); i++) {
-      for (auto const& x : dfMat[i]){
-        NM(x.first,i) = x.second;
+		for (int i = 0; i < NM.nrow(); i++) {
+      for(int j = 0; j < NM.ncol(); j++){
+        auto fnd = dfMat[j].find(i);
+        if(fnd != dfMat[j].end()){
+          NM(i,j) = fnd->second;
+        }else{
+          NM(i,j) = 0;
+        }
       }
-			//Rcpp::NumericVector  v = wrap(dfMat[i]);
-			//NM(_,i) = v;
 		}
 		dimnms =  Rcpp::List::create(rownames, colnames);
 	}else{
     NM 	= Rcpp::IntegerMatrix( colnames.size(), rownames.size());
-		for (int i = 0; i < NM.nrow(); i++) {
-      for (auto const& x : dfMat[i]){
-        NM(i, x.first) = x.second;
+    for (int j = 0; j < NM.nrow(); j++) {
+      for(int i = 0; i < NM.ncol(); i++){
+        auto fnd = dfMat[j].find(i);
+        if(fnd != dfMat[j].end()){
+          NM(i,j) = fnd->second;
+        }else{
+          NM(i,j) = 0;
+        }
       }
-		}
+    }
 		dimnms =  Rcpp::List::create( colnames, rownames);
 	}
 

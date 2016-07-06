@@ -107,7 +107,7 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 		rareDep = round(0.95 * Mo->getMinColSum());
 		if(rareDep == 0){
 			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-			exit(1);
+			//exit(1);
 		}
 	}
 	delete Mo;
@@ -256,7 +256,7 @@ int rarefyMain(string inF, string outF, string mode,
 			rareDep = round(0.95 * Mo->getMinColSum());
 			if(rareDep == 0){
 				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-				exit(1);
+				//exit(1);
 			}
 		}
 		rowNames = Mo->getRowNames();

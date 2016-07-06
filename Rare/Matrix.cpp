@@ -855,10 +855,12 @@ void Matrix::transpose(){
 	// takes the matrix and transposes it
 	// column ID and row ID have to be swapped as well
 	vector< vector< mat_fl > >  transpMat(mat[0].size(), vector< mat_fl >(mat.size()));
-
+	vector<double> TmpcolSum(transpMat.size(),0);
 	for(uint i = 0; i < mat.size(); i++){
 		for(uint j = 0; j < mat[i].size(); j++){
 			transpMat[j][i] = mat[i][j];
+			// build colsum on the go
+			TmpcolSum[j] += (double)mat[i][j];
 		}
 	}
 
@@ -866,6 +868,10 @@ void Matrix::transpose(){
 	vector< string >  rowIDst 	= rowIDs;
 	rowIDs 						= colIDs;
 	colIDs						= rowIDst;
+
+	// redo colSum so 0.95 * 0 works still for rarefaction
+	colSum = TmpcolSum;
+
 
 	// swap the matrices
 	mat = transpMat;
