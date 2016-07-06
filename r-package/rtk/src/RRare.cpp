@@ -81,7 +81,7 @@ void helpMsg(){
 
 
 
-void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
+void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeats,
 	vector<DivEsts*> *  divvs,
 	std::vector<vector<map<uint, uint>>>& MaRare,
 	std::vector<string>& cntsNames,
@@ -116,7 +116,7 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 	uint i = 0;
 	std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 
-	int NoOfMatrices = writeFiles;
+	//int NoOfMatrices = writeFiles;
 
 	//rarefection code
 	//divvs->resize(fileNames.size());
@@ -132,13 +132,13 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 		for (; i < toWhere; i++){
 			DivEsts * div 	= new DivEsts();
 			div->SampleName = SampleNames[i];
-			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep, outF, repeats, writeFiles);
+			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep, outF, repeats, NoOfMatrices);
 		}
 		// launch one in the mainthread
 		DivEsts * div 	= new DivEsts();
 		div->SampleName = SampleNames[i];
 		rareStruct* tmpRS;
-		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, outF, repeats, writeFiles);
+		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, outF, repeats, NoOfMatrices);
 		i++;
 
 		// process created data, first threads, then main thread
@@ -351,7 +351,7 @@ int rarefyMain(string inF, string outF, string mode,
 		}
 		delete Mo;
 	}else if(mode == "rare_lowMem"){
-		rareLowMem(inF, outF, writeFiles,  rareDep,  repeats,
+		rareLowMem(inF, outF, NoOfMatrices,  rareDep,  repeats,
 		divvs, retCnts, cntsNames, skippedNamess, rowNames, numThr);
 	}
 
