@@ -1,4 +1,4 @@
-library(rarefaction)
+library(rtk)
 #reload('rarefaction')
 require(testthat)
 context("Test rare")

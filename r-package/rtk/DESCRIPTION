@@ -1,6 +1,6 @@
-Package: rarefaction
+Package: rtk
 Type: Package
-Title: Fast rarefaction
+Title: rarefaction tool kit (rtk)
 Version: 0.1.6
 Date: 2016-06-09
 Author: Falk Hildebrand, Paul Saary

@@ -7,7 +7,7 @@
 \description{ Rarefy datasets in R or from a path. }
 
 \usage{
-rare(input, repeats=10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose=FALSE, threads=1 )
+rare(input, repeats = 10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose = FALSE, threads = 1, tmpdir = NULL )
 }
 
 \arguments{
@@ -18,6 +18,7 @@ rare(input, repeats=10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose=FAL
   \item{margin}{Indicates which margin in the matrix represents the Samples and Species. Default is to rarefy assuming columns represent single samples (margin=2). If margin=1, rows are assumed to be samples. (default: 2 (columns))}
   \item{verbose}{If extra output should be printed to std::out or not to see progress of rarefaction. (\code{default: TRUE)}}
   \item{threads}{Number of cores to use during rarefaction}
+  \item{tmpdir}{Location to store temporary files}
 
 }
 \details{
