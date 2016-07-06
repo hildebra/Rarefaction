@@ -2,6 +2,5 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rcpp_rarefaction <- function(input, rMatrix, inColNames, inRowNames, repeats, depth, NoOfMatrices, verbose = FALSE, threads = 1L, margin = 2L, tmpDir = "", lowmem = FALSE) {
-    .Call('rarefaction_rcpp_rarefaction', PACKAGE = 'rarefaction', input, rMatrix, inColNames, inRowNames, repeats, depth, NoOfMatrices, verbose, threads, margin, tmpDir, lowmem)
+    .Call('rtk_rcpp_rarefaction', PACKAGE = 'rtk', input, rMatrix, inColNames, inRowNames, repeats, depth, NoOfMatrices, verbose, threads, margin, tmpDir, lowmem)
 }
-

@@ -12,7 +12,14 @@ struct cDR{
 	string skippedSample;
 };
 
-cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
+struct rareStruct{
+	DivEsts* div;
+	string cntsName;
+	vector< map< uint, uint>> cnts;
+	string skippedNames;
+};
+
+rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 	int repeats, int writeFiles,
 	int NoOfMatrices){
 
@@ -22,20 +29,46 @@ cDR* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 
 	// vector holding the rarefaction results for this sample
 	// repeat times
-	std::vector<map<uint, uint>> RareSample;
-	string retCntsSampleName;
-	string skippedSample;
-	cur->rarefy(rareDep, outF, repeats, div, RareSample, retCntsSampleName, skippedSample,
+	std::vector<map<uint, uint>> cnts;
+	string cntsName;
+	string skippedNames;
+	cur->rarefy(rareDep, outF, repeats, div, cnts, cntsName, skippedNames,
 				NoOfMatrices, writeFiles, true);
 
-	cDR* tmpCDR 				= new cDR();// 	= {*div, retCnts};
+	rareStruct* tmpCDR 				= new rareStruct();// 	= {*div, retCnts};
 	tmpCDR->div 				= div;
-	tmpCDR->RareSample 			= RareSample;
-	tmpCDR->retCntsSampleName 	= retCntsSampleName;
-	tmpCDR->skippedSample		= skippedSample;
+	tmpCDR->cnts 			= cnts;
+	tmpCDR->cntsName 	= cntsName;
+	tmpCDR->skippedNames		= skippedNames;
 
 	delete cur;
 	return tmpCDR;
+}
+
+
+rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
+//	cout << i << " ";
+	smplVec* cur = new smplVec(fileNames[i],4);
+
+	//div->SampleName = curS;
+	std::vector<vector<uint>> cnts;
+	vector< map< uint, uint>> cntsMap;
+	string cntsName;
+	string skippedNames;
+	cur->rarefy(rareDep, outF, repeats,
+					div, cntsMap, cntsName, skippedNames,
+					writeFiles, false,writeFiles);
+
+	//delete cur;
+	//return div;
+	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
+	tmpRS->div 							= div;
+	tmpRS->cnts 						= cntsMap;
+	tmpRS->cntsName 				= cntsName;
+	tmpRS->skippedNames			= skippedNames;
+
+	delete cur;
+	return tmpRS;
 }
 
 
@@ -52,8 +85,8 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 	vector<DivEsts*> *  divvs,
 	std::vector<vector<map<uint, uint>>>& MaRare,
 	std::vector<string>& cntsNames,
-	std::vector<string>& skippedSamples,
-	std::vector<string>& rowNames ){
+	std::vector<string>& skippedNamess,
+	std::vector<string>& rowNames, int numThr ){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
 	// then it loads those files again and
@@ -79,55 +112,76 @@ void rareLowMem(string inF, string outF, int writeFiles, long arg4, int repeats,
 	}
 	delete Mo;
 
+	int done = 0; // number of samples processed for multithreading
+	uint i = 0;
+	std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 
 	int NoOfMatrices = writeFiles;
 
 	//rarefection code
 	//divvs->resize(fileNames.size());
-	for(uint i = 0; i < fileNames.size(); i++){
+	while(i < fileNames.size()){
 
-		smplVec* cur 		= new smplVec(fileNames[i], 4);
-		DivEsts * div 		= new DivEsts();
-		div->SampleName 	= SampleNames[i];
-		//placeholder for R function, not to be filled here
-		std::vector<map<uint, uint>> cnts;
-		string cntsName;
-		string skippedSample;
-		cur->rarefy(rareDep,outF,repeats,div, cnts, cntsName, skippedSample, writeFiles,false,NoOfMatrices);
-		divvs->push_back(div);
+		// allow multithreading
+		cerr << "At Sample " << i << " of " << fileNames.size() << " Samples";
+		uint toWhere = done + numThr - 1;
+		if ((uint)((uint)fileNames.size() - 2 ) < toWhere){
+			toWhere = fileNames.size() - 2;
+		}
+		// launch samples in threads
+		for (; i < toWhere; i++){
+			DivEsts * div 	= new DivEsts();
+			div->SampleName = SampleNames[i];
+			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep, outF, repeats, writeFiles);
+		}
+		// launch one in the mainthread
+		DivEsts * div 	= new DivEsts();
+		div->SampleName = SampleNames[i];
+		rareStruct* tmpRS;
+		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, outF, repeats, writeFiles);
+		i++;
 
-		// push back skipped samples
-		// skippedSample
-		if(skippedSample.size() > 0){
-			skippedSamples.push_back(skippedSample);
+		// process created data, first threads, then main thread
+		i = done;
+		for (; i < toWhere; i++){
+			rareStruct* RSasync;
+			RSasync 		= tt[i-done].get();
+			divvs->push_back(RSasync->div);
+			string curS 	= SampleNames[i];
+			//divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
+
+			// add the matrices to the container
+			if(NoOfMatrices > 0){
+				for(uint i = 0; i < RSasync->cnts.size(); i++){
+					MaRare[i].push_back(RSasync->cnts[i]);
+				}
+				// save sample name for naming purposes
+				if(RSasync->cntsName.size() != 0){
+					cntsNames.push_back(RSasync->cntsName);
+				}
+			}
+			delete RSasync;
 		}
 
+		// main thread divv push back
+		divvs->push_back(tmpRS->div);
+		string curS 	= SampleNames[i];
+		//divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
 		if(NoOfMatrices > 0){
-			vector < string > rowIDs = cur->getRowNames();
-			vector < uint > nrowIDs(rowIDs.size());
-			// convert ids into integer vector
-			for(uint i = 0; i < rowIDs.size(); i++){
-				nrowIDs[i] = std::stoi(rowIDs[i]);
+			for(uint i = 0; i < tmpRS->cnts.size(); i++){
+				MaRare[i].push_back(tmpRS->cnts[i]);
 			}
-			for(uint i = 0; i < cnts.size(); i++){
 
-				// reshape each vector, as some are zero, and we need to rematch values and rows
-				std::map <uint, uint> tmpVec;
-					for (auto const& x : cnts[i]){
-						tmpVec[nrowIDs[x.first]] = x.second;
-					}
-				MaRare[i].push_back(tmpVec);
-			}
 			// save sample name for naming purposes
-			if(cntsName.size() != 0){
-				cntsNames.push_back(cntsName);
+			if(tmpRS->cntsName.size() != 0){
+				cntsNames.push_back(tmpRS->cntsName);
 			}
 		}
-		// set sample names for R
-		cntsNames = cntsNames;
-
-		delete cur;
+		delete tmpRS;
+		i++;
+		done = i;
 	}
+
 
 	// delete tmp file we created
 	fileNames.push_back(outF + "sums.txt");
@@ -162,8 +216,8 @@ int rarefyMain(string inF, string outF, string mode,
 	vector< string > cnames , vector< string > rnames ,
 	vector<DivEsts*> *  divvs,
 	std::vector<vector<map<uint, uint>>> &retCnts,
-	std::vector<string>& retCntsSampleNames,
-	std::vector<string>& skippedSamples,
+	std::vector<string>& cntsNames,
+	std::vector<string>& skippedNamess,
 	std::vector<string>& rowNames, int NoOfMatrices,
 	bool transpose)
 {
@@ -213,7 +267,7 @@ int rarefyMain(string inF, string outF, string mode,
 		}
 		//cerr << "TH";
 		//std::future<DivEsts*> *tt = new std::future<DivEsts*>[numThr - 1];
-		std::future<cDR*> *tt = new std::future<cDR*>[numThr - 1];
+		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 		//cout << "threads\n";
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
@@ -234,8 +288,8 @@ int rarefyMain(string inF, string outF, string mode,
 			//use main thread to calc one sample as well
 			DivEsts * div = new DivEsts();
 			//divvs[i] = calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
-			cDR* tmpCDr;
-			//tmpCDr = new cDR;
+			rareStruct* tmpCDr;
+			//tmpCDr = new rareStruct;
 			tmpCDr 		= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles,
 									 NoOfMatrices);
 
@@ -245,7 +299,7 @@ int rarefyMain(string inF, string outF, string mode,
 			i++;
 			i 			= done;
 			for (; i < toWhere; i++){
-				cDR* CDrAsync;
+				rareStruct* CDrAsync;
 				CDrAsync = tt[i-done].get();
 				// append diversity measures
 				divvs->push_back(CDrAsync->div);
@@ -253,18 +307,18 @@ int rarefyMain(string inF, string outF, string mode,
 				if(NoOfMatrices > 0){
 					// append vector to matrix
 					uint repI = 0;
-					while(repI < CDrAsync->RareSample.size()){
-						retCnts[repI].push_back(CDrAsync->RareSample[repI]);
+					while(repI < CDrAsync->cnts.size()){
+						retCnts[repI].push_back(CDrAsync->cnts[repI]);
 						repI++;
 					}
 					// save sample name for naming purposes
-					if(CDrAsync->retCntsSampleName.size() != 0){
-						retCntsSampleNames.push_back(CDrAsync->retCntsSampleName);
+					if(CDrAsync->cntsName.size() != 0){
+						cntsNames.push_back(CDrAsync->cntsName);
 					}
 				}
-				// skippedSample
-				if(CDrAsync->skippedSample.size() > 0){
-					skippedSamples.push_back(CDrAsync->skippedSample);
+				// skippedNames
+				if(CDrAsync->skippedNames.size() > 0){
+					skippedNamess.push_back(CDrAsync->skippedNames);
 				}
 				delete CDrAsync;
 			}
@@ -273,18 +327,18 @@ int rarefyMain(string inF, string outF, string mode,
 			divvs->push_back(tmpCDr->div);
 			if(NoOfMatrices > 0){
 				uint repI = 0;
-				while(repI < tmpCDr->RareSample.size()){
-					retCnts[repI].push_back(tmpCDr->RareSample[repI]);
+				while(repI < tmpCDr->cnts.size()){
+					retCnts[repI].push_back(tmpCDr->cnts[repI]);
 					repI++;
 				}
 				// save sample name for naming purposes
-				if(tmpCDr->retCntsSampleName.size() != 0){
-					retCntsSampleNames.push_back(tmpCDr->retCntsSampleName);
+				if(tmpCDr->cntsName.size() != 0){
+					cntsNames.push_back(tmpCDr->cntsName);
 				}
 			}
-			// skippedSample
-			if(tmpCDr->skippedSample.size() > 0){
-				skippedSamples.push_back(tmpCDr->skippedSample);
+			// skippedNames
+			if(tmpCDr->skippedNames.size() > 0){
+				skippedNamess.push_back(tmpCDr->skippedNames);
 			}
 
 
@@ -298,7 +352,7 @@ int rarefyMain(string inF, string outF, string mode,
 		delete Mo;
 	}else if(mode == "rare_lowMem"){
 		rareLowMem(inF, outF, writeFiles,  rareDep,  repeats,
-		divvs, retCnts, retCntsSampleNames, skippedSamples, rowNames);
+		divvs, retCnts, cntsNames, skippedNamess, rowNames, numThr);
 	}
 
 
