@@ -6,7 +6,6 @@
 //#include "Matrix.h"
 #include "ClStr2Mat.h"
 
-
 const char* rar_ver="0.63 alpha";
 
 struct rareStruct{
@@ -17,7 +16,6 @@ struct rareStruct{
 	string skippedNames;
 };
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
-	cout << i << " ";
 	smplVec* cur = Mo->getSampleVec(i);
 	string curS = Mo->getSampleName(i);
 	div->SampleName = curS;
@@ -30,15 +28,43 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string out
 					writeFiles, false,writeFiles);
 	//delete cur;
 	//return div;
-	rareStruct* tmpRS 				= new rareStruct();// 	= {*div, retCnts};
-	tmpRS->div 				= div;
-	tmpRS->cnts 			= cntsMap;
-	tmpRS->cntsName 		= cntsName;
-	tmpRS->skippedNames		= skippedNames;
+	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
+	tmpRS->div 							= div;
+	tmpRS->cnts 						= cntsMap;
+	tmpRS->cntsName 				= cntsName;
+	tmpRS->skippedNames			= skippedNames;
 
 	delete cur;
 	return tmpRS;
 }
+
+
+rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
+//	cout << i << " ";
+	smplVec* cur = new smplVec(fileNames[i],4);
+
+	//div->SampleName = curS;
+	std::vector<vector<uint>> cnts;
+	vector< map< uint, uint>> cntsMap;
+	string cntsName;
+	string skippedNames;
+	cur->rarefy(rareDep, outF, repeats,
+					div, cntsMap, cntsName, skippedNames,
+					writeFiles, false,writeFiles);
+
+	//delete cur;
+	//return div;
+	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
+	tmpRS->div 							= div;
+	tmpRS->cnts 						= cntsMap;
+	tmpRS->cntsName 				= cntsName;
+	tmpRS->skippedNames			= skippedNames;
+
+	delete cur;
+	return tmpRS;
+}
+
+
 
 void helpMsglegacy(){
 	string  AvailableModes = "Available run modes:\nnormalize\nsplitMat\nlineExtr\nmergeMat\nsumMat\nrarefaction\nrare_inmat\nmodule\n";
@@ -99,7 +125,7 @@ void helpMsg(){
 
 
 
-void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeats){
+void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeats, int numThr = 1){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
 	// then it loads those files again and
@@ -128,13 +154,75 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	vector< vector< map< uint, uint > > > MaRare (NoOfMatrices);
 	std::vector<string> cntsNames;
 
+	int done = 0; // number of samples processed for multithreading
+	uint i = 0;
+	std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 
 	//rarefection code
 	vector<DivEsts*> divvs(fileNames.size(),NULL);
-	for(uint i = 0; i < fileNames.size(); i++){
-		smplVec* cur 		= new smplVec(fileNames[i], 4);
-		DivEsts * div 		= new DivEsts();
-		div->SampleName 	= SampleNames[i];
+	while(i < fileNames.size()){
+
+		// allow multithreading
+		cerr << "At Sample " << i << " of " << fileNames.size() << " Samples";
+		uint toWhere = done + numThr - 1;
+		if ((uint)((uint)fileNames.size() - 2 ) < toWhere){
+			toWhere = fileNames.size() - 2;
+		}
+		// launch samples in threads
+		for (; i < toWhere; i++){
+			DivEsts * div 	= new DivEsts();
+			div->SampleName = SampleNames[i];
+			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep, outF, repeats, writeFiles);
+		}
+		// launch one in the mainthread
+		DivEsts * div 	= new DivEsts();
+		div->SampleName = SampleNames[i];
+		rareStruct* tmpRS;
+		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, outF, repeats, writeFiles);
+		i++;
+
+		// process created data, first threads, then main thread
+		i = done;
+		for (; i < toWhere; i++){
+			rareStruct* RSasync;
+			RSasync 		= tt[i-done].get();
+			divvs[i] 		= RSasync->div;
+			string curS 	= SampleNames[i];
+			divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
+
+			// add the matrices to the container
+			if(NoOfMatrices > 0){
+				for(uint i = 0; i < RSasync->cnts.size(); i++){
+					MaRare[i].push_back(RSasync->cnts[i]);
+				}
+				// save sample name for naming purposes
+				if(RSasync->cntsName.size() != 0){
+					cntsNames.push_back(RSasync->cntsName);
+				}
+			}
+			delete RSasync;
+		}
+
+		// main thread divv push back
+		divvs[i] = tmpRS->div;
+		string curS 	= SampleNames[i];
+		divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
+		if(NoOfMatrices > 0){
+			for(uint i = 0; i < tmpRS->cnts.size(); i++){
+				MaRare[i].push_back(tmpRS->cnts[i]);
+			}
+
+			// save sample name for naming purposes
+			if(tmpRS->cntsName.size() != 0){
+				cntsNames.push_back(tmpRS->cntsName);
+			}
+		}
+		delete tmpRS;
+		i++;
+		done = i;
+	}
+		// TODO extracting data
+		/*
 		//placeholder for R function, not to be filled here
 		std::vector<map<uint, uint>> cnts;
 		string cntsName;
@@ -163,29 +251,31 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 			if(cntsName.size() != 0){
 				cntsNames.push_back(cntsName);
 			}
-		}
+		}*/
 
-		delete cur;
-	}
+
+
 	// print the div estimates out into a file
-	printDivMat(outF + "all.txt", divvs);
+	printDivMat(outF + "median_alpha_diversity.tsv", divvs);
 	for (size_t i = 0; i < divvs.size(); i++){
 		delete divvs[i];
 	}
 	if(NoOfMatrices > 0){
 		for(uint i = 0; i < MaRare.size(); i++){
-			printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+			printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 		}
 	}
 
 	// delete tmp file we created
 	for(uint i = 0; i < fileNames.size(); i++){
 		if( remove( fileNames[i].c_str() ) != 0 ){
-			cerr << "Error deleting file: " << fileNames[i];
+			cerr << "Error deleting file: " << fileNames[i] << std::endl;
 		}
 	}
 
 	cout << "Finished\n";
+
+
 }
 
 
@@ -241,7 +331,7 @@ int main(int argc, char* argv[])
 			std::exit(0);
 		}
 		else if (mode == "rare_lowMem") {
-			rareLowMem(inF, outF, writeFiles,  arg4,  repeats);
+			rareLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
 		}else if (mode == "correl2"){
 			//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
 			//reads in signature matrix (e.g. 40 marker genes)
@@ -361,6 +451,18 @@ int main(int argc, char* argv[])
 				divvs[i] 		= RSasync->div;
 				string curS 	= Mo->getSampleName(i);
 				divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
+
+				// add the matrices to the container
+				if(NoOfMatrices > 0){
+					for(uint i = 0; i < RSasync->cnts.size(); i++){
+						MaRare[i].push_back(RSasync->cnts[i]);
+					}
+					// save sample name for naming purposes
+					if(RSasync->cntsName.size() != 0){
+						cntsNames.push_back(RSasync->cntsName);
+					}
+				}
+
 				delete RSasync;
 			}
 			// main thread divv push back
