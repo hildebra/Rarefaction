@@ -351,6 +351,8 @@ int main(int argc, char* argv[])
 			DivEsts * div 	= new DivEsts();
 			rareStruct* tmpRS;
 			tmpRS 			= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
+
+
 			i++;
 			i = done;
 			for (; i < toWhere; i++){
@@ -358,11 +360,13 @@ int main(int argc, char* argv[])
 				RSasync 		= tt[i-done].get();
 				divvs[i] 		= RSasync->div;
 				string curS 	= Mo->getSampleName(i);
-				//divvs[i-done]->print2file(outF + curS + ".estimates");
+				divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
 				delete RSasync;
 			}
 			// main thread divv push back
 			divvs[i] = tmpRS->div;
+			string curS 	= Mo->getSampleName(i);
+			divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
 
 			// add the matrices to the container
 			if(NoOfMatrices > 0){
@@ -378,14 +382,14 @@ int main(int argc, char* argv[])
 			i++;
 			done = i;
 		}
-		printDivMat(outF + "all.txt", divvs);
+		printDivMat(outF + "median_alpha_diversity.tsv", divvs);
 		for (size_t i = 0; i < divvs.size(); i++){
 			delete divvs[i];
 		}
 		if(NoOfMatrices > 0){
 			vector < string > rowNames = Mo->getRowNames();
 			for(uint i = 0; i < MaRare.size(); i++){
-				printRareMat(outF + "rarefied_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+				printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 			}
 		}
 		delete Mo;
