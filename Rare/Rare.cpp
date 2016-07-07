@@ -237,7 +237,12 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		done = i;
 	}
 
-
+	// delete tmp files we created for rarefaction, as we now do not need them anymore
+	for(uint i = 0; i < fileNames.size(); i++){
+		if( remove( fileNames[i].c_str() ) != 0 ){
+			cerr << "Error deleting file: " << fileNames[i] << std::endl;
+		}
+	}
 
 	// print the div estimates out into a file
 	printDivMat(outF + "median_alpha_diversity.tsv", divvs);
@@ -249,26 +254,26 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		for(uint i = 0; i < tmpMatFiles.size(); i++){
 			string matOut = outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv";
 			reassembleTmpMat(tmpMatFiles[i], rowNames, matOut);
-		}
 
+			// delete tmp rarefaction files now
+			for(uint j = 0; j < tmpMatFiles[i].size(); j++){
+				if( remove( tmpMatFiles[i][j].c_str() ) != 0 ){
+					cerr << "Error deleting file: " << tmpMatFiles[i][j] << std::endl;
+				}
+			}
+		}
 		//for(uint i = 0; i < MaRare.size(); i++){
 		//	printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 		//}
 	}
-
-	// delete tmp file we created
-	for(uint i = 0; i < fileNames.size(); i++){
-		if( remove( fileNames[i].c_str() ) != 0 ){
-			cerr << "Error deleting file: " << fileNames[i] << std::endl;
-		}
-	}
+	/*
 	for(uint i = 0; i < tmpMatFiles.size(); i++){
 		for(uint j = 0; j < tmpMatFiles[i].size(); j++){
 			if( remove( tmpMatFiles[i][j].c_str() ) != 0 ){
 				cerr << "Error deleting file: " << tmpMatFiles[i][j] << std::endl;
 			}
 		}
-	}
+	}*/
 	cout << "Finished\n";
 }
 
