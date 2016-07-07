@@ -14,6 +14,7 @@ struct rareStruct{
 	//std::vector<vector<uint>> cnts;
 	vector< map< uint, uint>> cnts;
 	string skippedNames;
+	vector<string> IDs;
 };
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
 	smplVec* cur = Mo->getSampleVec(i);
@@ -59,6 +60,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	tmpRS->cnts 						= cntsMap;
 	tmpRS->cntsName 				= cntsName;
 	tmpRS->skippedNames			= skippedNames;
+	tmpRS->IDs 							= cur->getRowNames();
 
 	delete cur;
 	return tmpRS;
@@ -125,8 +127,169 @@ void helpMsg(){
 
 
 
-
 void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeats, int numThr = 1){
+	// this mode takes the file, reads it in memory
+	// prints the columns to their own files
+	// then it loads those files again and
+	// rarefies each column
+	// the measures are then combines again.
+
+	//split mat code
+	vector<string> fileNames;
+	Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true);
+	vector < string > SampleNames 	= Mo->getSampleNames();
+	vector < string > rowNames 		= Mo->getRowNames();
+
+	int rareDep 	= atoi(arg4.c_str());
+	if(rareDep == 0){
+		// rarefy to smallest colSum
+		rareDep = round(0.95 * Mo->getMinColSum());
+		if(rareDep == 0.0){
+			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+			exit(1);
+		}
+	}
+	delete Mo;
+
+
+	int NoOfMatrices = writeFiles;
+	vector< vector< map< uint, uint > > > MaRare (NoOfMatrices);
+	std::vector<string> cntsNames;
+
+	int done = 0; // number of samples processed for multithreading
+	uint i = 0;
+	std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
+
+	//rarefection code
+	vector<DivEsts*> divvs(fileNames.size(),NULL);
+	while(i < fileNames.size()){
+
+		// allow multithreading
+		cerr << "At Sample " << i << " of " << fileNames.size() << " Samples";
+		uint toWhere = done + numThr - 1;
+		if ((uint)((uint)fileNames.size() - 2 ) < toWhere){
+			toWhere = fileNames.size() - 2;
+		}
+		// launch samples in threads
+		for (; i < toWhere; i++){
+			DivEsts * div 	= new DivEsts();
+			div->SampleName = SampleNames[i];
+			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep, outF, repeats, writeFiles);
+		}
+		// launch one in the mainthread
+		DivEsts * div 	= new DivEsts();
+		div->SampleName = SampleNames[i];
+		rareStruct* tmpRS;
+		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, outF, repeats, writeFiles);
+		i++;
+
+		// process created data, first threads, then main thread
+		i = done;
+		for (; i < toWhere; i++){
+			rareStruct* RSasync;
+			RSasync 		= tt[i-done].get();
+			divvs[i] 		= RSasync->div;
+			string curS 	= SampleNames[i];
+			divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
+
+			// add the matrices to the container
+			if(NoOfMatrices > 0){
+				vector < string > rowIDs = RSasync->IDs;
+				vector < uint > nrowIDs(rowIDs.size());
+				// convert ids into integer vector
+				for(uint i = 0; i < rowIDs.size(); i++){
+					nrowIDs[i] = std::stoi(rowIDs[i]);
+				}
+				for(uint i = 0; i < RSasync->cnts.size(); i++){
+					// reshape each vector, as some are zero, and we need to rematch values and rows
+					// we use the row Ids which we created correctly when splitting the vector from the input file
+					std::map <uint, uint> tmpVec;
+						for (auto const& x : RSasync->cnts[i]){
+							tmpVec[nrowIDs[x.first]] = x.second;
+						}
+					MaRare[i].push_back(tmpVec);
+				}
+				//for(uint i = 0; i < RSasync->cnts.size(); i++){
+				//	MaRare[i].push_back(RSasync->cnts[i]);
+				//}
+				// save sample name for naming purposes
+				if(RSasync->cntsName.size() != 0){
+					cntsNames.push_back(RSasync->cntsName);
+				}
+			}
+			delete RSasync;
+		}
+
+		// main thread divv push back
+		divvs[i] = tmpRS->div;
+		string curS 	= SampleNames[i];
+		divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
+
+		if(NoOfMatrices > 0){
+					vector < string > rowIDs = tmpRS->IDs;
+					vector < uint > nrowIDs(rowIDs.size());
+					// convert ids into integer vector
+					for(uint i = 0; i < rowIDs.size(); i++){
+						nrowIDs[i] = std::stoi(rowIDs[i]);
+					}
+					for(uint i = 0; i < tmpRS->cnts.size(); i++){
+						// reshape each vector, as some are zero, and we need to rematch values and rows
+						// we use the row Ids which we created correctly when splitting the vector from the input file
+						std::map <uint, uint> tmpVec;
+							for (auto const& x : tmpRS->cnts[i]){
+								tmpVec[nrowIDs[x.first]] = x.second;
+							}
+						MaRare[i].push_back(tmpVec);
+					}
+					// save sample name for naming purposes
+					if(tmpRS->cntsName.size() != 0){
+						cntsNames.push_back(tmpRS->cntsName);
+					}
+				}
+
+		/*
+		if(NoOfMatrices > 0){
+			for(uint i = 0; i < tmpRS->cnts.size(); i++){
+				MaRare[i].push_back(tmpRS->cnts[i]);
+			}
+
+			// save sample name for naming purposes
+			if(tmpRS->cntsName.size() != 0){
+				cntsNames.push_back(tmpRS->cntsName);
+			}
+		}*/
+		delete tmpRS;
+		i++;
+		done = i;
+	}
+
+
+
+	// print the div estimates out into a file
+	printDivMat(outF + "median_alpha_diversity.tsv", divvs);
+	for (size_t i = 0; i < divvs.size(); i++){
+		delete divvs[i];
+	}
+	if(NoOfMatrices > 0){
+		for(uint i = 0; i < MaRare.size(); i++){
+			printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+		}
+	}
+
+	// delete tmp file we created
+	for(uint i = 0; i < fileNames.size(); i++){
+		if( remove( fileNames[i].c_str() ) != 0 ){
+			cerr << "Error deleting file: " << fileNames[i] << std::endl;
+		}
+	}
+
+	cout << "Finished\n";
+
+
+}
+
+
+void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int repeats, int numThr = 1){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
 	// then it loads those files again and
@@ -186,47 +349,63 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		// process created data, first threads, then main thread
 		i = done;
 		for (; i < toWhere; i++){
-			rareStruct* RSasync;
-			RSasync 		= tt[i-done].get();
-			divvs[i] 		= RSasync->div;
+			rareStruct* tmpRS;
+			tmpRS 		= tt[i-done].get();
+			divvs[i] 		= tmpRS->div;
 			string curS 	= SampleNames[i];
 			divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
 
 			// add the matrices to the container
 			if(NoOfMatrices > 0){
 				// write matrix vectors to file
-
-				for(uint i = 0; i < RSasync->cnts.size(); i++){
-					MaRare[i].push_back(RSasync->cnts[i]);
+				vector < string > rowIDs = tmpRS->IDs;
+				vector < uint > nrowIDs(rowIDs.size());
+				// convert ids into integer vector, for remapping the values
+				for(uint i = 0; i < rowIDs.size(); i++){
+					nrowIDs[i] = std::stoi(rowIDs[i]);
 				}
+				for(uint i = 0; i < tmpRS->cnts.size(); i++){
+					// reshape each vector, as some are zero, and we need to rematch values and rows
+					// we use the row Ids which we created correctly when splitting the vector from the input file
+					std::map <uint, uint> tmpVec;
+						for (auto const& x : tmpRS->cnts[i]){
+							tmpVec[nrowIDs[x.first]] = x.second;
+						}
+						string vecLocation = printSimpleMap(tmpVec,	outF + "tmp_" + std::to_string(i) + tmpRS->cntsName + ".binary",	tmpRS->cntsName, rowNames);
+						tmpMatFiles[i].push_back(vecLocation);
+				}
+
 				// save sample name for naming purposes
-				if(RSasync->cntsName.size() != 0){
-					cntsNames.push_back(RSasync->cntsName);
+				if(tmpRS->cntsName.size() != 0){
+					cntsNames.push_back(tmpRS->cntsName);
 				}
 			}
-			delete RSasync;
+			delete tmpRS;
 		}
 
 		// main thread divv push back
 		divvs[i] = tmpRS->div;
 		string curS 	= SampleNames[i];
 		divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
+
 		if(NoOfMatrices > 0){
-
-			// new mode
+			vector < string > rowIDs = tmpRS->IDs;
+			vector < uint > nrowIDs(rowIDs.size());
+			// convert ids into integer vector, for remapping the values
+			for(uint i = 0; i < rowIDs.size(); i++){
+				nrowIDs[i] = std::stoi(rowIDs[i]);
+			}
 			for(uint i = 0; i < tmpRS->cnts.size(); i++){
-			//	for(uint j = 0; j < tmpRS->cnts[i].size(); j++){
-					cout << i;
-					string vecLocation = printSimpleMap(tmpRS->cnts[i],	outF + "tmp_" + std::to_string(i) + tmpRS->cntsName + ".tmpvec",	tmpRS->cntsName, rowNames);
+				// reshape each vector, as some are zero, and we need to rematch values and rows
+				// we use the row Ids which we created correctly when splitting the vector from the input file
+				std::map <uint, uint> tmpVec;
+					for (auto const& x : tmpRS->cnts[i]){
+						tmpVec[nrowIDs[x.first]] = x.second;
+					}
+					string vecLocation = printSimpleMap(tmpVec,	outF + "tmp_" + std::to_string(i) + tmpRS->cntsName + ".binary",	tmpRS->cntsName, rowNames);
 					tmpMatFiles[i].push_back(vecLocation);
-			//	}
 			}
-			/*
 
-			for(uint i = 0; i < tmpRS->cnts.size(); i++){
-				MaRare[i].push_back(tmpRS->cnts[i]);
-			}
-			*/
 			// save sample name for naming purposes
 			if(tmpRS->cntsName.size() != 0){
 				cntsNames.push_back(tmpRS->cntsName);
@@ -253,7 +432,7 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		// reassemble tmp fev files:
 		for(uint i = 0; i < tmpMatFiles.size(); i++){
 			string matOut = outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv";
-			reassembleTmpMat(tmpMatFiles[i], rowNames, matOut);
+			reassembleTmpMat(tmpMatFiles[i], rowNames, cntsNames, matOut);
 
 			// delete tmp rarefaction files now
 			for(uint j = 0; j < tmpMatFiles[i].size(); j++){
@@ -262,18 +441,8 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 				}
 			}
 		}
-		//for(uint i = 0; i < MaRare.size(); i++){
-		//	printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
-		//}
 	}
-	/*
-	for(uint i = 0; i < tmpMatFiles.size(); i++){
-		for(uint j = 0; j < tmpMatFiles[i].size(); j++){
-			if( remove( tmpMatFiles[i][j].c_str() ) != 0 ){
-				cerr << "Error deleting file: " << tmpMatFiles[i][j] << std::endl;
-			}
-		}
-	}*/
+
 	cout << "Finished\n";
 }
 
@@ -336,15 +505,16 @@ int main(int argc, char* argv[])
 		}
 		else if (mode == "rare_lowMem") {
 			rareLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
-		}else if (mode == "correl2"){
+		}else if (mode == "paul") {
+			rareExtremLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
+		}	else if (mode == "correl2"){
 			//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
 			//reads in signature matrix (e.g. 40 marker genes)
 			SigMatrix* Sig = new SigMatrix(inF);
 			//Sig->estimateBinModel();
 			//readMatrixLinebyLine(arg4,Sig);
 
-		}
-		else if (mode == "module") {
+		}else if (mode == "module") {
 			if (argc < 7) {
 				cout << "Usage: ./rare module [KO matrix] [outputfile] [module DB file] [KO redundancy, int] [Pathway completeness, float 0-1] [Enzyme completeness, float 0-1]\n";
 				cerr << "Not enough arguments for \"module\" function\n";
