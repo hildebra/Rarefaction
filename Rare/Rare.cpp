@@ -154,10 +154,11 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 	int NoOfMatrices = writeFiles;
 	vector< vector< map< uint, uint > > > MaRare (NoOfMatrices);
 	std::vector<string> cntsNames;
-
+	vector < vector < string > > tmpMatFiles (NoOfMatrices );
 	int done = 0; // number of samples processed for multithreading
 	uint i = 0;
 	std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
+
 
 	//rarefection code
 	vector<DivEsts*> divvs(fileNames.size(),NULL);
@@ -193,6 +194,8 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 
 			// add the matrices to the container
 			if(NoOfMatrices > 0){
+				// write matrix vectors to file
+
 				for(uint i = 0; i < RSasync->cnts.size(); i++){
 					MaRare[i].push_back(RSasync->cnts[i]);
 				}
@@ -209,10 +212,21 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		string curS 	= SampleNames[i];
 		divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
 		if(NoOfMatrices > 0){
+
+			// new mode
+			for(uint i = 0; i < tmpRS->cnts.size(); i++){
+			//	for(uint j = 0; j < tmpRS->cnts[i].size(); j++){
+					cout << i;
+					string vecLocation = printSimpleMap(tmpRS->cnts[i],	outF + "tmp_" + std::to_string(i) + tmpRS->cntsName + ".tmpvec",	tmpRS->cntsName, rowNames);
+					tmpMatFiles[i].push_back(vecLocation);
+			//	}
+			}
+			/*
+
 			for(uint i = 0; i < tmpRS->cnts.size(); i++){
 				MaRare[i].push_back(tmpRS->cnts[i]);
 			}
-
+			*/
 			// save sample name for naming purposes
 			if(tmpRS->cntsName.size() != 0){
 				cntsNames.push_back(tmpRS->cntsName);
@@ -231,9 +245,15 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 		delete divvs[i];
 	}
 	if(NoOfMatrices > 0){
-		for(uint i = 0; i < MaRare.size(); i++){
-			printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+		// reassemble tmp fev files:
+		for(uint i = 0; i < tmpMatFiles.size(); i++){
+			string matOut = outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv";
+			reassembleTmpMat(tmpMatFiles[i], rowNames, matOut);
 		}
+
+		//for(uint i = 0; i < MaRare.size(); i++){
+		//	printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
+		//}
 	}
 
 	// delete tmp file we created
@@ -242,10 +262,14 @@ void rareLowMem(string inF, string outF, int writeFiles, string arg4, int repeat
 			cerr << "Error deleting file: " << fileNames[i] << std::endl;
 		}
 	}
-
+	for(uint i = 0; i < tmpMatFiles.size(); i++){
+		for(uint j = 0; j < tmpMatFiles[i].size(); j++){
+			if( remove( tmpMatFiles[i][j].c_str() ) != 0 ){
+				cerr << "Error deleting file: " << tmpMatFiles[i][j] << std::endl;
+			}
+		}
+	}
 	cout << "Finished\n";
-
-
 }
 
 
@@ -290,6 +314,11 @@ int main(int argc, char* argv[])
 	if (argc > 7){
 		numThr = atoi(argv[7]);
 	}
+	if( writeFiles > repeats){
+		cerr << "Can not write more files than repeats. Set writefiles to repeats" << std::endl;
+		int writeFiles = repeats;
+	}
+
 
 	// start the modes
 	if (argc>3){

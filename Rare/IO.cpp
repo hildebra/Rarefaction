@@ -456,6 +456,69 @@ void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< s
 }
 
 
+
+string printSimpleMap(map<uint, uint> vec, string outF, string id, vector<string> rowNames){
+	// takes a map from the rarefaction function and writes the vector
+	// to the disk.
+	// this way we dont need memory to do
+	ofstream out(outF.c_str());
+	if (!out){ cerr << "Couldn't open tmpvec file " << outF << endl; std::exit(99); }
+
+	// write the header
+	out << id;
+	out << "\n";
+
+	// write the vector
+	for(uint i = 0; i < rowNames.size(); i++){
+			auto fnd = vec.find(i);
+			if(fnd != vec.end()){
+				out << fnd->second;
+			}else{
+				out << "0";
+			}
+		out << "\n";
+	}
+	out.close();
+
+	return outF;
+}
+
+void reassembleTmpMat(vector<string> inF, vector< string > rowNames, string outF){
+	// takes the vectors from printSimpleMap and constrcust a mat from them
+	// first open all inF streams
+	// iterate through and write line for line
+	if(inF.size() == 0){
+		std::exit(99);
+	}
+	vector<std::ifstream*> inFs(inF.size());
+	for(uint i = 0; i < inFs.size(); i++){
+		std::ifstream* f = new std::ifstream(inF[i].c_str(), std::ios::in); // create in free store
+		inFs[i] = f;
+	}
+
+	ofstream out(outF.c_str());
+	if (!out){ cerr << "Couldn't open tmpvec file " << outF << endl; std::exit(99); }
+	out << "Rarefied";
+
+	string a;
+	uint j = 0;
+	while(*inFs[0] && (j < rowNames.size())){
+		if((j > 0) && (j < rowNames.size())){
+			out <<  rowNames[j-1] << "\t";
+		}
+		j++;
+		for(uint i = 0; i < inFs.size(); i++){
+				string tStr;
+				getline(*inFs[i],tStr);
+				out << '\t' << tStr;
+		}
+		out << '\n';
+	}
+
+
+}
+
+
 std::istream& safeGetline(std::istream& is, std::string& t)
 {
 	t.clear();
