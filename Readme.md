@@ -66,6 +66,7 @@ Input data for rtk should be a count table in a .tsv or .csv format.
 Row and column names must be provided and be unique.
 
 **Example file:**
+
 |       | Sample a | Sample b | Sample c | Sample d |
 |-------|----------|----------|----------|----------|
 | OTU 1 | 0        | 12       | 4        | 80       |
