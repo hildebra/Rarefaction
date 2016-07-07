@@ -514,7 +514,7 @@ void reassembleTmpMat(vector<string> inF, vector< string > rowNames, string outF
 		}
 		out << '\n';
 	}
-
+	out.close();
 
 }
 
