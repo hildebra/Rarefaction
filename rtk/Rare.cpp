@@ -70,7 +70,7 @@ void helpMsglegacy(){
 }
 
 void stateVersion(){
-	printf("rare %s\n", rar_ver);
+	printf("rarefaction tool kit (rtk) %s\n", rar_ver);
 }
 
 void helpMsg(){
@@ -98,7 +98,7 @@ void helpMsg(){
 	printf("       mode      rare_inmat (Other modes are not available at the moment. Can be any string.)\n");
 	printf("       input     path to a .csv file                   (required)\n");
 	printf("       output    path for the ouput and tmp files      (required)\n");
-	printf("       depth     rarefaction depth                     (default: 1000)\n");
+	printf("       depth     rarefaction depth                     (default: 0.95 min colsum)\n");
 	printf("       repeats   number of times to compute diversity  (default: 1)\n");
 	printf("       write     number of files to write              (default: same as repeats)\n");
 	printf("       threads   number of threads to use in parallel  (default: 1)\n");
@@ -109,7 +109,7 @@ void helpMsg(){
 	printf("       mode      rare_inmat (Other modes are not available at the moment. Can be any string.)\n");
 	printf("       input     path to a .csv file                   (required)\n");
 	printf("       output    path for the ouput                    (required)\n");
-	printf("       depth     rarefaction depth                     (default: 1000)\n");
+	printf("       depth     rarefaction depth                     (default: 0.95 min colsum)\n");
 	printf("       repeats   number of times to compute diversity  (default: 1)\n");
 	printf("       write     number of files to write              (default: same as repeats)\n");
 	printf("       threads   number of threads to use in parallel  (default: 1)\n");
