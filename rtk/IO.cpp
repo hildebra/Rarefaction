@@ -408,8 +408,10 @@ void DivEsts::print2file(const string file){
 	}
 	out.close();
 }
-void printDivMat(const string outF, vector<DivEsts*>& inD){
-	ofstream out(outF.c_str());
+void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV ){
+
+	string outFmedian = outF + "median_alpha_diversity.tsv";
+	ofstream out(outFmedian.c_str());
 	if (!out){ cerr << "Couldn't open diversity estimate matrix " << outF << endl; std::exit(99); }
 	out << "Smpl\tRichness\tShannon\tSimpson\tInv. Simpson\tChao1\tEveness\n";
 	for (size_t i = 0; i < inD.size(); i++){
@@ -426,6 +428,75 @@ void printDivMat(const string outF, vector<DivEsts*>& inD){
 		out << getMedian(inD[i]->eve) << "\n";
 	}
 	out.close();
+
+	// print now each div estimate as well:
+	if(printDIV){
+		// open all files as streams
+		vector<string> divNames;
+		divNames.push_back("richness");
+		divNames.push_back("shannon");
+		divNames.push_back("simpson");
+		divNames.push_back("invsimpson");
+		divNames.push_back("chao1");
+		divNames.push_back("eve");
+
+		vector<ofstream> outFs(divNames.size());
+
+		// open files
+		for(uint i = 0; i < divNames.size(); i++){
+			string outFdiv = outF + "_alpha_" + divNames[i] + ".tsv";
+			outFs[i].open(outFdiv.c_str(), ios_base::out);
+		}
+
+		// write the divvs to disk
+		for (size_t i = 0; i < inD.size(); i++){
+			// richness
+			uint k = 0;
+			outFs[k] << inD[i]->SampleName ;
+			for( uint j = 0; j < inD[i]->richness.size(); j++){
+				outFs[k] << "\t" << inD[i]->richness[j] ;
+			}
+			outFs[k] << '\n';
+
+			// shannon
+			k = 1;
+			outFs[k] << inD[i]->SampleName ;
+			for( uint j = 0; j < inD[i]->shannon.size(); j++){
+				outFs[k] << "\t" << inD[i]->shannon[j] ;
+			}
+			outFs[k] << '\n';
+
+			// simpson
+			k = 2;
+			outFs[k] << inD[i]->SampleName ;
+			for( uint j = 0; j < inD[i]->simpson.size(); j++){
+				outFs[k] << "\t" << inD[i]->simpson[j] ;
+			}
+			outFs[k] << '\n';
+
+			// invsimpson
+			k = 3;
+			outFs[k] << inD[i]->SampleName ;
+			for( uint j = 0; j < inD[i]->invsimpson.size(); j++){
+				outFs[k] << "\t" << inD[i]->invsimpson[j] ;
+			}
+			outFs[k] << '\n';
+
+			// chao1
+			k = 4;
+			outFs[k] << inD[i]->SampleName ;
+			for( uint j = 0; j < inD[i]->chao1.size(); j++){
+				outFs[k] << "\t" << inD[i]->chao1[j] ;
+			}
+			outFs[k] << '\n';
+		}
+
+		// close streams
+		for(uint i = 0; i < divNames.size(); i++){
+			outFs[i].close();
+		}
+	}
+
 }
 void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId){
 	ofstream out(outF.c_str());

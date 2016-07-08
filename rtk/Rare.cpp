@@ -84,7 +84,7 @@ void helpMsg(){
 	//printf("    lineExtr      TODO\n");
 	//printf("    mergeMat      TODO\n");
 	//printf("    sumMat        TODO\n");
-	printf("    rarefaction   TODO\n");
+	//printf("    rarefaction   TODO\n");
 	printf("    rare_lowMem   rarefy a matrix and compute diversity measures. Using less memory.\n");
 	printf("    rare_inmat    rarefy a matrix and compute diversity measures. Process in memory.\n");
 	//printf("    module        TODO\n");
@@ -349,7 +349,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 			tmpRS 		= tt[i-done].get();
 			divvs[i] 		= tmpRS->div;
 			string curS 	= SampleNames[i];
-			divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
+			//divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
 
 			// add the matrices to the container
 			if(NoOfMatrices > 0){
@@ -366,7 +366,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 		// main thread divv push back
 		divvs[i] 			= tmpRS->div;
 		string curS 	= SampleNames[i];
-		divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
+		//divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
 
 
 		// add the matrices to the container
@@ -391,7 +391,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	}
 
 	// print the div estimates out into a file
-	printDivMat(outF + "median_alpha_diversity.tsv", divvs);
+	printDivMat(outF , divvs, true);
 	for (size_t i = 0; i < divvs.size(); i++){
 		delete divvs[i];
 	}
@@ -588,7 +588,7 @@ int main(int argc, char* argv[])
 				tmpRS 		= tt[i-done].get();
 				divvs[i] 		= tmpRS->div;
 				string curS 	= Mo->getSampleName(i);
-				divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
+				//divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
 
 				// add the matrices to the container
 				if(NoOfMatrices > 0){
@@ -604,7 +604,7 @@ int main(int argc, char* argv[])
 			// main thread divv push back
 			divvs[i] = tmpRS->div;
 			string curS 	= Mo->getSampleName(i);
-			divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
+			//divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
 
 			// add the matrices to the container
 			if(NoOfMatrices > 0){
@@ -618,7 +618,7 @@ int main(int argc, char* argv[])
 			i++;
 			done = i;
 		}
-		printDivMat(outF + "median_alpha_diversity.tsv", divvs);
+		printDivMat(outF , divvs, true);
 		for (size_t i = 0; i < divvs.size(); i++){
 			delete divvs[i];
 		}

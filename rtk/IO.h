@@ -79,7 +79,7 @@ public:
 	vector<double> shannon,simpson,invsimpson,chao1,eve;
 	string SampleName;
 };
-void printDivMat(const string outF, vector<DivEsts*>&);
+void printDivMat(const string outF, vector<DivEsts*>&, bool);
 void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId);
 string printSimpleMap(map<uint, uint> vec, string outF, string id, vector<string> rowNames);
 void reassembleTmpMat(vector<string> inF, vector< string > rowNames,vector< string > colNames, string outF);
