@@ -7,7 +7,7 @@
 #include "ClStr2Mat.h"
 #include "Rare.h"
 
-const char* rar_ver="0.63 alpha";
+const char* rar_ver="0.64 alpha";
 
 
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
