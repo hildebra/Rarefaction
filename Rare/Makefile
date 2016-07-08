@@ -1,6 +1,6 @@
 # copyright: Michael Safyan
 
-program_NAME := rare
+program_NAME := rtk
 program_C_SRCS := $(wildcard *.c)
 program_CXX_SRCS := $(wildcard *.cpp)
 program_C_OBJS := ${program_C_SRCS:.c=.o}
@@ -27,4 +27,3 @@ clean:
 	@- $(RM) $(program_OBJS)
 
 distclean: clean
-

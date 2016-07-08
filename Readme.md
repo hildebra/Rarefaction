@@ -22,9 +22,9 @@ make
 Two modes for rarefaction of a count table are available
 
 ```bash
-./rtk rare_inmat input.csv output.file depth.int repeats NoOfMatrices threads
+./rtk rare_inmat input.csv output.file depth.int repeats NoOfMatrices threads tmpStore
 
-./rtk rare_lowMem input.csv output.file depth.int repeats NoOfMatrices threads
+./rtk rare_lowMem input.csv output.file depth.int repeats NoOfMatrices threads tmpStore
 ```
 
 ### Options:
@@ -32,8 +32,9 @@ Two modes for rarefaction of a count table are available
 - **output.file**: In mode `rare_inmat` the output file will be placed here. In mode `rare_lowMem` temporary files may also be stored at this location. See XYZ for details about temporary files.
 - **depth.int**: Depth to rarefy to. If set to 0 a rarefaction depth of 0.95 times the smallest column sum will be used.
 - **repeats**: Number of times diversity measures for all samples should be computed.
-- **NoOfMatrices**: Number of rarefied matrices should be written to disk. Can be 0 or any `integer <= repeats`
+- **NoOfMatrices**: Number of rarefied tables, that should be written to disk. Can be 0 or any `integer <= repeats` (default: 0)
 - **threads**: If possible the software can use multiple threads (`default 1`).
+- **tmpStore**: If set to 1 temporary files for the creation of the rarefaction tables (see `NoOfMatrices`) are stored on disk instead of in memory. This can reduce memory consumption drastically if multiple or large rarefaction tables should be written (default 1)
 
 ### Ouput files:
 
@@ -89,6 +90,21 @@ http://stackoverflow.com/questions/1729824/transpose-a-file-in-bash
 
 
 # Example
+A minimal working example of a rarefaction is shown here. This example should run on any UNIX system.
+```
+#!/bin/sh
+FILE="example.input.csv"
+touch $FILE
+echo -e "OUT \t Sample 1 \tSample 2\tSample 3" >> $FILE
+echo -e "OTU 1\t232\t10\t0" >> $FILE
+echo -e "OTU 2\t0\t57\t22" >> $FILE
+echo -e "OTU 3\t17\t0\t45" >> $FILE
+echo -e "OTU 4\t5\t83\t0" >> $FILE
+
+rtk rare_lowMem $FILE test. 0 10 1 1 1
+
+ls -lh test.*
+```
 
 
 # Copyright
