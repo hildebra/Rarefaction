@@ -489,6 +489,14 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV ){
 				outFs[k] << "\t" << inD[i]->chao1[j] ;
 			}
 			outFs[k] << '\n';
+
+			// eve
+			k = 5;
+			outFs[k] << inD[i]->SampleName ;
+			for( uint j = 0; j < inD[i]->chao1.size(); j++){
+				outFs[k] << "\t" << inD[i]->eve[j] ;
+			}
+			outFs[k] << '\n';
 		}
 
 		// close streams
