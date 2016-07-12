@@ -520,8 +520,8 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 			cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
 			std::exit(62);
 		}
-		if (cnt % 10000 == 0){
-			// every 10000 lines, write to file. The rest will be written later
+		if (cnt % 1000 == 0){
+			// every 1000 lines, write to file. The rest will be written later
 			for (size_t cnt2=0;cnt2<outStr.size();cnt2++){
 				// we open the file, and close it again, as we dont want to be limited in the number of
 				// files to have open
@@ -544,7 +544,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		}
 	}
 	else {//close filestreams to single sample files
-		// write the overlapp of the read in (since the last 10000)
+		// write the overlapp of the read in (since the last 1000)
 		for (size_t i = 0; i < outFs.size(); i++){
 			// we open the file, and close it again, as we dont want to be limited in the number of
 			// files to have open

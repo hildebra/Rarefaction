@@ -68,6 +68,10 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	tmpRS->skippedNames			= skippedNames;
 
 	delete cur;
+
+	if( remove( fileNames[i].c_str() ) != 0 ){
+		cerr << "LowMem: Error deleting file: " << fileNames[i] << std::endl;
+	}
 	return tmpRS;
 }
 
@@ -86,7 +90,7 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	std::vector<vector<map<uint, uint>>>& MaRare,
 	std::vector<string>& cntsNames,
 	std::vector<string>& skippedNamess,
-	std::vector<string>& rowNames, int numThr ){
+	std::vector<string>& rowNames, int numThr, bool verbose ){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
 	// then it loads those files again and
@@ -94,8 +98,10 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	// the measures are then combines again.
 
 	//split mat code
-	cout << " Low mem test" << std::endl;
-	cout << "Tmp dir: " << outF << std::endl;
+	if(verbose == true){
+		cout << " Low mem test" << std::endl;
+		cout << "Tmp dir: " << outF << std::endl;
+	}
 	vector<string> fileNames;
 	Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true);
 	vector < string > SampleNames 	= Mo->getSampleNames();
@@ -107,7 +113,7 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 		rareDep = round(0.95 * Mo->getMinColSum());
 		if(rareDep == 0){
 			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-			//exit(1);
+			return;
 		}
 	}
 	delete Mo;
@@ -123,7 +129,9 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	while(i < fileNames.size()){
 
 		// allow multithreading
-		cerr << "At Sample " << i << " of " << fileNames.size() << " Samples";
+		if(verbose == true){
+			cerr << "At Sample " << i+1 << " of " << fileNames.size() << " Samples";
+		}
 		uint toWhere = done + numThr - 1;
 		if ((uint)((uint)fileNames.size() - 2 ) < toWhere){
 			toWhere = fileNames.size() - 2;
@@ -185,11 +193,11 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 
 	// delete tmp file we created
 	fileNames.push_back(outF + "sums.txt");
-	for(uint i = 0; i < fileNames.size(); i++){
+	/*for(uint i = 0; i < fileNames.size(); i++){
 		if( remove( fileNames[i].c_str() ) != 0 ){
 			cerr << "Error deleting file: " << fileNames[i];
 		}
-	}
+	}*/
 
 }
 
@@ -256,7 +264,7 @@ int rarefyMain(string inF, string outF, string mode,
 			rareDep = round(0.95 * Mo->getMinColSum());
 			if(rareDep == 0){
 				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-				//exit(1);
+				return 0;
 			}
 		}
 		rowNames = Mo->getRowNames();
@@ -352,7 +360,7 @@ int rarefyMain(string inF, string outF, string mode,
 		delete Mo;
 	}else if(mode == "rare_lowMem"){
 		rareLowMem(inF, outF, NoOfMatrices,  rareDep,  repeats,
-		divvs, retCnts, cntsNames, skippedNamess, rowNames, numThr);
+		divvs, retCnts, cntsNames, skippedNamess, rowNames, numThr, verbose);
 	}
 
 
