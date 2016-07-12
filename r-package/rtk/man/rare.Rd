@@ -11,26 +11,18 @@ rare(input, repeats = 10, depth = 1000, ReturnMatrix  = 0, margin = 2, verbose =
 }
 
 \arguments{
-  \item{input}{This can be either a numeric matrix or a path to a text file in tab-delimited format on the harddrive. The later option is for very big matrices, to avoid unnecessary memory consumption in R. (required)}
+  \item{input}{This can be either a numeric matrix or a path to a text file in tab-delimited format on the locally available storage. The later option is for very big matrices, to avoid unnecessary memory consumption in R.}
   \item{repeats}{Number of times to compute diversity measures. (\code{default: 10})}
   \item{depth}{Number of elements per row/column to rarefy to. The so called rarefaction depth or samplesize. Can also be a vector of ints. (\code{default: 1000})}
   \item{ReturnMatrix}{Number of rarefied matrices which are returned to R. Set to zero to only measure diversity. (\code{default: 1})}
   \item{margin}{Indicates which margin in the matrix represents the Samples and Species. Default is to rarefy assuming columns represent single samples (margin=2). If margin=1, rows are assumed to be samples. (default: 2 (columns))}
   \item{verbose}{If extra output should be printed to std::out or not to see progress of rarefaction. (\code{default: TRUE)}}
-  \item{threads}{Number of cores to use during rarefaction}
+  \item{threads}{Number of threads to use during rarefaction}
   \item{tmpdir}{Location to store temporary files}
 
 }
 \details{
 Function \code{rare} takes a dataset and calcualtes the diversity measures, namely the shannon diversity, richness, simpson index, the inverse simpson index, chao1 and evenness.
-The returned diversity indexes are:
-
-Shannon diversity: Describes the complexity withing a given sample.
-Richness: The number of species observed in each sample.
-simpson index: Describes the propability that two individual from the same dataset are of the same type.
-Inverse simpson index: ... ?
-Chao1: ???
-Eveness: Describes the relative distribution of species in a sample.
 
 If wished for the function can also return one or multiple rarefied matrices rarefied to one or multiple depths. Those can then also be used to create collectorcurves (see \code{\link{collectors.curve}}).
 }
@@ -43,7 +35,7 @@ The object \code{divvs} contains a list of diversity measures for each sample pr
 
 \code{depths} just contains the input variable and might be usefull for further analysis of the results.
 
-It is possible to plot the resulsts of the rarefaction, depending on the parameters passed to \code{rare}. See \code{\link{plot.rarefaction}} for examples.
+It is possible to plot the results of the rarefaction, depending on the parameters passed to \code{rare}. See \code{\link{plot.rarefaction}} for examples.
 }
 
 \references{
@@ -53,7 +45,7 @@ It is possible to plot the resulsts of the rarefaction, depending on the paramet
 
 \seealso{\code{\link{plot.rarefaction}}, \code{\link{collectors.curve}}}
 
-\author{Falk Hildebrand, Paul Saary}
+\author{\packageAuthor{rtk}}
 
 \examples{
 require("rarefaction")
