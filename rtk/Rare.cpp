@@ -28,7 +28,6 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string out
 	tmpRS->cnts 						= cntsMap;
 	tmpRS->cntsName 				= cntsName;
 	tmpRS->skippedNames			= skippedNames;
-
 	delete cur;
 	return tmpRS;
 }
@@ -57,6 +56,10 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	tmpRS->IDs 							= cur->getRowNames();
 
 	delete cur;
+
+	if( remove( fileNames[i].c_str() ) != 0 ){
+		cerr << "LowMem: Error deleting file: " << fileNames[i] << std::endl;
+	}
 	return tmpRS;
 }
 
@@ -324,7 +327,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	while(i < fileNames.size()){
 
 		// allow multithreading
-		cerr << "At Sample " << i << " of " << fileNames.size() << " Samples";
+		cerr << "At Sample " << i+1 << " of " << fileNames.size() << " Samples" << std::endl;
 		uint toWhere = done + numThr - 1;
 		if ((uint)((uint)fileNames.size() - 2 ) < toWhere){
 			toWhere = fileNames.size() - 2;
@@ -384,11 +387,9 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	}
 
 	// delete tmp files we created for rarefaction, as we now do not need them anymore
-	for(uint i = 0; i < fileNames.size(); i++){
-		if( remove( fileNames[i].c_str() ) != 0 ){
-			cerr << "Error deleting file: " << fileNames[i] << std::endl;
-		}
-	}
+//	for(uint i = 0; i < fileNames.size(); i++){
+
+//	}
 
 	// print the div estimates out into a file
 	printDivMat(outF , divvs, true);
@@ -473,6 +474,7 @@ int main(int argc, char* argv[])
 		//	rareLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
 		}else if (mode == "rare_lowMem") {
 			rareExtremLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr, storeBinary);
+			std::exit(0);
 		}	else if (mode == "correl2"){
 			//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
 			//reads in signature matrix (e.g. 40 marker genes)
@@ -569,7 +571,7 @@ int main(int argc, char* argv[])
 		cout << "threads\n";
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
-			cerr << "At Sample " << i << " of " << Mo->smplNum() << " Samples";
+			cerr << "At Sample " << i+1 << " of " << Mo->smplNum() << " Samples" << std::endl;
 			uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
@@ -734,7 +736,7 @@ void printRarefactionMatrix(vector< vector < string > >& tmpMatFiles, string out
 		// delete tmp rarefaction files now
 		for(uint j = 0; j < tmpMatFiles[i].size(); j++){
 			if( remove( tmpMatFiles[i][j].c_str() ) != 0 ){
-				cerr << "Error deleting file: " << tmpMatFiles[i][j] << std::endl;
+				cerr << "printRarefactionMatrix: Error deleting file: " << tmpMatFiles[i][j] << std::endl;
 			}
 		}
 	}

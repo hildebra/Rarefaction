@@ -376,7 +376,7 @@ Matrix::Matrix(void)
 {
 }
 
-Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl, bool NumericRowId )
+Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl, bool NumericRowId)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
@@ -445,6 +445,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		if (!doHigh){
 			outFs[cnt2].open(oF2.c_str(), ios_base::out);
 			outFs[cnt2].precision(12);
+			outFs[cnt2].close();
 		}
 	}
 	if (doHigh){
@@ -489,14 +490,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 					else {
 						taxa = (*fnd).second;
 					}
-					/*
-					string lngTax = "";
-					for (int tt = 0; tt < maxLvl; tt++){
-						lngTax += taxa[tt] ;
-						taxa[tt] = lngTax;
-						lngTax += +";";
-					}
-					*/
+
 				}
 				geneCnt++;
 				continue;
@@ -526,9 +520,15 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 			cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
 			std::exit(62);
 		}
-		if (cnt % 10000 ==0){
+		if (cnt % 10000 == 0){
+			// every 10000 lines, write to file. The rest will be written later
 			for (size_t cnt2=0;cnt2<outStr.size();cnt2++){
+				// we open the file, and close it again, as we dont want to be limited in the number of
+				// files to have open
+				outFs[cnt2].open(outFName[cnt2], ios_base::out | ios::app);
+				outFs[cnt2].precision(12);
 				outFs[cnt2] << outStr[cnt2];outStr[cnt2] = "";
+				outFs[cnt2].close();
 			}
 		}
 
@@ -544,7 +544,12 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		}
 	}
 	else {//close filestreams to single sample files
+		// write the overlapp of the read in (since the last 10000)
 		for (size_t i = 0; i < outFs.size(); i++){
+			// we open the file, and close it again, as we dont want to be limited in the number of
+			// files to have open
+			outFs[i].open(outFName[i], ios_base::out | ios::app);
+			outFs[i].precision(12);
 			outFs[i] << outStr[i];
 			outFs[i].close();
 		}
@@ -560,6 +565,8 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	out.close();
 	cout << "Read " << geneCnt << " genes" << endl;
 }
+
+
 
 Matrix::Matrix(const vector<string>& rnms, const vector<string>& cnms):
 	rowIDs(rnms),colIDs(cnms), maxCols((int)cnms.size())
