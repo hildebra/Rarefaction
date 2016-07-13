@@ -53,10 +53,8 @@ rare <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, v
 
 		result <- lapply(depth, function(d){
 						res <- rcpp_rarefaction("", input, colnames(input),
-								rownames(input),
-			                    repeats, d,
-								ReturnMatrix,
-			                    verbose, threads,
+								rownames(input), repeats, d,
+								ReturnMatrix, verbose, threads,
 								margin, "NULL", FALSE)
 
 						# remove col and/or row names, as we've added them for

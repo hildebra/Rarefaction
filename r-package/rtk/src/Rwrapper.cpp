@@ -30,7 +30,7 @@ List createDivList(DivEsts * div){
     return divLst;
 }
 
-IntegerMatrix matrix2Mat(std::vector<map<uint, uint>> dfMat,
+IntegerMatrix matrix2Mat(std::vector<map<uint, uint>>& dfMat,
 						std::vector<string> colnames, std::vector<string> rownames, bool transpose=false ){
 	// create a mat from a vector vector uint
 	IntegerMatrix NM;
@@ -171,7 +171,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	  }
 	  for(int i=0; i < NoOfMatrices; i++){
 		  if(retCnts[i].size() > 0){
-			  IntegerMatrix RdfTmp 		= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames, transpose);
+			  IntegerMatrix RdfTmp 	= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames, transpose);
 			  RrarefyMatrices[i]		= RdfTmp;
 		  }
 	  }
