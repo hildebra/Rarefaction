@@ -584,6 +584,7 @@ void reassembleTmpMat(vector<string> inF, vector< string > rowNames, vector< str
 	for(uint i = 0; i < inFs.size(); i++){
 		std::ifstream* f = new std::ifstream(inF[i].c_str(), std::ios::in | std::ios::binary); // create in free store
 		inFs[i] = f;
+		inFs[i]->close();
 	}
 
 	ofstream out(outF.c_str());
@@ -596,18 +597,58 @@ void reassembleTmpMat(vector<string> inF, vector< string > rowNames, vector< str
 
 	string a;
 	uint j = 0;
-	while((*inFs[0]) && (j < rowNames.size())){
-		if(j < rowNames.size()){
-			out <<  rowNames[j] << "\t";
+	// bufer for 1000 rows
+	uint bi = 0;
+	uint bj = 0;
+	const uint bn = 1000;
+	std::vector<vector< uint > > inBuff(bn, std::vector<uint>(inFs.size() ) );
+
+	while(j < rowNames.size()){
+		// fill buffer:
+		for(uint i = 0; i < inFs.size(); i++){
+			uint value;
+			inFs[i]->open(inF[i].c_str(), std::ios::in | std::ios::binary);
+			long int offset = j * sizeof(value);
+			inFs[i]->seekg(offset, ios_base::beg );
+
+			bj = 0;
+			while((*inFs[i]) && bj < bn ){
+				inFs[i]->read(reinterpret_cast<char*>(&value), sizeof(value));
+				inBuff[bj][i] = value;
+				bj++;
+			}
+
+			inFs[i]->close();
 		}
-		j++;
+		// write buffers to file
+		for(uint ij = 0; ij < bj && j+ij < rowNames.size(); ij++){
+			out <<  rowNames[j + ij] << "\t";
+			for(uint i = 0; i < inFs.size(); i++){
+				out << '\t' << inBuff[ij][i];
+			}
+			out << '\n';
+		}
+		j = j + bj;
+
+		/*
+		// write from buffer:
+		for(uint i = 0; i < inFs.size(); i++){
+
+		}
 
 		for(uint i = 0; i < inFs.size(); i++){
 				uint value;
+				inFs[i]->open(inF[i].c_str(), std::ios::in | std::ios::binary);
+
+				long int offset = j * sizeof(value);
+				//inFs[i]->seekg(offset, ios_base::beg );
+
 				inFs[i]->read(reinterpret_cast<char*>(&value), sizeof(value));
+				//inFs[i]->close();
 				out << '\t' << value;
 		}
 		out << '\n';
+		j++; */
 	}
 	out.close();
 
