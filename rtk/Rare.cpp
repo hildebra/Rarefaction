@@ -6,6 +6,7 @@
 //#include "Matrix.h"
 #include "ClStr2Mat.h"
 #include "Rare.h"
+#include "options.h"
 
 const char* rar_ver="0.64 alpha";
 
@@ -79,48 +80,102 @@ void stateVersion(){
 void helpMsg(){
 	stateVersion();
 	printf("\n");
-	printf("usage: rare mode input output [options] \n");
-	//printf("\n");
-	printf("available run modes:\n");
-	//printf("    normalize     TODO\n");
-	//printf("    splitMat      TODO\n");
-	//printf("    lineExtr      TODO\n");
-	//printf("    mergeMat      TODO\n");
-	//printf("    sumMat        TODO\n");
-	//printf("    rarefaction   TODO\n");
-	printf("    rare_lowMem   rarefy a matrix and compute diversity measures. Using less memory.\n");
-	printf("    rare_inmat    rarefy a matrix and compute diversity measures. Process in memory.\n");
-	//printf("    module        TODO\n");
+	printf("USAGE\n");
+	printf("    rtk  -i <input.csv> -m <mode> -o <output> [options] \n");
 	printf("\n");
-	printf("details:\n");
+	printf("OPTIONS\n");
+
+	printf("    -i      path to an .csv file to rarefy\n");
+	printf("    -o      path to a output directory\n");
+	printf("    -m      mode can be either swap or memory.\n");
+	printf("            Swap mode creates temporary files but uses less memory. \n");
+	printf("            The speed of both modes is comparable.\n");
+	printf("    -d      Depth to rarefy to. Default is 0.95 times the minimal column sum.\n");
+	printf("    -r      Number of times to create diversity measures. Default is 10.\n");
+	printf("    -w      Number of rarefied tables to write.\n");
+	printf("    -t      Number of threads to use. Default: 1\n");
+	printf("    -ns     If set, no temporary files will be used when writing rarefaction tables to disk.\n");
 	printf("\n");
+	printf("EXAMPLE\n");
+	printf("    Rarefy a table to 1000 counts per sample with two threads. Create one table:\n");
+	printf("        rtk -i table.csv -o outputdir/prefix. -m swap -d 1000 -r 10 -w 1 -t 2\n");
 	printf("\n");
-	printf("mode:  rare_lowMem\n");
-	printf("usage: rare rare_lowMem input output depth repeats write threads\n");
-	printf("\n");
-	printf("       mode      rare_inmat (Other modes are not available at the moment. Can be any string.)\n");
-	printf("       input     path to a .csv file                   (required)\n");
-	printf("       output    path for the ouput and tmp files      (required)\n");
-	printf("       depth     rarefaction depth                     (default: 0.95 min colsum)\n");
-	printf("       repeats   number of times to compute diversity  (default: 1)\n");
-	printf("       write     number of files to write              (default: same as repeats)\n");
-	printf("       threads   number of threads to use in parallel  (default: 1)\n");
-	printf("\n");
-	printf("mode:  rare_inmat\n");
-	printf("usage: rare rare_inmat input output depth repeats write threads\n");
-	printf("\n");
-	printf("       mode      rare_inmat (Other modes are not available at the moment. Can be any string.)\n");
-	printf("       input     path to a .csv file                   (required)\n");
-	printf("       output    path for the ouput                    (required)\n");
-	printf("       depth     rarefaction depth                     (default: 0.95 min colsum)\n");
-	printf("       repeats   number of times to compute diversity  (default: 1)\n");
-	printf("       write     number of files to write              (default: same as repeats)\n");
-	printf("       threads   number of threads to use in parallel  (default: 1)\n");
-	printf("\n");
+	printf("    Rarefy with most memory and least amount of IO:\n");
+	printf("        rtk -i table.csv -o outputdir/prefix. -m memory -ns\n");
 
 
 	std::exit(2);
 }
+
+
+
+
+options::options(int argc, char** argv){
+/*	RefTaxFile(""), blastres(""), outF(""), input_format("bl8"),
+	BLfilter(true), calcHighMats(false), hitRD(false), isReads(false),
+	annotateAll(false), nativeSlVdb(false),
+	numThr(1), taxDepth(defDep), LCAfract(0.9f), idThr(defDep,0),
+	blFiles(0), refDBs(0), Taxlvls(defDep)*/
+
+	bool hasErr = false;
+
+
+	//bool newIDthrs = false; string newIDthStr("");
+	for (int i = 1; i < argc; i++)
+	{
+		if (!strcmp(argv[i], "-i"))
+			input = argv[++i];
+		else if (!strcmp(argv[i], "-o"))
+			output = argv[++i];
+		else if (!strcmp(argv[i], "-m"))
+			mode = argv[++i];
+		else if (!strcmp(argv[i], "-d"))
+			depth = atoi(argv[++i]);
+		else if (!strcmp(argv[i], "-r"))
+			repeats = atoi(argv[++i]);
+		else if (!strcmp(argv[i], "-w"))
+			write = atoi(argv[++i]);
+		else if (!strcmp(argv[i], "-t"))
+			threads = atoi(argv[++i]);
+		else if (!strcmp(argv[i], "-ns"))   // no swap
+			writeSwap = false;
+		else if (!strcmp(argv[i], "-v"))
+			verbose = true;
+		else if (!strcmp(argv[i], "-h"))
+			helpMsg();
+	}
+
+	// sanity checks
+	// we need input
+	if(input == ""){
+		cerr << "A input must be given\n";
+		hasErr = true;
+	}
+	if(mode == ""){
+		cerr << "A mode must be specified\n";
+		hasErr = true;
+	}
+
+	if (hasErr) {
+		cerr << "Use \"rtk -h\" to get full help.\n";
+		 exit(5);
+	}
+
+
+	stateVersion();
+	// print run mode:
+	cout << "------------------------------------ "  << std::endl;
+	cout << "Run information:" << std::endl;
+	cout << "input file:     " << input  << std::endl;
+	cout << "output file:    " << output  << std::endl;
+	cout << "mode:           " << mode  << std::endl;
+	cout << "depth:          " << depth  << std::endl;
+	//cout << "mode:           " << mode  << std::endl;
+	cout << std::endl;
+
+}
+
+
 
 /*
 
@@ -417,12 +472,23 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 
 int main(int argc, char* argv[])
 {
+	options* opts = new options(argc,argv);
 
-	if (argc < 3) {
-		helpMsg();
-	}
-	stateVersion();
+	string inF	 				= opts->input;
+	string outF 				= opts->output;
+	string mode 				= opts->mode;
+	bool storeBinary 		= opts->writeSwap;
+	uint rareDep				= opts->depth;
+	uint repeats 				= opts->repeats;
+	uint numThr 				= opts->threads;
+	uint writeFiles     = opts->write;
+	bool verbose        = opts->verbose;
+	string arg4         = std::to_string(rareDep);
+	vector < vector < string > > tmpMatFiles (writeFiles );
 
+
+
+	/*
 	long rareDep = 1000;	int repeats (1);
 	//bool splitMode(false),mergeMode(false),sumUpMode(false);
 	string inF = argv[2];
@@ -460,10 +526,10 @@ int main(int argc, char* argv[])
 	vector < vector < string > > tmpMatFiles (writeFiles );
 	if (argc > 8){
 		storeBinary = atoi(argv[8]);
-	}
+	}*/
 
 	// start the modes
-	if (argc>3){
+//	if (argc>3){
 		if (mode == "splitMat") {
 			vector<string> empt;
 			Matrix* Mo = new Matrix(inF, outF, arg4, empt, false);
@@ -472,7 +538,7 @@ int main(int argc, char* argv[])
 			std::exit(0);
 		//}else if (mode == "rare_lowMem") {
 		//	rareLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
-		}else if (mode == "rare_lowMem") {
+	}else if (mode == "swap") {
 			rareExtremLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr, storeBinary);
 			std::exit(0);
 		}	else if (mode == "correl2"){
@@ -525,13 +591,13 @@ int main(int argc, char* argv[])
 		else if (mode == "geneMat"){
 			cout << "Gene clustering matrix creation\n";
 			if (argc < 5) {cerr << "Needs at least 4 arguments\n"; std::exit(0);}
-			ClStr2Mat* cl = new ClStr2Mat(inF,outF,arg4,argv[5]);
-			delete cl;
+			//ClStr2Mat* cl = new ClStr2Mat(inF,outF,arg4,argv[5]);
+			//delete cl;
 			std::exit(0);
 		} else {
 			helpMsg();
 		}
-	}
+//	}
 
 
 
@@ -543,7 +609,7 @@ int main(int argc, char* argv[])
 	//testing max mem
 	//int maxSiz = 1;if (verbose){		for(std::vector<char>::size_type sz = 1;   ;  sz *= 2)		{			break;			std::cerr << "attempting sz = " << sz << '\n';			std::vector<unsigned short> v(sz);		}		//cout<<"Max vec size: "<<maxSiz<<endl;	}
 
-	if (mode == "rare_inmat"){
+	if (mode == "memory"){
 		Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
 		vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		cout << "Using " << numThr << " ";
