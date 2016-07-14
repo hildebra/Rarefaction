@@ -630,25 +630,6 @@ void reassembleTmpMat(vector<string> inF, vector< string > rowNames, vector< str
 		}
 		j = j + bj;
 
-		/*
-		// write from buffer:
-		for(uint i = 0; i < inFs.size(); i++){
-
-		}
-
-		for(uint i = 0; i < inFs.size(); i++){
-				uint value;
-				inFs[i]->open(inF[i].c_str(), std::ios::in | std::ios::binary);
-
-				long int offset = j * sizeof(value);
-				//inFs[i]->seekg(offset, ios_base::beg );
-
-				inFs[i]->read(reinterpret_cast<char*>(&value), sizeof(value));
-				//inFs[i]->close();
-				out << '\t' << value;
-		}
-		out << '\n';
-		j++; */
 	}
 	out.close();
 
