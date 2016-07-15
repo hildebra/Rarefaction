@@ -1,5 +1,5 @@
 useDynLib(rtk)
-export(rare)
+export(rtk)
 export(plot.rarefaction)
 export(collectors.curve)
 exportClass(rarefaction)

@@ -41,7 +41,7 @@ Rarefaction curves can be fittet to either the arrhenius-equation, the michaelis
 }
 
 
-\seealso{\code{\link{rare}}, \code{\link{collectors.curve}}}
+\seealso{\code{\link{rtk}}, \code{\link{collectors.curve}}}
 
 \author{Falk Hildebrand, Paul Saary}
 
@@ -52,9 +52,9 @@ data            <- matrix(sample(x = c(rep(0, 1500),rep(1:10, 500),1:1000),size 
 # find the column with the lowest aboundance
 samplesize      <- min(colSums(data))
 # rarefy the dataset, so each column contains the same number of samples
-d1  <- rare(input = data, depth = samplesize)
+d1  <- rtk(input = data, depth = samplesize)
 # rarefy to different depths between 1 and samplesize
-d2  <- rare(input = data, depth = round(seq(1, samplesize, length.out = 200)))
+d2  <- rtk(input = data, depth = round(seq(1, samplesize, length.out = 200)))
 
 # just the richness of all three samples as boxplot
 plot(d1, div = "richness")

@@ -54,9 +54,9 @@ IntegerMatrix matrix2Mat(std::vector<map<uint, uint>>& dfMat,
       for(int i = 0; i < NM.ncol(); i++){
         auto fnd = dfMat[j].find(i);
         if(fnd != dfMat[j].end()){
-          NM(i,j) = fnd->second;
+          NM(j,i) = fnd->second;
         }else{
-          NM(i,j) = 0;
+          NM(j,i) = 0;
         }
       }
     }

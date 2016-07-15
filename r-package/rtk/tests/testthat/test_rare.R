@@ -8,8 +8,8 @@ test_that("rare works on columns and rows", {
   a     <- rep(min(colSums(data)), ncol(data))
   b     <- rep(min(rowSums(data)), nrow(data))
 
-  expect_equal(colSums(rare(data, depth= min(a), ReturnMatrix = 1, margin = 2, verbose = F)$raremat[[1]]), a)
-  expect_equal(rowSums(rare(data, depth= min(b), ReturnMatrix = 1, margin = 1, verbose = F)$raremat[[1]]), b)
+  expect_equal(colSums(rtk(data, depth= min(a), ReturnMatrix = 1, margin = 2, verbose = F)$raremat[[1]]), a)
+  expect_equal(rowSums(rtk(data, depth= min(b), ReturnMatrix = 1, margin = 1, verbose = F)$raremat[[1]]), b)
   #expect_equal(length("abc"), 3)
 })
 
@@ -20,11 +20,11 @@ test_that("rare has the right names", {
   rnames <- paste(rep("TestRowNames"), 1:nrow(data))
   colnames(data) <- cnames
   rownames(data) <- rnames
-  expect_equal(colnames(rare(data, depth=min(colSums(data)), ReturnMatrix = 1, margin = 2, verbose=F)$raremat[[1]]), cnames)
-  expect_equal(rownames(rare(data, depth=min(colSums(data)), ReturnMatrix = 1, margin = 2, verbose=F)$raremat[[1]]), rnames)
+  expect_equal(colnames(rtk(data, depth=min(colSums(data)), ReturnMatrix = 1, margin = 2, verbose=F)$raremat[[1]]), cnames)
+  expect_equal(rownames(rtk(data, depth=min(colSums(data)), ReturnMatrix = 1, margin = 2, verbose=F)$raremat[[1]]), rnames)
 
-  expect_equal(colnames(rare(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 1, verbose=F)$raremat[[1]]), cnames)
-  expect_equal(rownames(rare(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 1, verbose=F)$raremat[[1]]), rnames)
+  expect_equal(colnames(rtk(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 1, verbose=F)$raremat[[1]]), cnames)
+  expect_equal(rownames(rtk(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 1, verbose=F)$raremat[[1]]), rnames)
 })
 
 
@@ -32,7 +32,7 @@ test_that("zeros are reproduced", {
   data <- matrix(c(0,10,20,30,0, 0,0,10,20,30, 10,20,0,0,30, 10,20,30,0,0, 10,0,20,0,30, 10, 0,0,20,30), 5)
   nullpos <- which(data==0,arr.ind = T)
   samplesize <- min(colSums(data))
-  data.r <- rare(data, depth=samplesize, ReturnMatrix = 1, margin = 2, verbose=F)$raremat[[1]]
+  data.r <- rtk(data, depth=samplesize, ReturnMatrix = 1, margin = 2, verbose=F)$raremat[[1]]
   nullpos.after <- which(data==0,arr.ind = T)
   # equal because we rarefy every column to its max, sow e actually do not even lose values!
   # the tables should also be the same
