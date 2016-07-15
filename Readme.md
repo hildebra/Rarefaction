@@ -14,7 +14,7 @@ rtk was tested to compile successfully on windows (version? with compiler XY), G
 **Compile in UNIX**
 ```bash
 git clone https://github.com/hildebra/Rarefaction
-cd Rarefaction/Rare
+cd Rarefaction/rtk
 make
 ```
 
@@ -22,19 +22,23 @@ make
 Two modes for rarefaction of a count table are available
 
 ```bash
-./rtk rare_inmat input.csv output.file depth.int repeats NoOfMatrices threads tmpStore
-
-./rtk rare_lowMem input.csv output.file depth.int repeats NoOfMatrices threads tmpStore
+rtk  -i <input.csv> -m <mode> -o <output> [options]
 ```
 
 ### Options:
-- **input.csv** (`required`)
-- **output.file**: In mode `rare_inmat` the output file will be placed here. In mode `rare_lowMem` temporary files may also be stored at this location. (`required`)
-- **depth.int**: Depth to rarefy to. If set to 0 a rarefaction depth of 0.95 times the smallest column sum will be used. (`default 0.95 *  min. colsum`)
-- **repeats**: Number of times diversity measures for all samples should be computed. (`default 10`)
-- **NoOfMatrices**: Number of rarefied tables, that should be written to disk. Can be 0 or any `integer <= repeats`. (`default: 0`)
-- **threads**: If possible the software can use multiple threads. (`default 1`)
-- **tmpStore**: If set to 1 temporary files for the creation of the rarefaction tables (see `NoOfMatrices`) are stored on disk instead of in memory. This can reduce memory consumption drastically if multiple or large rarefaction tables should be written. (`default 1`)
+```
+-i      path to an .csv file to rarefy
+-o      path to a output directory
+-m      mode can be either swap or memory.
+        Swap mode creates temporary files but uses less memory.
+        The speed of both modes is comparable.
+-d      Depth to rarefy to. Default is 0.95 times the minimal column sum.
+-r      Number of times to create diversity measures. Default is 10.
+-w      Number of rarefied tables to write.
+-t      Number of threads to use. Default: 1
+-ns     If set, no temporary files will be used when writing rarefaction tables to disk (no swap).
+
+```
 
 ### Output files:
 
@@ -42,9 +46,9 @@ Two modes for rarefaction of a count table are available
 
 This file contains the median diversity measures for all Samples in a tab separated format.
 
-**[samplename]_alpha_div.tsv**
+**[samplename]_richness|eveness|...|.tsv**
 
-For each sample the diversity measures of all rarefaction attemts are written to an individual file. These contain for each diversity measurements multiple values. The median of which can be found in the previously mentioned file.
+Each diversity measures is exported as a table containing all repeats for all sample.
 
 **rarefied_to_X_n_Y.tsv**
 
@@ -55,9 +59,9 @@ If `NoOfMatrices > 0` each rarefied matrix will be saved in the output directory
 This file contains the column sums of all samples. It can be used to estimate well suited rarefaction depth.
 
 ### Temporary files
-If the mode `rare_lowMem` is used, temporary files will be produced to reduce RAM usage. Thus the input matrix will be first split into its columns and each column will be written into a single file. Those file will then be loaded again and deleted after the software is finished using them.
+If the mode `memory` is used, temporary files will be produced to reduce RAM usage. Thus the input matrix will be first split into its columns and each column will be written into a single file. Those file will then be loaded again and deleted after the software is finished using them.
 
-Temporary files will also be created if `NoOfMatrices > 0` and `tmpStore = 1 (default)`. In this case the vectors of the rarefied tables will be stored on disk as binary before merging them to tables.
+Temporary files will also be created if `-w > 0`. In this case the vectors of the rarefied tables will be stored on disk as binary before merging them to tables. Thi can be prevented by using the `-ns` flag.
 
 In both cases RAM usage is drastically reduced and the load on the local drive is substantially higher.
 
@@ -102,8 +106,7 @@ echo -e "OTU 2\t  0        \t  57       \t  22"       >> $FILE
 echo -e "OTU 3\t  17       \t  0        \t  45"       >> $FILE
 echo -e "OTU 4\t  5        \t  83       \t  0"        >> $FILE
 
-./rtk rare_lowMem $FILE test. 0 10 1 1 1
-
+./rtk -i $FILE -o test. -mode memory
 ls -lh test.*
 ```
 
