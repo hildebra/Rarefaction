@@ -4,6 +4,8 @@ A rarefaction software written in C++11 to rarefy large high count datasets quic
 # Installation
 To use rtk you can download the binary files under https://github.com/hildebra/Rarefaction/releases or compile from source.
 
+Fo the R package please see
+
 ## Compile from source
 To build this software you will need to have a compiler for C++11 on your system. On a GNU/Linux system you usuallu have to install developer tools to do that. For Ubuntu this is explained here: https://help.ubuntu.com/community/InstallingCompilers
 
@@ -46,7 +48,7 @@ rtk  -i <input.csv> -m <mode> -o <output> [options]
 
 This file contains the median diversity measures for all Samples in a tab separated format.
 
-**[samplename]_richness|eveness|...|.tsv**
+**richness|eveness|...|.tsv**
 
 Each diversity measures is exported as a table containing all repeats for all sample.
 

@@ -81,15 +81,15 @@ void helpMsg(){
 	stateVersion();
 	printf("\n");
 	printf("USAGE\n");
-	printf("    rtk  -i <input.csv> -m <mode> -o <output> [options] \n");
+	printf("    rtk <mode> -i <input.csv> -o <output> [options] \n");
 	printf("\n");
 	printf("OPTIONS\n");
 
-	printf("    -i      path to an .csv file to rarefy\n");
-	printf("    -o      path to a output directory\n");
-	printf("    -m      mode can be either swap or memory.\n");
+	printf("            For rarefaction: mode can be either swap or memory.\n");
 	printf("            Swap mode creates temporary files but uses less memory. \n");
 	printf("            The speed of both modes is comparable.\n");
+	printf("    -i      path to an .csv file to rarefy\n");
+	printf("    -o      path to a output directory\n");
 	printf("    -d      Depth to rarefy to. Default is 0.95 times the minimal column sum.\n");
 	printf("    -r      Number of times to create diversity measures. Default is 10.\n");
 	printf("    -w      Number of rarefied tables to write.\n");
@@ -127,8 +127,8 @@ options::options(int argc, char** argv){
 			input = argv[++i];
 		else if (!strcmp(argv[i], "-o"))
 			output = argv[++i];
-		else if (!strcmp(argv[i], "-m"))
-			mode = argv[++i];
+		///else if (!strcmp(argv[i], "-m"))
+		//	mode = argv[++i];
 		else if (!strcmp(argv[i], "-d"))
 			depth = atoi(argv[++i]);
 		else if (!strcmp(argv[i], "-r"))
@@ -143,16 +143,14 @@ options::options(int argc, char** argv){
 			verbose = true;
 		else if (!strcmp(argv[i], "-h"))
 			helpMsg();
+
+
 	}
 
 	// sanity checks
 	// we need input
 	if(input == ""){
 		cerr << "A input must be given\n";
-		hasErr = true;
-	}
-	if(mode == ""){
-		cerr << "A mode must be specified\n";
 		hasErr = true;
 	}
 
@@ -486,7 +484,7 @@ int main(int argc, char* argv[])
 	string arg4         = std::to_string(rareDep);
 	vector < vector < string > > tmpMatFiles (writeFiles );
 
-
+	mode = argv[1];
 
 	/*
 	long rareDep = 1000;	int repeats (1);
