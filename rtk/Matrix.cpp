@@ -857,6 +857,45 @@ void Matrix::normalize() {
 	}
 	*/
 }
+void Matrix::normalize(uint depth, bool cointoss) {
+	vector<mat_fl> allSums(colIDs.size(), (mat_fl)0);
+	for (size_t smpl = 0; smpl<(colIDs.size()); smpl++) {
+		mat_fl sums(0);
+		for (size_t i = 0; i<rowIDs.size(); i++) {
+			sums += mat[smpl][i];
+		}
+		allSums[smpl] = sums;
+	}
+	if(cointoss){
+		for (size_t smpl = 0; smpl < (colIDs.size()); smpl++) {
+			for (size_t i = 0; i < rowIDs.size(); i++) {
+				if(depth < allSums[smpl]){
+					mat[smpl][i] /= (allSums[smpl]/depth);
+					int a=rand()%2;
+					if(a == 1){
+						mat[smpl][i]  = floor(mat[smpl][i] + 0.5);
+					}else{
+						mat[smpl][i]  = floor(mat[smpl][i] );
+					}
+				}else{
+					mat[smpl][i]  = 0;
+				}
+			}
+		}
+	}else{
+		for (size_t smpl = 0; smpl < (colIDs.size()); smpl++) {
+			for (size_t i = 0; i < rowIDs.size(); i++) {
+				if(depth < allSums[smpl]){
+					mat[smpl][i] /= (allSums[smpl]/depth);
+					mat[smpl][i]  = floor(mat[smpl][i]);
+				}else{
+					mat[smpl][i]  = 0;
+				}
+			}
+		}
+	}
+}
+
 
 void Matrix::transpose(){
 	// takes the matrix and transposes it

@@ -77,7 +77,7 @@ List rcpp_rarefaction(Rcpp::String input,
 						StringVector inRowNames,
 						int repeats, long depth, int NoOfMatrices,
 						bool verbose = false, unsigned int threads = 1,
-						 int margin=2, Rcpp::String tmpDir = "", bool lowmem = false)
+						 int margin=2, Rcpp::String tmpDir = "", bool lowmem = false, bool estimate = false)
 						{
 
 	// check for user interrup
@@ -105,10 +105,13 @@ List rcpp_rarefaction(Rcpp::String input,
 
   // switch to low mem if wanted
   if(lowmem == true){
-    mode = "rare_lowMem";
+    mode = "swap";
     outF = tmpDir;
   }else{
-    mode = "rare_inmat";
+    mode = "memory";
+  }
+  if(estimate == true){
+    mode = "estimate";
   }
 
 	// transpose matrix, yes or no

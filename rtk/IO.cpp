@@ -150,6 +150,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 				retCntsSampleName = divs->SampleName; // safe the sample name as well
 			}
 		}
+
 		richness = 0;
 		divs->richness.push_back(this->getRichness(cnts));
 		vector<double> three = this->calc_div(cnts, 4);
@@ -161,6 +162,58 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 		richness = 0;
 	}
 }
+
+void smplVec::estimateDiv(uint depth,  DivEsts* divs, vector<mat_fl> flcnts){
+
+	if( totSum == 0 ){
+		if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
+		return;
+	}
+
+	vector<uint> cnts(flcnts.begin(), flcnts.end());
+	richness = 0;
+	divs->richness.push_back(this->getRichness(cnts));
+	vector<double> three = this->calc_div(cnts, 4);
+	divs->shannon.push_back(three[0]);
+	divs->simpson.push_back(three[1]);
+	divs->invsimpson.push_back(three[2]);
+	divs->chao1.push_back(this->calc_chao1(cnts,1));
+	divs->eve.push_back(this->calc_eveness(cnts));
+	richness = 0;
+}
+
+void smplVec::estimateDiv(uint depth,  DivEsts* divs, vector<mat_fl> flcnts,
+													std::vector<map<uint, uint>> & RareSample,
+													string& retCntsSampleName, string& skippedSample){
+
+	if (totSum == 0){
+		skippedSample = divs->SampleName;
+		cout<<"skipped sample, because rowSums < depth \n";
+		return;
+	}
+	vector<uint> cnts(flcnts.begin(), flcnts.end());
+
+	// fill the cnts
+	retCntsSampleName = divs->SampleName;
+	map<uint, uint> cntsMap;
+	for(uint i = 0; i < cnts.size(); i++){
+		if(cnts[i] != 0){
+			cntsMap[i]	= cnts[i];
+		}
+	}
+	RareSample.push_back(cntsMap);
+
+	richness = 0;
+	divs->richness.push_back(this->getRichness(cnts));
+	vector<double> three = this->calc_div(cnts, 4);
+	divs->shannon.push_back(three[0]);
+	divs->simpson.push_back(three[1]);
+	divs->invsimpson.push_back(three[2]);
+	divs->chao1.push_back(this->calc_chao1(cnts,1));
+	divs->eve.push_back(this->calc_eveness(cnts));
+	richness = 0;
+}
+
 
 long smplVec::getRichness(const vector<unsigned int>& cnts){
 	for (size_t i = 0; i<cnts.size(); i++){

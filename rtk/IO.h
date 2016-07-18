@@ -97,6 +97,12 @@ public:
 	//int maxSiz(){return vector<unsigned short>::max_size();}
 	vector < string > getRowNames(){ return(IDs); }
 
+	// scale vector
+	void estimateDiv(uint, DivEsts*, vector<mat_fl>);
+	void estimateDiv(uint depth,  DivEsts* , vector<mat_fl> ,
+														std::vector<map<uint, uint>> & ,
+														string& , string& );
+
 private:
 	int binarySearch(vector<float>,const float x);
 	//void shuffle();

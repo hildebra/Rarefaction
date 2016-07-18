@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // rcpp_rarefaction
-List rcpp_rarefaction(Rcpp::String input, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, long depth, int NoOfMatrices, bool verbose, unsigned int threads, int margin, Rcpp::String tmpDir, bool lowmem);
-RcppExport SEXP rtk_rcpp_rarefaction(SEXP inputSEXP, SEXP rMatrixSEXP, SEXP inColNamesSEXP, SEXP inRowNamesSEXP, SEXP repeatsSEXP, SEXP depthSEXP, SEXP NoOfMatricesSEXP, SEXP verboseSEXP, SEXP threadsSEXP, SEXP marginSEXP, SEXP tmpDirSEXP, SEXP lowmemSEXP) {
+List rcpp_rarefaction(Rcpp::String input, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, long depth, int NoOfMatrices, bool verbose, unsigned int threads, int margin, Rcpp::String tmpDir, bool lowmem, bool estimate);
+RcppExport SEXP rtk_rcpp_rarefaction(SEXP inputSEXP, SEXP rMatrixSEXP, SEXP inColNamesSEXP, SEXP inRowNamesSEXP, SEXP repeatsSEXP, SEXP depthSEXP, SEXP NoOfMatricesSEXP, SEXP verboseSEXP, SEXP threadsSEXP, SEXP marginSEXP, SEXP tmpDirSEXP, SEXP lowmemSEXP, SEXP estimateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -23,7 +23,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type margin(marginSEXP);
     Rcpp::traits::input_parameter< Rcpp::String >::type tmpDir(tmpDirSEXP);
     Rcpp::traits::input_parameter< bool >::type lowmem(lowmemSEXP);
-    __result = Rcpp::wrap(rcpp_rarefaction(input, rMatrix, inColNames, inRowNames, repeats, depth, NoOfMatrices, verbose, threads, margin, tmpDir, lowmem));
+    Rcpp::traits::input_parameter< bool >::type estimate(estimateSEXP);
+    __result = Rcpp::wrap(rcpp_rarefaction(input, rMatrix, inColNames, inRowNames, repeats, depth, NoOfMatrices, verbose, threads, margin, tmpDir, lowmem, estimate));
     return __result;
 END_RCPP
 }

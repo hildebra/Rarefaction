@@ -8,7 +8,7 @@ rare.status <- function(msg, verbose=TRUE){
   }
 }
 # this is the rarefy function
-rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, verbose = FALSE, threads = 1, tmpdir = NULL ){
+rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, verbose = FALSE, threads = 1, tmpdir = NULL, estimate = FALSE ){
 
 
 	if(repeats < ReturnMatrix ){
@@ -55,7 +55,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
 						res <- rcpp_rarefaction("", input, colnames(input),
 								rownames(input), repeats, d,
 								ReturnMatrix, verbose, threads,
-								margin, "NULL", FALSE)
+								margin, "NULL", FALSE, estimate)
 
 						# remove col and/or row names, as we've added them for
 						# the Cpp software to work well
@@ -96,7 +96,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
 	                        repeats, d,
 							ReturnMatrix,
 	                        verbose, threads,
-							margin, tmpdir, uselowmem)
+							margin, tmpdir, uselowmem, estimate)
 							return(res)
 						})
   }else{

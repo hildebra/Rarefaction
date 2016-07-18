@@ -11,6 +11,27 @@
 const char* rar_ver="0.64 alpha";
 
 
+rareStruct* calcDivEst(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int writeFiles){
+	smplVec* cur = Mo->getSampleVec(i);
+	string curS = Mo->getSampleName(i);
+	div->SampleName = curS;
+	std::vector<vector<uint>> cnts;
+	vector< map< uint, uint>> cntsMap;
+	string cntsName;
+	string skippedNames;
+	vector<mat_fl> flcnts = Mo->getColumn(i);
+	cur->estimateDiv(rareDep, div, flcnts);
+	//delete cur;
+	//return div;
+	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
+	tmpRS->div 							= div;
+//	tmpRS->cnts 						= cntsMap;
+//	tmpRS->cntsName 				= cntsName;
+//	tmpRS->skippedNames			= skippedNames;
+	delete cur;
+	return tmpRS;
+}
+
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
 	smplVec* cur = Mo->getSampleVec(i);
 	string curS = Mo->getSampleName(i);
@@ -464,7 +485,33 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 }
 
 
+void estimateMode(string inF, string outF, uint depth){
+	int writeFiles = 0;
 
+	Matrix* Mo = new Matrix(inF, "");
+
+	vector<DivEsts*> divvs(Mo->smplNum(),NULL);
+
+	Mo->normalize(depth, false);
+
+	uint i = 0; uint done = 0;
+	while ( i < Mo->smplNum()){
+
+		rareStruct* tmpRS;
+		DivEsts * div 	= new DivEsts();
+		tmpRS = calcDivEst(i, Mo, div, depth, "",  writeFiles);
+		divvs[i] = tmpRS->div;
+		i++;
+	}
+	//Mo->estimateDiversity(Depth);
+
+	printDivMat(outF , divvs, true);
+  for (size_t i = 0; i < divvs.size(); i++){
+    delete divvs[i];
+  }
+	Mo->writeMatrix(outF);
+	delete Mo;
+}
 
 
 
@@ -569,6 +616,9 @@ int main(int argc, char* argv[])
 			Mo->writeMatrix(outF);
 			delete Mo;
 			std::exit(0);
+		} else if (mode == "estimate") {
+			estimateMode(inF, outF, rareDep);
+			std::exit(0);
 		} else if (mode == "help" || mode == "-help" || mode == "-h" || mode == "--help"){
 			helpMsg();
 		} else if (mode == "lineExtr"){
@@ -592,8 +642,6 @@ int main(int argc, char* argv[])
 			//ClStr2Mat* cl = new ClStr2Mat(inF,outF,arg4,argv[5]);
 			//delete cl;
 			std::exit(0);
-		} else {
-			helpMsg();
 		}
 //	}
 

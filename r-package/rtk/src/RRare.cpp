@@ -19,6 +19,26 @@ struct rareStruct{
 	string skippedNames;
 };
 
+rareStruct* calcDivEst(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int writeFiles){
+	smplVec* cur = Mo->getSampleVec(i);
+	string curS = Mo->getSampleName(i);
+	div->SampleName = curS;
+	std::vector<map<uint, uint>> cnts;
+	string cntsName;
+	string skippedNames;
+	vector<mat_fl> flcnts = Mo->getColumn(i);
+	cur->estimateDiv(rareDep, div, flcnts,  cnts, cntsName, skippedNames);
+	//delete cur;
+	//return div;
+	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
+	tmpRS->div 							= div;
+	tmpRS->cnts 						= cnts;
+	tmpRS->cntsName 				= cntsName;
+	tmpRS->skippedNames			= skippedNames;
+	delete cur;
+	return tmpRS;
+}
+
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
 	int repeats, int writeFiles,
 	int NoOfMatrices){
@@ -89,7 +109,7 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	vector<DivEsts*> *  divvs,
 	std::vector<vector<map<uint, uint>>>& MaRare,
 	std::vector<string>& cntsNames,
-	std::vector<string>& skippedNamess,
+	std::vector<string>& skippedNames,
 	std::vector<string>& rowNames, int numThr, bool verbose ){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
@@ -205,6 +225,94 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 
 
 
+int estimateMode(string inF, string outF, int NoOfMatrices,
+									uint rareDep, vector<DivEsts*> *  divvs ,
+									std::vector<vector<map<uint, uint>>> &retCnts,
+									vector<vector<mat_fl>>  rmatrix,
+									std::vector<string>& cntsNames,
+									std::vector<string>& skippedNames,
+									vector< string > rnames,
+									vector< string > cnames,
+									bool transpose,
+									uint numThr, bool verbose){
+
+	int writeFiles = 0;
+
+
+	Matrix* Mo;
+	if(inF != ""){
+			Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
+	}else{
+		Mo = new Matrix(); // empty matrix for filling later
+		int nr = rmatrix.size();
+		for(int i=0; i < nr; i++){
+			Mo->addRow(rmatrix[i]);
+		}
+		Mo->setSampleNames(cnames);
+		Mo->setRowNames(rnames);
+	}
+
+	if(transpose == true){
+		if(verbose == true){
+			cout << "Will now transpose the matrix\n";
+		}
+		Mo->transpose();
+		if(verbose == true){
+			cout << "Done transposing\n";
+		}
+	}
+
+	if(rareDep == 0){
+		// rarefy to smallest colSum
+		rareDep = round(0.95 * Mo->getMinColSum());
+		if(rareDep == 0){
+			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+			return 0;
+		}
+	}
+
+	//Matrix* Mo = new Matrix(inF, "");
+
+	//vector<DivEsts*> divvs(Mo->smplNum(),NULL);
+
+	Mo->normalize(rareDep, false);
+
+	uint i = 0; uint done = 0;
+	while ( i < Mo->smplNum()){
+
+		rareStruct* tmpRS;
+		DivEsts * div 	= new DivEsts();
+		tmpRS = calcDivEst(i, Mo, div, rareDep, "", writeFiles);
+
+		divvs->push_back(tmpRS->div);
+
+		if(NoOfMatrices > 0){
+			uint repI = 0;
+			while(repI < tmpRS->cnts.size()){
+				cout << "tmpRs size " << tmpRS->cnts.size() << "repI  " <<repI << std::endl;
+				retCnts[repI].push_back(tmpRS->cnts[repI]);
+				repI++;
+			}
+			// save sample name for naming purposes
+			if(tmpRS->cntsName.size() != 0){
+				cntsNames.push_back(tmpRS->cntsName);
+			}
+		}
+		// skippedNames
+		if(tmpRS->skippedNames.size() > 0){
+			skippedNames.push_back(tmpRS->skippedNames);
+		}
+
+		i++;
+	}
+	//Mo->estimateDiversity(Depth);
+
+	//printDivMat(outF , divvs, true);
+	cout << "los weiter";
+	//Mo->writeMatrix(outF);
+	delete Mo;
+}
+
 
 
 
@@ -225,7 +333,7 @@ int rarefyMain(string inF, string outF, string mode,
 	vector<DivEsts*> *  divvs,
 	std::vector<vector<map<uint, uint>>> &retCnts,
 	std::vector<string>& cntsNames,
-	std::vector<string>& skippedNamess,
+	std::vector<string>& skippedNames,
 	std::vector<string>& rowNames, int NoOfMatrices,
 	bool transpose)
 {
@@ -235,7 +343,7 @@ int rarefyMain(string inF, string outF, string mode,
 	MyRNG rng;
 
 
-	if (mode == "rare_inmat"){
+	if (mode == "memory"){
 		Matrix* Mo;
 		if(inF != ""){
 			  Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
@@ -326,7 +434,7 @@ int rarefyMain(string inF, string outF, string mode,
 				}
 				// skippedNames
 				if(CDrAsync->skippedNames.size() > 0){
-					skippedNamess.push_back(CDrAsync->skippedNames);
+					skippedNames.push_back(CDrAsync->skippedNames);
 				}
 				delete CDrAsync;
 			}
@@ -346,7 +454,7 @@ int rarefyMain(string inF, string outF, string mode,
 			}
 			// skippedNames
 			if(tmpCDr->skippedNames.size() > 0){
-				skippedNamess.push_back(tmpCDr->skippedNames);
+				skippedNames.push_back(tmpCDr->skippedNames);
 			}
 
 
@@ -358,9 +466,20 @@ int rarefyMain(string inF, string outF, string mode,
 			done = i;
 		}
 		delete Mo;
-	}else if(mode == "rare_lowMem"){
+	}else if(mode == "swap"){
 		rareLowMem(inF, outF, NoOfMatrices,  rareDep,  repeats,
-		divvs, retCnts, cntsNames, skippedNamess, rowNames, numThr, verbose);
+		divvs, retCnts, cntsNames, skippedNames, rowNames, numThr, verbose);
+	}else if(mode == "estimate"){
+
+
+		estimateMode(inF, outF, NoOfMatrices, rareDep, divvs ,
+			retCnts,  rmatrix,cntsNames,
+			skippedNames, rnames, cnames,
+			transpose, numThr,  verbose);
+
+
+		//estimateMode(inF, outF, rareDep, divvs, retCnts, );
+
 	}
 
 

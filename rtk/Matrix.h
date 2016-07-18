@@ -150,11 +150,13 @@ public:
 	void splitOnHDD(string out_seed);
 	void writeSums(string);
 	void normalize();
+	void normalize(uint, bool cointoss);
 	void transpose();
 	void writeMatrix(const string ofile,bool onlyFilled=false);
 	size_t smplNum(){ return colIDs.size(); }
 	smplVec* getSampleVec(uint which){ return new smplVec(mat[which],1); }
 	string getSampleName(uint which){ return colIDs[which]; }
+	vector<mat_fl> getColumn(int i){return(mat[i]);}
 
 	int SmplNum() { return (int)mat.size(); }
 	int FtNum() {
