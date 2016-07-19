@@ -308,7 +308,6 @@ int estimateMode(string inF, string outF, int NoOfMatrices,
 	//Mo->estimateDiversity(Depth);
 
 	//printDivMat(outF , divvs, true);
-	cout << "los weiter";
 	//Mo->writeMatrix(outF);
 	delete Mo;
 }

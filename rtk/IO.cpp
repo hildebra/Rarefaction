@@ -188,7 +188,7 @@ void smplVec::estimateDiv(uint depth,  DivEsts* divs, vector<mat_fl> flcnts,
 
 	if (totSum == 0){
 		skippedSample = divs->SampleName;
-		cout<<"skipped sample, because rowSums < depth \n";
+		cout<<"skipped sample, because rowSums < depth: eg totSum = 0\n";
 		return;
 	}
 	vector<uint> cnts(flcnts.begin(), flcnts.end());
