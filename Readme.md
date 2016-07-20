@@ -24,16 +24,17 @@ make
 Two modes for rarefaction of a count table are available
 
 ```bash
-rtk  -i <input.csv> -m <mode> -o <output> [options]
+rtk  <mode> -i <input.csv> -o <output> [options]
 ```
 
 ### Options:
 ```
--i      path to an .csv file to rarefy
--o      path to a output directory
--m      mode can be either swap or memory.
+<mode>  mode can be either swap or memory.
         Swap mode creates temporary files but uses less memory.
         The speed of both modes is comparable.
+
+-i      path to an .csv file to rarefy
+-o      path to a output directory
 -d      Depth to rarefy to. Default is 0.95 times the minimal column sum.
 -r      Number of times to create diversity measures. Default is 10.
 -w      Number of rarefied tables to write.
@@ -108,7 +109,7 @@ echo -e "OTU 2\t  0        \t  57       \t  22"       >> $FILE
 echo -e "OTU 3\t  17       \t  0        \t  45"       >> $FILE
 echo -e "OTU 4\t  5        \t  83       \t  0"        >> $FILE
 
-./rtk -i $FILE -o test. -mode memory
+./rtk memory -i $FILE -o test. 
 ls -lh test.*
 ```
 
