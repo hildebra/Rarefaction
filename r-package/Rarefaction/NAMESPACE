@@ -1,6 +1,0 @@
-useDynLib(rtk)
-export(rare)
-export(plot.rarefaction)
-export(collectors.curve)
-exportClass(rarefaction)
-importFrom(Rcpp, evalCpp)

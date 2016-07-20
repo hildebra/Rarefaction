@@ -85,7 +85,7 @@ void helpMsg(){
 	printf("\n");
 	printf("OPTIONS\n");
 
-	printf("            For rarefaction: mode can be either swap or memory.\n");
+	printf("<mode>      For rarefaction: mode can be either swap or memory.\n");
 	printf("            Swap mode creates temporary files but uses less memory. \n");
 	printf("            The speed of both modes is comparable.\n");
 	printf("    -i      path to an .csv file to rarefy\n");
@@ -98,10 +98,10 @@ void helpMsg(){
 	printf("\n");
 	printf("EXAMPLE\n");
 	printf("    Rarefy a table to 1000 counts per sample with two threads. Create one table:\n");
-	printf("        rtk -i table.csv -o outputdir/prefix. -m swap -d 1000 -r 10 -w 1 -t 2\n");
+	printf("        rtk swap -i table.csv -o outputdir/prefix. -d 1000 -r 10 -w 1 -t 2\n");
 	printf("\n");
 	printf("    Rarefy with most memory and least amount of IO:\n");
-	printf("        rtk -i table.csv -o outputdir/prefix. -m memory -ns\n");
+	printf("        rtk memory -i table.csv -o outputdir/prefix. -ns\n");
 
 
 	std::exit(2);
