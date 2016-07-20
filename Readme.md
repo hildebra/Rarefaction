@@ -4,7 +4,7 @@ A rarefaction software written in C++11 to rarefy large high count datasets quic
 # Installation
 To use rtk you can download the binary files under https://github.com/hildebra/Rarefaction/releases or compile from source.
 
-For the R package please see the [readme of rtk](r-package/rtk/Readme.md)
+For the R package please see the [readme of rtk](r-package/rtk/README.md).
 
 ## Compile from source
 To build this software you will need to have a compiler for C++11 on your system. On a GNU/Linux system you usuallu have to install developer tools to do that. For Ubuntu this is explained here: https://help.ubuntu.com/community/InstallingCompilers
