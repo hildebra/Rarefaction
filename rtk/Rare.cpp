@@ -187,7 +187,7 @@ options::options(int argc, char** argv){
 	cout << "Run information:" << std::endl;
 	cout << "input file:     " << input  << std::endl;
 	cout << "output file:    " << output  << std::endl;
-	cout << "mode:           " << mode  << std::endl;
+	cout << "mode:           " << argv[1]  << std::endl;
 	cout << "depth:          " << depth  << std::endl;
 	//cout << "mode:           " << mode  << std::endl;
 	cout << std::endl;
@@ -485,31 +485,67 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 }
 
 
-void estimateMode(string inF, string outF, uint depth){
-	int writeFiles = 0;
+void estimateMode(string inF, string outF, uint rareDep, uint numThr, uint writeFiles){
 
 	Matrix* Mo = new Matrix(inF, "");
 
 	vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 
-	Mo->normalize(depth, false);
 
+
+	if(rareDep == 0){
+		// rarefy to smallest colSum
+		rareDep = round(0.95 * Mo->getMinColSum());
+		if(rareDep == 0.0){
+			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+			exit(1);
+		}
+	}
+	Mo->normalize(rareDep, false);
+
+	std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 	uint i = 0; uint done = 0;
 	while ( i < Mo->smplNum()){
-
-		rareStruct* tmpRS;
+		cerr << "At Sample " << i+1 << " of " << Mo->smplNum() << " Samples" << std::endl;
+		uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
+		for (; i < toWhere; i++){
+			DivEsts * div = new DivEsts();
+			tt[i - done] = async(std::launch::async, calcDivEst, i, Mo, div, rareDep, "",  writeFiles);
+		}
+		//use main thread to calc one sample as well
 		DivEsts * div 	= new DivEsts();
-		tmpRS = calcDivEst(i, Mo, div, depth, "",  writeFiles);
-		divvs[i] = tmpRS->div;
-		i++;
-	}
-	//Mo->estimateDiversity(Depth);
+		rareStruct* tmpRS;
+		tmpRS 			= calcDivEst(i, Mo, div, rareDep, "",  writeFiles);
 
-	printDivMat(outF , divvs, true);
+
+		i++;
+		i = done;
+		for (; i < toWhere; i++){
+			rareStruct* tmpRS;
+			tmpRS 		= tt[i-done].get();
+			divvs[i] 		= tmpRS->div;
+			string curS 	= Mo->getSampleName(i);
+
+			delete tmpRS;
+		}
+		// main thread divv push back
+		divvs[i] 			= tmpRS->div;
+		string curS 	= Mo->getSampleName(i);
+
+		delete tmpRS;
+		i++;
+		done = i;
+	}
+
+
+	printDivMat(outF, divvs, true);
+
   for (size_t i = 0; i < divvs.size(); i++){
     delete divvs[i];
   }
-	Mo->writeMatrix(outF);
+	if(writeFiles){
+		Mo->writeMatrix(outF + "rarefied_to_" + std::to_string(rareDep) +".tsv" );
+	}
 	delete Mo;
 }
 
@@ -617,7 +653,7 @@ int main(int argc, char* argv[])
 			delete Mo;
 			std::exit(0);
 		} else if (mode == "estimate") {
-			estimateMode(inF, outF, rareDep);
+			estimateMode(inF, outF, rareDep, numThr, writeFiles);
 			std::exit(0);
 		} else if (mode == "help" || mode == "-help" || mode == "-h" || mode == "--help"){
 			helpMsg();

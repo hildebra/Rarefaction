@@ -870,12 +870,12 @@ void Matrix::normalize(uint depth, bool cointoss) {
 		for (size_t smpl = 0; smpl < (colIDs.size()); smpl++) {
 			for (size_t i = 0; i < rowIDs.size(); i++) {
 				if(depth < allSums[smpl]){
-					mat[smpl][i] /= (allSums[smpl]/depth);
+					mat[smpl][i] /= (allSums[smpl]);
 					int a=rand()%2;
 					if(a == 1){
-						mat[smpl][i]  = floor(mat[smpl][i] + 0.5);
+						mat[smpl][i]  = ceil(depth*mat[smpl][i]);
 					}else{
-						mat[smpl][i]  = floor(mat[smpl][i] );
+						mat[smpl][i]  = floor(depth*mat[smpl][i]);
 					}
 				}else{
 					mat[smpl][i]  = 0;
@@ -886,8 +886,8 @@ void Matrix::normalize(uint depth, bool cointoss) {
 		for (size_t smpl = 0; smpl < (colIDs.size()); smpl++) {
 			for (size_t i = 0; i < rowIDs.size(); i++) {
 				if(depth < allSums[smpl]){
-					mat[smpl][i] /= (allSums[smpl]/depth);
-					mat[smpl][i]  = floor(mat[smpl][i]);
+					mat[smpl][i] /= (allSums[smpl]);
+					mat[smpl][i]  = floor(depth*mat[smpl][i] + 0.5);
 				}else{
 					mat[smpl][i]  = 0;
 				}
