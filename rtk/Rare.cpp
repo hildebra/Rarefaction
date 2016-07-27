@@ -83,6 +83,8 @@ void helpMsg(){
 	printf("USAGE\n");
 	printf("    rtk <mode> -i <input.csv> -o <output> [options] \n");
 	printf("\n");
+	printf("MODE rarefaction\n");
+	printf("\n");
 	printf("OPTIONS\n");
 
 	printf("<mode>      For rarefaction: mode can be either swap or memory.\n");
@@ -102,7 +104,15 @@ void helpMsg(){
 	printf("\n");
 	printf("    Rarefy with most memory and least amount of IO:\n");
 	printf("        rtk memory -i table.csv -o outputdir/prefix. -ns\n");
+	printf("\n");
+	printf("MODE: Colsums\n");
+	printf("Reports the column sums of all columns in form of a sorted and an unsorted file.\n");
+	printf("\n");
+	printf("EXAMPLE\n");
+	printf("    Repot column sums of file 'table.csv'\n");
+	printf("        rtk colsums -i table.csv -o prefix\n");
 
+	printf("\n");
 
 	std::exit(2);
 }
@@ -420,11 +430,11 @@ int main(int argc, char* argv[])
 		} else if (mode == "rarefaction" || mode == "rare_inmat") {
 			rareDep = atoi(arg4.c_str());
 		}
-		else if (mode == "colSums" || mode == "colSum") {
+		else if (mode == "colSums" || mode == "colsums"  || mode == "colSum") {
 		 // just load and discard the matrix and report back the colsums
 		 vector<string> fileNames;
 		 Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true, false);
-		 column co = Mo->getMinColumn();
+		 column co 		= Mo->getMinColumn();
 		 vector< pair< double, string>> colsums = Mo->getColSums();
 		 Mo->writeColSums(outF);
 
@@ -437,7 +447,7 @@ int main(int argc, char* argv[])
 		 cout << "Colsums where written into the files:" << std::endl;
 		 cout << "    " << outF << "colSums.txt" << std::endl;
 		 cout << "    " << outF << "colSums_sorted.txt" << std::endl;
-		 
+
 		 delete Mo;
 		 std::exit(0);
 	 	}
