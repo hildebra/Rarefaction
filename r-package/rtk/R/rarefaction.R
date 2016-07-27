@@ -118,12 +118,72 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
 
 	if(length(depth) == 1){
 		result <- result[[1]]
-	}
+	}else{
+    names(result) <- depth
+  }
 
 	result$depths <- depth
 	result$repeats <- repeats
 	# set our class
-	class(result) <- "rarefaction";
+	class(result) <- "rtk";
 	return(result)
 
+}
+
+
+
+
+
+
+get.diversity <- function(obj, div = 'richness', multi = FALSE){
+    if(multi == FALSE){
+      if(class(obj) != 'rtk'){
+        stop("this function requires an object of type 'rtk'")
+      }
+    }
+    if(length(obj$depths) == 1 || multi == T){
+      if(multi == T){
+        obj <- obj[[1]]
+      }
+      y <- sapply(obj$divvs, function(x){
+        r <- x[[div]]
+        return(r)
+        })
+    }else{
+      y <- lapply(obj$depths, function(i){
+        ia <- as.character(i)
+        x <- get.diversity(obj[ia], div, multi = TRUE)
+        return(x)
+        })
+    }
+    return(y)
+}
+
+get.median.diversity <- function(obj, div = 'richness'){
+  if(class(obj) != 'rtk'){
+    stop("this function requires an object of type 'rtk'")
+  }
+  res <- get.diversity(obj, div)
+  if(length(obj$depths) == 1){
+    ret <- apply(res, 2, median)
+  }else{
+    ret <- lapply(res, function(x){
+        return(apply(x, 2, median))
+      })
+  }
+  return(ret)
+}
+get.mean.diversity <- function(obj, div = 'richness'){
+  if(class(obj) != 'rtk'){
+    stop("this function requires an object of type 'rtk'")
+  }
+  res <- get.diversity(obj, div)
+  if(length(obj$depths) == 1){
+    ret <- apply(res, 2, mean)
+  }else{
+    ret <- lapply(res, function(x){
+        return(apply(x, 2, mean))
+      })
+  }
+  return(ret)
 }

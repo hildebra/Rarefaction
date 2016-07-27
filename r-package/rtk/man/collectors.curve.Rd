@@ -29,7 +29,7 @@ The function \code{collectors.curve} can visualize the richness a dataset has, i
 
 }
 
-\seealso{Use \code{\link{plot.rarefaction}} for how to plot your results.}
+\seealso{Use \code{\link{plot.rtk}} for how to plot your results.}
 
 \author{Falk Hildebrand, Paul Saary}
 

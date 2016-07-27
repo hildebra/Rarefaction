@@ -1,7 +1,7 @@
-\name{plot.rarefaction}
+\name{plot.rtk}
 \alias{rarefactioncurve}
 \alias{plot}
-\alias{plot.rarefaction}
+\alias{plot.rtk}
 
 
 \title{Plot rarfeaction results}
@@ -9,7 +9,7 @@
 \description{ Rarefy datasets in R or from a path. }
 
 \usage{
-plot.rarefaction(x, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", boxplot = FALSE, ...)
+plot.rtk(x, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", boxplot = FALSE, ...)
 plot(...)
 }
 
