@@ -376,7 +376,7 @@ Matrix::Matrix(void)
 {
 }
 
-Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl, bool NumericRowId)
+Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl, bool NumericRowId, bool writeTmpFiles)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
@@ -442,7 +442,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		colIDs[cnt2] = segments;
 		string oF2 = outF + sampleNameSep + colIDs[cnt2];
 		outFName.push_back(oF2);
-		if (!doHigh){
+		if (!doHigh && writeTmpFiles){
 			outFs[cnt2].open(oF2.c_str(), ios_base::out);
 			outFs[cnt2].precision(12);
 			outFs[cnt2].close();
@@ -520,7 +520,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 			cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
 			std::exit(62);
 		}
-		if (cnt % 1000 == 0){
+		if (cnt % 1000 == 0 && writeTmpFiles){
 			// every 1000 lines, write to file. The rest will be written later
 			for (size_t cnt2=0;cnt2<outStr.size();cnt2++){
 				// we open the file, and close it again, as we dont want to be limited in the number of
@@ -535,7 +535,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	}
 	in.close();
 	ofstream out;
-	if (doHigh){//write out high lvl mats
+	if (doHigh && writeTmpFiles){//write out high lvl mats
 		for (int i = 0; i < maxLvl; i++){
 			string oF2 = outF + LvlNms[i] + ".txt";
 			out.open(oF2.c_str(), ios_base::out);
@@ -543,7 +543,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 			out.close();
 		}
 	}
-	else {//close filestreams to single sample files
+	else if(writeTmpFiles){//close filestreams to single sample files
 		// write the overlapp of the read in (since the last 1000)
 		for (size_t i = 0; i < outFs.size(); i++){
 			// we open the file, and close it again, as we dont want to be limited in the number of
@@ -1002,6 +1002,49 @@ void Matrix::writeSums(string out_seed){
 			sums+=mat[i][smpl];
 		}
 		out<<colIDs[smpl+1]<<"\t"<<sums<<endl;
+	}
+	out.close();
+}
+
+
+bool sortPair(const pair<double, string>& left, const pair<double, string>& right){
+	return left.second < right.second;
+}
+
+vector< pair <double, string>> Matrix::getColSums(bool sorted){
+	// fill colsums stepwise
+	if(colsums.size() == 0){
+		for(uint i = 0; i < colIDs.size(); i++){
+			pair<double, string> p(colSum[i], colIDs[i]);
+			colsums.push_back(p);
+		}
+	}
+	if(sorted == false){
+		return colsums;
+	}else{
+		// now we sort this shit
+		std::sort(colsums.begin(), colsums.end(), sortPair);
+		return colsums;
+	}
+}
+void Matrix::writeColSums(string outF){
+	vector< pair <double, string>> colsumsUnsort 	= getColSums(false);
+	vector< pair<double, string>> colsumsSort 		= getColSums(true);
+	string outF2 = outF + "colSums.txt";
+	ofstream out;
+	out.open(outF2.c_str(),ios_base::out);
+	out.precision(12);
+	for( auto it = colsumsUnsort.begin(); it != colsumsUnsort.end(); it++ ){
+		out << it->second<<"\t"<< it->first<<std::endl;
+	}
+	out.close();
+
+	// sorted
+	outF2 = outF + "colSums_sorted.txt";
+	out.open(outF2.c_str(),ios_base::out);
+	out.precision(12);
+	for( auto it = colsumsSort.begin(); it != colsumsSort.end(); it++ ){
+		out << it->second<<"\t"<< it->first<<std::endl;
 	}
 	out.close();
 }

@@ -19,6 +19,12 @@ void vecPurge(vector<vector<mat_fl>>& vec, mat_fl val);//removes val from each e
 string join(const vector<string>& in, const string &X);
 
 
+class column{
+	public:
+		double colsum;
+		string id;
+};
+
 class HMat
 {
 public:
@@ -140,7 +146,7 @@ class Matrix
 // convention: mat[smpl][feature]
 public:
 	//Matrix(const string inF);
-	Matrix(const string inF, const string, const string xtra, vector<string>& outFName, bool highLvl = false, bool NumericRowId = false);
+	Matrix(const string inF, const string, const string xtra, vector<string>& outFName, bool highLvl = false, bool NumericRowId = false, bool writeTmpFiles = true);
 
 	Matrix(const string inF, const string xtra, bool highLvl = false); // this reads to mem
 	Matrix(const vector<string>& rnms, const vector<string>& cnms);//module abundance matrix
@@ -169,18 +175,43 @@ public:
 	vector < string > getSampleNames(){ return(colIDs); }
 	vector < string > getRowNames(){ return(rowIDs); }
 	//void addCount(string, int, mat_fl);
-	double getMinColSum(){
+
+
+
+
+		double getMinColSum(){
+			if(colSum.size() > 0){
+				double minE = colSum[0];
+				for(uint i = 0; i < colSum.size(); i++){
+					if(minE > colSum[i]){
+						minE = colSum[i];
+					}
+				}
+				return minE;
+			}else{
+				return 0;
+			}
+		}
+	column getMinColumn(uint offset = 0){
+		column* minimalColumn = new column();
 		if(colSum.size() > 0){
 			double minE = colSum[0];
+			string ID;
 			for(uint i = 0; i < colSum.size(); i++){
-				if(minE > colSum[i]){minE = colSum[i];}
+				if(minE > colSum[i]){
+					minE = colSum[i];
+					ID = colIDs[i];
+				}
 			}
-			return minE;
+			minimalColumn->id = ID;
+			minimalColumn->colsum = minE;
+			return *minimalColumn;
 		}else{
-			return 0;
+			return *minimalColumn;
 		}
 	}
-
+	vector< pair <double, string>> getColSums(bool sorted = false);
+	void writeColSums(string outF);
 private:
 	//subroutines
 	void read_subset_genes(const string);
@@ -203,7 +234,11 @@ private:
 	GeneIDidx subset;
 	bool doSubsets, doHigh;
 	vector<double> colSum;
+
+	vector< pair <double, string>> colsums;
 };
+
+
 
 
 class SigMatrix :public Matrix {
