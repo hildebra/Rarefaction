@@ -555,6 +555,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		}
 	}
 	//write colSums
+	/*
 	string oF2 = outF + sampleNameSep + "sums.txt";
 
 	out.open(oF2.c_str(),ios_base::out);
@@ -562,7 +563,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	for (size_t smpl=0;smpl<(colIDs.size()); smpl++){
 		out<<colIDs[smpl]<<"\t"<<colSum[smpl]<<endl;
 	}
-	out.close();
+	out.close();*/
 	cout << "Read " << geneCnt << " genes" << endl;
 }
 

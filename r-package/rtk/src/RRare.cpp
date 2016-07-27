@@ -192,7 +192,7 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 
 
 	// delete tmp file we created
-	fileNames.push_back(outF + "sums.txt");
+	//fileNames.push_back(outF + "sums.txt");
 	/*for(uint i = 0; i < fileNames.size(); i++){
 		if( remove( fileNames[i].c_str() ) != 0 ){
 			cerr << "Error deleting file: " << fileNames[i];
