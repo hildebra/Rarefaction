@@ -159,6 +159,8 @@ public:
 	void transpose();
 	void writeMatrix(const string ofile,bool onlyFilled=false);
 	size_t smplNum(){ return colIDs.size(); }
+	int rowNum(){ return rowIDs.size(); }
+
 	smplVec* getSampleVec(uint which){ return new smplVec(mat[which],1); }
 	string getSampleName(uint which){ return colIDs[which]; }
 

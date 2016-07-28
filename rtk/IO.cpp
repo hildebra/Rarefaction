@@ -1,4 +1,5 @@
 #include "IO.h"
+std::mutex rarefyMutex;
 
 
 void lineCntOut(const string inF, const string outF, const string arg4){
@@ -108,9 +109,10 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 	if (verbose){cerr<<"..\n";}
 }
 
+
 void smplVec::rarefy(long dep, string ofile, int rep,
 					DivEsts* divs, std::vector<map<uint, uint>> & RareSample,
-					string& retCntsSampleName, string& skippedSample,
+					string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* abundInRow,
 					int writes,bool write, bool fillret){
 	if (dep>totSum){
 		skippedSample = divs->SampleName;
@@ -118,6 +120,8 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 		return;
 	}
 	long curIdx=(long)totSum+1;
+
+
 
 	for (int curRep=0;curRep<rep;curRep++){
 		if(curIdx+dep >= (long) totSum){
@@ -159,6 +163,24 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 		divs->chao1.push_back(this->calc_chao1(cnts,1));
 		divs->eve.push_back(this->calc_eveness(cnts));
 		richness = 0;
+
+		// save abundance for chao2 calculations later
+		rarefyMutex.lock();
+		//*bob = *bob + 1;
+		//cout << *bob << "\n";
+
+		for(uint i = 0; i < IDs.size(); i++){
+			uint value = 0;
+			int id = std::stoi(IDs[i]);
+			auto fnd = cntsMap.find(i);
+			if(fnd != cntsMap.end()){
+				//cout << abundInRow ;//&
+				abundInRow->at(curRep)[id]++;
+			}
+
+		}
+		//cout << abundInRow->size();
+		rarefyMutex.unlock();
 	}
 }
 
@@ -668,4 +690,37 @@ std::istream& safeGetline(std::istream& is, std::string& t)
 			t += (char)c;
 		}
 	}
+}
+
+
+
+vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow){
+	std::vector<mat_fl> chao2;
+	for(uint i = 0; i < abundInRow.size(); i++){
+		// count No of species
+		float NoOfSpec = 0;
+		float singletons = 0;
+		float doubletons = 0;
+		for(uint j = 0; j < abundInRow[i].size(); j++){
+			if(abundInRow[i][j] != 0){
+				NoOfSpec++;
+			}
+			if(abundInRow[i][j] == 1){
+				singletons++;
+			}else	if(abundInRow[i][j] == 2){
+				doubletons++;
+			}
+		}
+		// calc chao2
+		mat_fl tmpChao2 = 0.0;
+		if(doubletons != 0){
+			tmpChao2 = float(NoOfSpec + ((singletons*singletons)/(2*doubletons)));
+		}
+		chao2.push_back(tmpChao2);
+	}
+	return chao2;
+}
+void writeChao2(vector<mat_fl> chao2, string outF){
+
+
 }

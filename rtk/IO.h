@@ -18,6 +18,7 @@
 #include <assert.h>
 #include <unordered_map>
 #include <future>
+#include <mutex>
 
 //#include <tchar.h>
 //#include <string.h>
@@ -25,6 +26,7 @@
 //multi threading
 //#include <thread>
 //#include <future>
+
 
 const bool verbose=0;
 
@@ -92,7 +94,7 @@ public:
 		//delete[] arr;
 	}
 	void rarefy(long,string o,int rep,DivEsts*, vector<map<uint, uint>>& RareSample,
-		string& retCntsSampleName, string& skippedSample, int=0,bool=false, bool=false);
+		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* , int=0,bool=false, bool=false);
 	long getRichness(const vector<unsigned int>& cnts);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
 	vector < string > getRowNames(){ return(IDs); }
@@ -122,3 +124,5 @@ private:
 
 	//vector<float> vec;
 };
+
+vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow);
