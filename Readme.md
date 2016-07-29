@@ -29,7 +29,8 @@ rtk  <mode> -i <input.csv> -o <output> [options]
 
 ### Options:
 ```
-<mode>  mode can be either swap or memory.
+<mode>  mode can be either swap or memory for rarefaction or 
+        colsums for column sums report.
         Swap mode creates temporary files but uses less memory.
         The speed of both modes is comparable.
 
@@ -42,6 +43,8 @@ rtk  <mode> -i <input.csv> -o <output> [options]
 -ns     If set, no temporary files will be used when writing rarefaction tables to disk (no swap).
 
 ```
+
+## Rarefaction
 
 ### Output files:
 
@@ -67,6 +70,15 @@ If the mode `memory` is used, temporary files will be produced to reduce RAM usa
 Temporary files will also be created if `-w > 0`. In this case the vectors of the rarefied tables will be stored on disk as binary before merging them to tables. Thi can be prevented by using the `-ns` flag.
 
 In both cases RAM usage is drastically reduced and the load on the local drive is substantially higher.
+
+
+## Colum sums
+Knowing the dataset at hand is relevant. thats whi RTK allows the user to quickly estimate the column sums of the dataset.
+
+The mode colsums creates two files containing sorted and unsorted column sums of all samples:
+```bash
+rtk  colsums -i <input.csv> -o <output> [options]
+```
 
 
 
