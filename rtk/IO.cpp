@@ -714,6 +714,57 @@ vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow){
 	}
 	return chao2;
 }
+
+void computeICE(vector<vector<uint>>& abundInRow){
+	vector<mat_fl> ICE;
+
+	int val;
+	for(uint i = 0; i < abundInRow.size(); i++){
+		vector<uint> abundOneToTen(10,0);
+		float nr = 0.0, sa = 0.0, sr = 0.0, f1 = 0.0, ca= 0.0,sumf= 0.0, g2a = 0.0;
+
+		for(uint j = 0; j < abundInRow[i].size(); j++){
+			val = abundInRow[i][j];
+			if(val < 11 && val != 0){
+				nr += val;
+				sr++;
+			}else if(val > 10){
+				sa++;
+			}
+			if(val == 1){
+				f1 += 1;
+			}
+			if(val < 11 && val > 0){
+				abundOneToTen[val] = abundOneToTen[val] + 1;
+			}
+		}
+		cout << std::endl;
+		for(uint j = 0; j < abundOneToTen.size(); j++){
+			sumf += abundOneToTen[j] * j;
+		}
+		cout << std::endl;
+		ca = 1 - (f1)/(nr);
+		g2a = (sr/ca) * (sumf/(nr * (nr - 1))) - 1;
+		if(g2a < 0){
+			g2a = 0;
+		}
+
+		if(ca != 0){
+			mat_fl tmp = sa + sr/ca + (f1/ca) * g2a;
+			ICE.push_back(tmp);
+		}else{
+			ICE.push_back(0);
+			//vector<uint> ia
+			//ice = computeChao2()
+		}
+
+
+	// ice <- sa + sr/ca + (f1/ca) * g2a
+
+	}
+}
+
+
 void writeChao2(vector<mat_fl>& chao2, string outF){
 	ofstream out(outF.c_str());
 	out << "Chao2";

@@ -126,4 +126,5 @@ private:
 };
 
 vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow);
+void computeICE(vector<vector<uint>>& abundInRow);
 void writeChao2(vector<mat_fl>&, string );

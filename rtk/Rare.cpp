@@ -307,6 +307,8 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 
 	// compute chao2 and write to file
 	vector<mat_fl> chao2 = computeChao2(abundInRow);
+	 computeICE(abundInRow);
+
 	writeChao2(chao2, outF + "_chao2.tsv");
 
 	cout << "Finished\n";
