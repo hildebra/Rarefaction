@@ -58,6 +58,7 @@ num_threads(nt), richness(-1), Shannon(-1.f){
 	for (size_t i = 0; i< vec.size(); i++){
 		//if (vec.size()-i<10000){cerr<<i<<" ";}
 		long maxG = (long)vec[i];
+		IDs.push_back( std::to_string(i));
 
 		posInVec++;
 		if (maxG == 0){ continue; }//not really a feature, doesnt need ot be counted as cat
@@ -67,7 +68,7 @@ num_threads(nt), richness(-1), Shannon(-1.f){
 			arr[k] = posInVec;
 		}
 		//numFeatures++;
-
+		// some simple numeric id for refernce in chao2 abundance calculations, so it behaves as the swap mode
 	}
 	posInVec++;
 	numFeatures = posInVec;
@@ -166,20 +167,14 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 
 		// save abundance for chao2 calculations later
 		rarefyMutex.lock();
-		//*bob = *bob + 1;
-		//cout << *bob << "\n";
-
 		for(uint i = 0; i < IDs.size(); i++){
 			uint value = 0;
 			int id = std::stoi(IDs[i]);
 			auto fnd = cntsMap.find(i);
 			if(fnd != cntsMap.end()){
-				//cout << abundInRow ;//&
 				abundInRow->at(curRep)[id]++;
 			}
-
 		}
-		//cout << abundInRow->size();
 		rarefyMutex.unlock();
 	}
 }
@@ -620,7 +615,6 @@ void reassembleTmpMat(vector<string> inF, vector< string > rowNames, vector< str
 	string a;
 	uint j = 0;
 	// bufer for 1000 rows
-	uint bi = 0;
 	uint bj = 0;
 	const uint bn = 1000;
 	std::vector<vector< uint > > inBuff(bn, std::vector<uint>(inFs.size() ) );
@@ -644,7 +638,7 @@ void reassembleTmpMat(vector<string> inF, vector< string > rowNames, vector< str
 		}
 		// write buffers to file
 		for(uint ij = 0; ij < bj && j+ij < rowNames.size(); ij++){
-			out <<  rowNames[j + ij] << "\t";
+			out <<  rowNames[j + ij];
 			for(uint i = 0; i < inFs.size(); i++){
 				out << '\t' << inBuff[ij][i];
 			}
@@ -720,7 +714,12 @@ vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow){
 	}
 	return chao2;
 }
-void writeChao2(vector<mat_fl> chao2, string outF){
-
-
+void writeChao2(vector<mat_fl>& chao2, string outF){
+	ofstream out(outF.c_str());
+	out << "Chao2";
+	for(uint j = 0; j < chao2.size(); j++){
+		out << '\t' << chao2[j];
+	}
+	out << '\n';
+	out.close();
 }

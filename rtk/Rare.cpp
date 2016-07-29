@@ -11,7 +11,8 @@
 const char* rar_ver="0.65 alpha";
 
 
-rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
+rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, vector<vector<uint>>* abundInRow,
+	string outF, int repeats, int writeFiles){
 	smplVec* cur = Mo->getSampleVec(i);
 	string curS = Mo->getSampleName(i);
 	div->SampleName = curS;
@@ -19,9 +20,8 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, string out
 	vector< map< uint, uint>> cntsMap;
 	string cntsName;
 	string skippedNames;
-	vector<vector<uint>> abundInRow;
 	cur->rarefy(rareDep, outF, repeats,
-					div, cntsMap, cntsName, skippedNames, &abundInRow,
+					div, cntsMap, cntsName, skippedNames, abundInRow,
 					writeFiles, false, writeFiles);
 	//delete cur;
 	//return div;
@@ -203,8 +203,6 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	// abundance vectors to hold the number of occurences of genes per row
 	// this will be used for Chao2 estimation
 	vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
-	int bob = 0;
-	cout << "Bob am anfang:" << bob << std::endl;
 
 	int rareDep 	= atoi(arg4.c_str());
 	if(rareDep == 0){
@@ -291,11 +289,6 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 		done = i;
 	}
 
-	// delete tmp files we created for rarefaction, as we now do not need them anymore
-//	for(uint i = 0; i < fileNames.size(); i++){
-
-//	}
-
 	// print the div estimates out into a file
 	printDivMat(outF , divvs, true);
 	for (size_t i = 0; i < divvs.size(); i++){
@@ -312,19 +305,9 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 		}
 	}
 
-
-// print caheo2 vector
-	for(uint i = 0; i < abundInRow.size(); i++){
-		cout << "chaeo rep "<< i<< ": " ;
-		for(uint j = 0; j < abundInRow[i].size(); j++){
-			cout << abundInRow[i][j] << "\t";
-		}
-		cout << "\n";
-	}
+	// compute chao2 and write to file
 	vector<mat_fl> chao2 = computeChao2(abundInRow);
-for(uint i = 0 ; i < chao2.size(); i++){
-	cout << chao2[i] << " ";
-}
+	writeChao2(chao2, outF + "_chao2.tsv");
 
 	cout << "Finished\n";
 }
@@ -479,7 +462,8 @@ int main(int argc, char* argv[])
 			//ClStr2Mat* cl = new ClStr2Mat(inF,outF,arg4,argv[5]);
 			//delete cl;
 			std::exit(0);
-		} else {
+		}  else if(mode == "memory"){
+		}else {
 			helpMsg();
 		}
 //	}
@@ -516,6 +500,9 @@ int main(int argc, char* argv[])
 		std::vector<string> cntsNames;
 
 
+		// abundance vectors to hold the number of occurences of genes per row
+		// this will be used for Chao2 estimation
+		vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
 
 		//cerr << "TH";
 		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
@@ -526,12 +513,12 @@ int main(int argc, char* argv[])
 			uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
-				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, outF, repeats, writeFiles);
+				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, outF, repeats, writeFiles);
 			}
 			//use main thread to calc one sample as well
 			DivEsts * div 	= new DivEsts();
 			rareStruct* tmpRS;
-			tmpRS 			= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
+			tmpRS 			= calcDivRar(i, Mo, div, rareDep, &abundInRow, outF, repeats, writeFiles);
 
 
 			i++;
@@ -587,6 +574,10 @@ int main(int argc, char* argv[])
 		}
 
 		delete Mo;
+
+
+		vector<mat_fl> chao2 = computeChao2(abundInRow);
+		writeChao2(chao2, outF + "_chao2.tsv");
 		cout << "Finished\n";
 		std::exit(0);
 	}
