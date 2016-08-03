@@ -133,6 +133,8 @@ options::options(int argc, char** argv){
 
 
 	//bool newIDthrs = false; string newIDthStr("");
+	mode = argv[1];
+
 	for (int i = 1; i < argc; i++)
 	{
 		if (!strcmp(argv[i], "-i"))
@@ -140,7 +142,6 @@ options::options(int argc, char** argv){
 		else if (!strcmp(argv[i], "-o"))
 			output = argv[++i];
 		///else if (!strcmp(argv[i], "-m"))
-		//	mode = argv[++i];
 		else if (!strcmp(argv[i], "-d"))
 			depth = atoi(argv[++i]);
 		else if (!strcmp(argv[i], "-r"))
@@ -179,7 +180,21 @@ options::options(int argc, char** argv){
 	cout << "input file:     " << input  << std::endl;
 	cout << "output file:    " << output  << std::endl;
 	cout << "mode:           " << mode  << std::endl;
-	cout << "depth:          " << depth  << std::endl;
+	if(depth != 0){
+		cout << "depth:          " << depth  << std::endl;
+	}else{
+		cout << "depth:          0.95 x min. column sum"   << std::endl;
+	}
+	cout << "repeats:        " << repeats  << std::endl;
+	cout << "writes:         " << write  << std::endl;
+	cout << "threads:        " << threads  << std::endl;
+	cout << "use swap:       ";
+	if(writeSwap == false){
+		cout << "true" << std::endl;
+	}else{
+		cout << "true" << std::endl;
+	}
+
 	//cout << "mode:           " << mode  << std::endl;
 	cout << std::endl;
 
@@ -195,10 +210,12 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	// the measures are then combines again.
 
 	//split mat code
+	cout << "Splitting input matrix to disk" << std::endl;
 	vector<string> fileNames;
 	Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true);
 	vector < string > SampleNames 	= Mo->getSampleNames();
 	vector < string > rowNames 		= Mo->getRowNames();
+	cout << "Done loading matrix" << std::endl;
 
 	// abundance vectors to hold the number of occurences of genes per row
 	// this will be used for Chao2 estimation
@@ -341,7 +358,7 @@ int main(int argc, char* argv[])
 	string arg4         = std::to_string(rareDep);
 	vector < vector < string > > tmpMatFiles (writeFiles );
 
-	mode = argv[1];
+	//mode = argv[1];
 
 	/*
 	long rareDep = 1000;	int repeats (1);
@@ -487,10 +504,11 @@ int main(int argc, char* argv[])
 	//int maxSiz = 1;if (verbose){		for(std::vector<char>::size_type sz = 1;   ;  sz *= 2)		{			break;			std::cerr << "attempting sz = " << sz << '\n';			std::vector<unsigned short> v(sz);		}		//cout<<"Max vec size: "<<maxSiz<<endl;	}
 
 	if (mode == "memory"){
+		cout << "Loading input matrix to memory" << std::endl;
 		Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
 		vector<DivEsts*> divvs(Mo->smplNum(),NULL);
-		cout << "Using " << numThr << " ";
 		vector< string > rowNames = Mo->getRowNames();
+		cout << "Done loading matrix" << std::endl;
 
 		if(rareDep == 0){
 			// rarefy to smallest colSum
@@ -514,7 +532,6 @@ int main(int argc, char* argv[])
 
 		//cerr << "TH";
 		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
-		cout << "threads\n";
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
 			int thirds = floor(( Mo->smplNum()-3)/3);
