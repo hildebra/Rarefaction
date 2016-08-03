@@ -1,5 +1,5 @@
 collectors.curve <- function(x, col = 0, times = 10, bin = 5, ...){
-  if(class(x) == "rarefaction"){
+  if(class(x) == "rtk"){
     cum.sample.rare(x, col, times, bin, ...)
   }else{
     cum.sample(x, col, times, bin, ...)
@@ -10,7 +10,7 @@ collectors.curve <- function(x, col = 0, times = 10, bin = 5, ...){
 
 
 cum.sample.rare <- function(x, col = 1, times = 10,  bin , ...){
-  if(class(x) != "rarefaction"){
+  if(class(x) != "rtk"){
     stop("Not a rarefaction object")
   }
   depths <- x$depths

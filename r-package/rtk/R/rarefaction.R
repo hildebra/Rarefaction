@@ -1,5 +1,7 @@
 r.median <- function(n, x){
-  median(unlist(sapply(x, function(x){x[[n]]}), F, F))
+  x1 <- unlist(sapply(x, function(x){x[[n]]}), F, F)
+  x2 <- x1[!is.na(x1)]
+  return(median(x2))
 }
 
 rare.status <- function(msg, verbose=TRUE){

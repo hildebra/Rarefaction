@@ -690,8 +690,7 @@ std::istream& safeGetline(std::istream& is, std::string& t)
 
 
 
-vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow){
-	std::vector<mat_fl> chao2;
+void computeChao2(std::vector<mat_fl>& chao2, vector<vector<uint>>& abundInRow){
 	for(uint i = 0; i < abundInRow.size(); i++){
 		// count No of species
 		float NoOfSpec = 0;
@@ -714,7 +713,6 @@ vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow){
 		}
 		chao2.push_back(tmpChao2);
 	}
-	return chao2;
 }
 
 void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow){

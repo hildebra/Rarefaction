@@ -7,7 +7,10 @@
 \description{ Rarefy datasets in R or from a path. }
 
 \usage{
-rtk(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2, verbose = FALSE, threads = 1, tmpdir = NULL)
+rtk(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, verbose = FALSE, threads = 1, tmpdir = NULL )
+get.diversity(obj, div = 'richness', multi = FALSE)
+get.mean.diversity(obj, div = 'richness')
+get.median.diversity(obj, div = 'richness')
 }
 
 \arguments{
@@ -35,7 +38,9 @@ The object \code{divvs} contains a list of diversity measures for each sample pr
 
 \code{depths} just contains the input variable and might be usefull for further analysis of the results.
 
-It is possible to plot the results of the rarefaction, depending on the parameters passed to \code{rare}. See \code{\link{plot.rarefaction}} for examples.
+It is possible to plot the results of the rarefaction, depending on the parameters passed to \code{rare}. See \code{\link{plot.rtk}} for examples.
+
+
 }
 
 \references{
@@ -48,12 +53,15 @@ It is possible to plot the results of the rarefaction, depending on the paramete
 \author{\packageAuthor{rtk}}
 
 \examples{
-require("rarefaction")
+require("rtk")
 # generate semi sparse example data
 data            <- matrix(sample(x = c(rep(0, 1500),rep(1:10, 500),1:1000),size = 120, replace = TRUE), 10)
 # find the column with the lowest aboundance
 samplesize      <- min(colSums(data))
 # rarefy the dataset, so each column contains the same number of samples
 data.rarefied   <- rtk(input = data, depth = samplesize, ReturnMatrix = 1)
+
+richness   <- get.diversity(data.rarefied, div = "richness")
+eveness    <- get.diversity(data.rarefied, div = "eveness")
 
 }

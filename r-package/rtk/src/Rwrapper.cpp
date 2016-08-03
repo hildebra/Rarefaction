@@ -127,6 +127,9 @@ List rcpp_rarefaction(Rcpp::String input,
 	std::vector<string> retCntsSampleNames;
 	std::vector<string> rowNames;
 	std::vector<string> skippedSamples;
+  std::vector<double> ACE;
+  vector<mat_fl> ICE;
+  std::vector<double> chao2;
 
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
@@ -135,7 +138,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	rarefyMain(input, outF, mode,  repeats, depth,  threads, verbose,
 				 rmat, incolnames, inrownames ,
 				 divvs, retCnts, retCntsSampleNames,
-				 skippedSamples,
+				 skippedSamples, ACE, ICE, chao2,
 				rowNames, NoOfMatrices, transpose);
 
 	// check for user interrup
@@ -188,9 +191,15 @@ List rcpp_rarefaction(Rcpp::String input,
 		retMatDF 			= wrap(RrarefyMatrices);
 		returnList			= List::create(	Named("divvs", majorLst),
 											Named("raremat",retMatDF),
+                      Named("ICE", wrap(ICE)),
+                      Named("ACE", wrap(ACE)),
+                      Named("chao2", wrap(chao2)),
 											Named("skipped", wrap(skippedSamples)));
     }else{
 		returnList			= List::create(Named("divvs", majorLst),
+                      Named("ICE", wrap(ICE)),
+                      Named("ACE", wrap(ACE)),
+                      Named("chao2", wrap(chao2)),
 										  Named("skipped", wrap(skippedSamples)));
   }
 

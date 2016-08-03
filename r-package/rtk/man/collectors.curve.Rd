@@ -34,9 +34,9 @@ The function \code{collectors.curve} can visualize the richness a dataset has, i
 \author{Falk Hildebrand, Paul Saary}
 
 \examples{
-require("rarefaction")
+require("rtk")
 # Collectors Curve dataset should be broad and contain many samples (columns)
-data            <- matrix(sample(x = c(rep(0, 15000),rep(1:10, 100)),size = 10000, replace = TRUE), ncol = 80)
+data        <- matrix(sample(x = c(rep(0, 15000),rep(1:10, 100)),size = 10000, replace = TRUE), ncol = 80)
 data.r 			<- rtk(data, ReturnMatrix = 1, depth = min(colSums(data)))
 # collectors curve on dataframe/matrix
 collectors.curve(data, xlab = "No. of samples", ylab = "richness")

@@ -334,9 +334,11 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	}
 
 	// compute chao2, ACE, ICE and write to file
-	vector<mat_fl> chao2 = computeChao2(abundInRow);
+	// compute chao2, ACE, ICE and write to file
+	vector<mat_fl> chao2;
 	vector<mat_fl> ICE;
 	vector<mat_fl> ACE;
+	computeChao2(chao2, abundInRow);
 	computeCE(ICE, abundInRow);
 	computeCE(ACE, occuencesInRow);
 	writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
@@ -618,9 +620,10 @@ int main(int argc, char* argv[])
 
 
 		// compute chao2, ACE, ICE and write to file
-		vector<mat_fl> chao2 = computeChao2(abundInRow);
+		vector<mat_fl> chao2;
 		vector<mat_fl> ICE;
 		vector<mat_fl> ACE;
+		computeChao2(chao2, abundInRow);
 		computeCE(ICE, abundInRow);
 		computeCE(ACE, occuencesInRow);
 		writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");

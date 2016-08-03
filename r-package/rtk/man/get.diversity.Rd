@@ -19,7 +19,7 @@
   \item{div}{diversity measure as string e.g "richness"}
 }
 \details{
-These set of functions allows fast and easy access to to calculated diversity measures by rtk.
+This set of functions allows fast and easy access to calculated diversity measures by rtk.
 It returns a matrix, when rarefaction was only performed to one
 depth and a list of matrices or vectors if rarefaction was done for multiple depths.
 }
@@ -34,7 +34,7 @@ depth and a list of matrices or vectors if rarefaction was done for multiple dep
 \author{Falk Hildebrand, Paul Saary}
 
 \examples{
-require("rarefaction")
+require("rtk")
 # Collectors Curve dataset should be broad and contain many samples (columns)
 data            <- matrix(sample(x = c(rep(0, 15000),rep(1:10, 100)),size = 10000, replace = TRUE), ncol = 80)
 data.r 			<- rtk(data, depth = min(colSums(data)))

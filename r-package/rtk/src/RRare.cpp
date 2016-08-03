@@ -19,7 +19,9 @@ struct rareStruct{
 	string skippedNames;
 };
 
-rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string outF,
+rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep,
+	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
+	string outF,
 	int repeats, int writeFiles,
 	int NoOfMatrices){
 
@@ -33,6 +35,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string ou
 	string cntsName;
 	string skippedNames;
 	cur->rarefy(rareDep, outF, repeats, div, cnts, cntsName, skippedNames,
+				abundInRow, occuencesInRow,
 				NoOfMatrices, writeFiles, true);
 
 	rareStruct* tmpCDR 				= new rareStruct();// 	= {*div, retCnts};
@@ -46,7 +49,9 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep, string ou
 }
 
 
-rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep, string outF, int repeats, int writeFiles){
+rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep,
+	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
+	string outF, int repeats, int writeFiles){
 //	cout << i << " ";
 	smplVec* cur = new smplVec(fileNames[i],4);
 
@@ -56,7 +61,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	string cntsName;
 	string skippedNames;
 	cur->rarefy(rareDep, outF, repeats,
-					div, cntsMap, cntsName, skippedNames,
+					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
 					writeFiles, false,writeFiles);
 
 	//delete cur;
@@ -89,7 +94,7 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	vector<DivEsts*> *  divvs,
 	std::vector<vector<map<uint, uint>>>& MaRare,
 	std::vector<string>& cntsNames,
-	std::vector<string>& skippedNamess,
+	std::vector<string>& skippedNames,
 	std::vector<string>& rowNames, int numThr, bool verbose ){
 	// this mode takes the file, reads it in memory
 	// prints the columns to their own files
@@ -121,11 +126,12 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	int done = 0; // number of samples processed for multithreading
 	uint i = 0;
 	std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
-
-	//int NoOfMatrices = writeFiles;
+	// abundance vectors to hold the number of occurences of genes per row
+	// this will be used for Chao2 estimation
+	vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
+	vector<vector<uint>> occuencesInRow(repeats, vector<uint>(Mo->rowNum(),0));
 
 	//rarefection code
-	//divvs->resize(fileNames.size());
 	while(i < fileNames.size()){
 
 		// allow multithreading
@@ -140,13 +146,15 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 		for (; i < toWhere; i++){
 			DivEsts * div 	= new DivEsts();
 			div->SampleName = SampleNames[i];
-			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep, outF, repeats, NoOfMatrices);
+			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep,
+				 									&abundInRow, &occuencesInRow, outF, repeats, NoOfMatrices);
 		}
 		// launch one in the mainthread
 		DivEsts * div 	= new DivEsts();
 		div->SampleName = SampleNames[i];
 		rareStruct* tmpRS;
-		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, outF, repeats, NoOfMatrices);
+		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep,
+													 &abundInRow, &occuencesInRow, outF, repeats, NoOfMatrices);
 		i++;
 
 		// process created data, first threads, then main thread
@@ -190,15 +198,6 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 		done = i;
 	}
 
-
-	// delete tmp file we created
-	//fileNames.push_back(outF + "sums.txt");
-	/*for(uint i = 0; i < fileNames.size(); i++){
-		if( remove( fileNames[i].c_str() ) != 0 ){
-			cerr << "Error deleting file: " << fileNames[i];
-		}
-	}*/
-
 }
 
 
@@ -225,7 +224,10 @@ int rarefyMain(string inF, string outF, string mode,
 	vector<DivEsts*> *  divvs,
 	std::vector<vector<map<uint, uint>>> &retCnts,
 	std::vector<string>& cntsNames,
-	std::vector<string>& skippedNamess,
+	std::vector<string>& skippedNames,
+	std::vector<mat_fl>& ACE,
+	std::vector<mat_fl>& ICE,
+	std::vector<mat_fl>& chao2,
 	std::vector<string>& rowNames, int NoOfMatrices,
 	bool transpose)
 {
@@ -268,6 +270,11 @@ int rarefyMain(string inF, string outF, string mode,
 			}
 		}
 		rowNames = Mo->getRowNames();
+		// abundance vectors to hold the number of occurences of genes per row
+		// this will be used for Chao2 estimation
+		vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
+		vector<vector<uint>> occuencesInRow(repeats, vector<uint>(Mo->rowNum(),0));
+
 		//vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		//divvs->resize(0,NULL); // paul resize the vector
 		if(verbose == true){
@@ -280,7 +287,15 @@ int rarefyMain(string inF, string outF, string mode,
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
 			if(verbose == true){
-				cout << "At Sample " << i+1 << " of " << Mo->smplNum() << " Samples\n";
+				int thirds = floor(( Mo->smplNum()-3)/3);
+				if(i < 3 || i % thirds == 0  ){
+					cout << "At Sample " << i+1 << " of " <<  Mo->smplNum() << " Samples" << std::endl  ;
+					if(i > 3 && i % thirds == 0 ){
+						cout << "..." << std::endl ;
+					}
+				}else if( i == 3){
+					cout << "..." << std::endl ;
+				}
 			}
 			uint toWhere = done+numThr - 1;
 			if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){
@@ -288,7 +303,8 @@ int rarefyMain(string inF, string outF, string mode,
 			}
 			for (; i < toWhere; i++){ // with just one thread this is not used?
 				DivEsts * div = new DivEsts();
-				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, outF,
+				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep,
+								 	&abundInRow, &occuencesInRow, outF,
 									repeats, writeFiles, NoOfMatrices);
 
 			}
@@ -298,7 +314,8 @@ int rarefyMain(string inF, string outF, string mode,
 			//divvs[i] = calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles);
 			rareStruct* tmpCDr;
 			//tmpCDr = new rareStruct;
-			tmpCDr 		= calcDivRar(i, Mo, div, rareDep, outF, repeats, writeFiles,
+			tmpCDr 		= calcDivRar(i, Mo, div, rareDep,  &abundInRow, &occuencesInRow,
+									outF, repeats, writeFiles,
 									 NoOfMatrices);
 
 
@@ -326,7 +343,7 @@ int rarefyMain(string inF, string outF, string mode,
 				}
 				// skippedNames
 				if(CDrAsync->skippedNames.size() > 0){
-					skippedNamess.push_back(CDrAsync->skippedNames);
+					skippedNames.push_back(CDrAsync->skippedNames);
 				}
 				delete CDrAsync;
 			}
@@ -346,7 +363,7 @@ int rarefyMain(string inF, string outF, string mode,
 			}
 			// skippedNames
 			if(tmpCDr->skippedNames.size() > 0){
-				skippedNamess.push_back(tmpCDr->skippedNames);
+				skippedNames.push_back(tmpCDr->skippedNames);
 			}
 
 
@@ -358,9 +375,16 @@ int rarefyMain(string inF, string outF, string mode,
 			done = i;
 		}
 		delete Mo;
+
+		// compute chao2, ACE, ICE and write to file
+		computeChao2(chao2, abundInRow);
+		computeCE(ICE, abundInRow);
+		computeCE(ACE, occuencesInRow);
+
+
 	}else if(mode == "rare_lowMem"){
 		rareLowMem(inF, outF, NoOfMatrices,  rareDep,  repeats,
-		divvs, retCnts, cntsNames, skippedNamess, rowNames, numThr, verbose);
+		divvs, retCnts, cntsNames, skippedNames, rowNames, numThr, verbose);
 	}
 
 
