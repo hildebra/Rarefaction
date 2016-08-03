@@ -11,7 +11,8 @@
 const char* rar_ver="0.65 alpha";
 
 
-rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, vector<vector<uint>>* abundInRow,
+rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
+	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
 	string outF, int repeats, int writeFiles){
 	smplVec* cur = Mo->getSampleVec(i);
 	string curS = Mo->getSampleName(i);
@@ -21,7 +22,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, vector<vec
 	string cntsName;
 	string skippedNames;
 	cur->rarefy(rareDep, outF, repeats,
-					div, cntsMap, cntsName, skippedNames, abundInRow,
+					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
 					writeFiles, false, writeFiles);
 	//delete cur;
 	//return div;
@@ -36,7 +37,8 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep, vector<vec
 
 
 rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep,
-	vector<vector<uint>>* abundInRow, string outF, int repeats, int writeFiles){
+	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow, string outF,
+	int repeats, int writeFiles){
 //	cout << i << " ";
 	smplVec* cur = new smplVec(fileNames[i],4);
 
@@ -46,7 +48,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	string cntsName;
 	string skippedNames;
 	cur->rarefy(rareDep, outF, repeats,
-					div, cntsMap, cntsName, skippedNames, abundInRow,
+					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
 					writeFiles, false, writeFiles);
 
 	//delete cur;
@@ -218,7 +220,8 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	cout << "Done loading matrix" << std::endl;
 
 	// abundance vectors to hold the number of occurences of genes per row
-	// this will be used for Chao2 estimation
+	// this will be used for ICE, ACE and or Chao2 estimation
+	vector<vector<uint>> occuencesInRow(repeats, vector<uint>(Mo->rowNum(),0));
 	vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
 
 	int rareDep 	= atoi(arg4.c_str());
@@ -250,7 +253,9 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 		int thirds = floor((fileNames.size()-3)/3);
 		if(i < 3 || i % thirds == 0  ){
 			cout << "At Sample " << i+1 << " of " << fileNames.size() << " Samples" << std::endl  ;
-			if(i % thirds == 0 ){cout << "..." << std::endl ;}
+			if(i > 3 && i % thirds == 0 ){
+					cout << "..." << std::endl ;
+			}
 		}else if( i == 3){
 			cout << "..." << std::endl ;
 		}
@@ -262,13 +267,13 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 		for (; i < toWhere; i++){
 			DivEsts * div 	= new DivEsts();
 			div->SampleName = SampleNames[i];
-			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep, &abundInRow, outF, repeats, writeFiles);
+			tt[i - done] = async(std::launch::async, calcDivRarVec, i, fileNames,  div, rareDep, &abundInRow, &occuencesInRow, outF, repeats, writeFiles);
 		}
 		// launch one in the mainthread
 		DivEsts * div 	= new DivEsts();
 		div->SampleName = SampleNames[i];
 		rareStruct* tmpRS;
-		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, &abundInRow, outF, repeats, writeFiles);
+		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, &abundInRow, &occuencesInRow, outF, repeats, writeFiles);
 		i++;
 
 		// process created data, first threads, then main thread
@@ -328,11 +333,13 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 		}
 	}
 
-	// compute chao2 and write to file
+	// compute chao2, ACE, ICE and write to file
 	vector<mat_fl> chao2 = computeChao2(abundInRow);
-	//computeICE(abundInRow);
-
-	writeChao2(chao2, outF + "_chao2.tsv");
+	vector<mat_fl> ICE;
+	vector<mat_fl> ACE;
+	computeCE(ICE, abundInRow);
+	computeCE(ACE, occuencesInRow);
+	writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
 
 	cout << "Finished\n";
 }
@@ -529,6 +536,7 @@ int main(int argc, char* argv[])
 		// abundance vectors to hold the number of occurences of genes per row
 		// this will be used for Chao2 estimation
 		vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
+		vector<vector<uint>> occuencesInRow(repeats, vector<uint>(Mo->rowNum(),0));
 
 		//cerr << "TH";
 		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
@@ -537,19 +545,21 @@ int main(int argc, char* argv[])
 			int thirds = floor(( Mo->smplNum()-3)/3);
 			if(i < 3 || i % thirds == 0  ){
 				cout << "At Sample " << i+1 << " of " <<  Mo->smplNum() << " Samples" << std::endl  ;
-				if(i % thirds == 0 ){cout << "..." << std::endl ;}
+				if(i > 3 && i % thirds == 0 ){
+					cout << "..." << std::endl ;
+				}
 			}else if( i == 3){
 				cout << "..." << std::endl ;
 			}
 			uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
-				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, outF, repeats, writeFiles);
+				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, repeats, writeFiles);
 			}
 			//use main thread to calc one sample as well
 			DivEsts * div 	= new DivEsts();
 			rareStruct* tmpRS;
-			tmpRS 			= calcDivRar(i, Mo, div, rareDep, &abundInRow, outF, repeats, writeFiles);
+			tmpRS 			= calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, repeats, writeFiles);
 
 
 			i++;
@@ -607,8 +617,14 @@ int main(int argc, char* argv[])
 		delete Mo;
 
 
+		// compute chao2, ACE, ICE and write to file
 		vector<mat_fl> chao2 = computeChao2(abundInRow);
-		writeChao2(chao2, outF + "_chao2.tsv");
+		vector<mat_fl> ICE;
+		vector<mat_fl> ACE;
+		computeCE(ICE, abundInRow);
+		computeCE(ACE, occuencesInRow);
+		writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
+
 		cout << "Finished\n";
 		std::exit(0);
 	}
@@ -624,7 +640,7 @@ int main(int argc, char* argv[])
 	string emptySmp;
 	string skippedSample;
 	vector<vector<uint>> abundInRow;
-	cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, &abundInRow, writeFiles,true,false);
+	//cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, &abundInRow, writeFiles,true,false);
 
 
 	div->print2file(outF+"_estimates");

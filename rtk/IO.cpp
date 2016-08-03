@@ -113,7 +113,8 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 
 void smplVec::rarefy(long dep, string ofile, int rep,
 					DivEsts* divs, std::vector<map<uint, uint>> & RareSample,
-					string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* abundInRow,
+					string& retCntsSampleName, string& skippedSample,
+					vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
 					int writes,bool write, bool fillret){
 	if (dep>totSum){
 		skippedSample = divs->SampleName;
@@ -173,6 +174,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			auto fnd = cntsMap.find(i);
 			if(fnd != cntsMap.end()){
 				abundInRow->at(curRep)[id]++;
+				occuencesInRow->at(curRep)[id] = occuencesInRow->at(curRep)[id] + fnd->second;
 			}
 		}
 		rarefyMutex.unlock();
@@ -715,12 +717,14 @@ vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow){
 	return chao2;
 }
 
-void computeICE(vector<vector<uint>>& abundInRow){
-	vector<mat_fl> ICE;
-
+void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow){
+	// inspired by the ICE implementation in the R package fossil
+	// by Matthew Vavrek
+	// https://matthewvavrek.com/programs-and-code/fossil/
+	// ACE and IE use this functio, one with ror abundance the other with row presence data
 	int val;
 	for(uint i = 0; i < abundInRow.size(); i++){
-		vector<uint> abundOneToTen(10,0);
+		std::vector< int > abundOneToTen(10,0);
 		float nr = 0.0, sa = 0.0, sr = 0.0, f1 = 0.0, ca= 0.0,sumf= 0.0, g2a = 0.0;
 
 		for(uint j = 0; j < abundInRow[i].size(); j++){
@@ -734,15 +738,14 @@ void computeICE(vector<vector<uint>>& abundInRow){
 			if(val == 1){
 				f1 += 1;
 			}
-			if(val < 11 && val > 0){
-				abundOneToTen[val] = abundOneToTen[val] + 1;
+			if((val < 11) && (val > 0)){
+			 	abundOneToTen[val-1]++;
 			}
 		}
-		cout << std::endl;
+
 		for(uint j = 0; j < abundOneToTen.size(); j++){
-			sumf += abundOneToTen[j] * j;
+			sumf += abundOneToTen[j] * (j+1);
 		}
-		cout << std::endl;
 		ca = 1 - (f1)/(nr);
 		g2a = (sr/ca) * (sumf/(nr * (nr - 1))) - 1;
 		if(g2a < 0){
@@ -751,25 +754,31 @@ void computeICE(vector<vector<uint>>& abundInRow){
 
 		if(ca != 0){
 			mat_fl tmp = sa + sr/ca + (f1/ca) * g2a;
-			ICE.push_back(tmp);
+			CE.push_back(tmp);
 		}else{
-			ICE.push_back(0);
-			//vector<uint> ia
-			//ice = computeChao2()
+			CE.push_back(0);// or compute chao2 here, why would i do that?
 		}
-
-
-	// ice <- sa + sr/ca + (f1/ca) * g2a
-
 	}
 }
 
 
-void writeChao2(vector<mat_fl>& chao2, string outF){
+void writeGlobalDiv(vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<mat_fl>& chao2, string outF){
 	ofstream out(outF.c_str());
 	out << "Chao2";
 	for(uint j = 0; j < chao2.size(); j++){
 		out << '\t' << chao2[j];
+	}
+	out << '\n';
+
+	out << "ICE";
+	for(uint j = 0; j < ICE.size(); j++){
+		out << '\t' << ICE[j];
+	}
+	out << '\n';
+
+	out << "ACE";
+	for(uint j = 0; j < ACE.size(); j++){
+		out << '\t' << ACE[j];
 	}
 	out << '\n';
 	out.close();

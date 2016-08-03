@@ -94,7 +94,7 @@ public:
 		//delete[] arr;
 	}
 	void rarefy(long,string o,int rep,DivEsts*, vector<map<uint, uint>>& RareSample,
-		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* , int=0,bool=false, bool=false);
+		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* ,vector<vector<uint>>* , int=0,bool=false, bool=false);
 	long getRichness(const vector<unsigned int>& cnts);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
 	vector < string > getRowNames(){ return(IDs); }
@@ -126,5 +126,6 @@ private:
 };
 
 vector<mat_fl> computeChao2(vector<vector<uint>>& abundInRow);
-void computeICE(vector<vector<uint>>& abundInRow);
-void writeChao2(vector<mat_fl>&, string );
+// compute ace or ice, depending on input data
+void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow);
+void writeGlobalDiv(vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<mat_fl>& chao2, string outF);
