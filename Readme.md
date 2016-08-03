@@ -1,16 +1,16 @@
-# Rarefaction tool kit - rtk
+# Rarefaction tool kit - RTK
 A rarefaction software written in C++11 to rarefy large high count datasets quickly and return diversity measures.
 
 # Installation
-To use rtk you can download the binary files under https://github.com/hildebra/Rarefaction/releases or compile from source.
+To use RTK you can download the binary files under https://github.com/hildebra/Rarefaction/releases or compile from source.
 
-For the R package please see the [readme of rtk](r-package/rtk/README.md).
+For the R package please see the [readme of RTK](r-package/rtk/README.md).
 
 ## Compile from source
 To build this software you will need to have a compiler for C++11 on your system. On a GNU/Linux system you usuallu have to install developer tools to do that. For Ubuntu this is explained here: https://help.ubuntu.com/community/InstallingCompilers
 
 
-rtk was tested to compile successfully on windows (version? with compiler XY), GNU/Linux (g++ v. 4.8.5 and v. 6.1.1) and on Mac OS 10.11.2 (Apple LLVM version 7.0.0 (clang-700.0.72)).
+RTK was tested to compile successfully on windows (version? with compiler XY), GNU/Linux (g++ v. 4.8.5 and v. 6.1.1) and on Mac OS 10.11.2 (Apple LLVM version 7.0.0 (clang-700.0.72)).
 
 
 **Compile in UNIX**
@@ -73,7 +73,7 @@ In both cases RAM usage is drastically reduced and the load on the local drive i
 
 
 ## Colum sums
-Knowing the dataset at hand is relevant. thats whi RTK allows the user to quickly estimate the column sums of the dataset.
+Knowing the dataset at hand is relevant. That is why RTK allows the user to quickly estimate the column sums of the dataset.
 
 The mode colsums creates two files containing sorted and unsorted column sums of all samples:
 ```bash
@@ -83,7 +83,7 @@ rtk  colsums -i <input.csv> -o <output> [options]
 
 
 ## Input data format
-Input data for rtk should be a count table in a .tsv or .csv format.
+Input data for RTK should be a count table in a .tsv or .csv format.
 Row and column names must be provided and be unique.
 
 **Example file:**
@@ -127,6 +127,6 @@ ls -lh test.*
 
 
 # Copyright
-rtk is licensed under the GPLv2. See notice and license file for more information.
+RTK is licensed under the GPLv2. See notice and license file for more information.
 
 Copyright (c) 2016 by Falk Hildebrand and Paul Saary
