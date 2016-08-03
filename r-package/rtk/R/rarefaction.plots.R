@@ -1,5 +1,5 @@
 
-plot.rarefaction <- function(x, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", boxplot = FALSE, ...){
+plot.rtk <- function(x, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", boxplot = FALSE, ...){
 
   if(!div%in% c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eveness')){
     stop(paste("Not a possible plotting option for div:", div))
