@@ -230,7 +230,13 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	while(i < fileNames.size()){
 
 		// allow multithreading
-		cerr << "At Sample " << i+1 << " of " << fileNames.size() << " Samples" << std::endl;
+		int thirds = floor((fileNames.size()-3)/3);
+		if(i < 3 || i % thirds == 0  ){
+			cout << "At Sample " << i+1 << " of " << fileNames.size() << " Samples" << std::endl  ;
+			if(i % thirds == 0 ){cout << "..." << std::endl ;}
+		}else if( i == 3){
+			cout << "..." << std::endl ;
+		}
 		uint toWhere = done + numThr - 1;
 		if ((uint)((uint)fileNames.size() - 2 ) < toWhere){
 			toWhere = fileNames.size() - 2;
@@ -307,7 +313,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 
 	// compute chao2 and write to file
 	vector<mat_fl> chao2 = computeChao2(abundInRow);
-	 computeICE(abundInRow);
+	//computeICE(abundInRow);
 
 	writeChao2(chao2, outF + "_chao2.tsv");
 
@@ -511,7 +517,13 @@ int main(int argc, char* argv[])
 		cout << "threads\n";
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
-			cerr << "At Sample " << i+1 << " of " << Mo->smplNum() << " Samples" << std::endl;
+			int thirds = floor(( Mo->smplNum()-3)/3);
+			if(i < 3 || i % thirds == 0  ){
+				cout << "At Sample " << i+1 << " of " <<  Mo->smplNum() << " Samples" << std::endl  ;
+				if(i % thirds == 0 ){cout << "..." << std::endl ;}
+			}else if( i == 3){
+				cout << "..." << std::endl ;
+			}
 			uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
