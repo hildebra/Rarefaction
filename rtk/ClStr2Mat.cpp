@@ -1,7 +1,7 @@
 #include "ClStr2Mat.h"
 
 
-ClStr2Mat::ClStr2Mat(const string inF, const string outF, 
+ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 	const string mapF, const string basePX):
 	GAs(0), CCH(NULL),smplLoc(0), baseP(0), smplN(0), curr(-1) {
 	ifstream incl;
@@ -18,7 +18,7 @@ ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 	incl.open(inF.c_str());
 	if (!incl) { cerr << "Couldn't open clustering file " << inF << endl; exit(55); }
 
-	//read map(s) and check that 
+	//read map(s) and check that
 	stringstream ss2(mapF);
 	while (getline(ss2, segments, ',')) {
 		read_map(segments);
@@ -30,7 +30,7 @@ ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 	vector<string> SmplNmsVec(smplN, "");
 	for (auto it = smpls.begin(); it != smpls.end(); it++) {
 		vector<int> XX = (*it).second;
-		SmplNmsVec[ XX[XX.size()-1] ] = (*it).first; 
+		SmplNmsVec[ XX[XX.size()-1] ] = (*it).first;
 	}
 	matO << "Genes";
 	for (size_t i = 0; i < SmplNmsVec.size(); i++) {
@@ -42,18 +42,18 @@ ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 	CCH = new ContigCrossHit((int)smplN);
 	CCH->setSmplNms(SmplNmsVec);
 	//SparseMatrix * mat = new SparseMatrix();
-	string line; 
+	string line;
 	int CLidx = 1;
 	const string sampleSeq = "__";
 	vector<smat_fl> repVec(smplN, 0.f), SmplSum(smplN, 0.f);
-	bool repFound = false; 
+	bool repFound = false;
 	while (getline(incl, line)) {
 		if (line.substr(0, 1) == ">") {//new cluster, add line to matrix
 			//mat->newRow();//itos(CLidx)
 			//write the vector out
-			if (CLidx >= 2) { 
+			if (CLidx >= 2) {
 				//report part is here
-				printVec(matO, repVec, itos(CLidx)); 
+				printVec(matO, repVec, itos(CLidx));
 				if (!repFound) {
 					geneNames << "\t?\n";
 					cerr << "No RepSeq found for " << line <<" -1"<< endl;
@@ -63,12 +63,12 @@ ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 			geneNames << itos(CLidx) << "\t" << line;
 			repVec.clear(); repVec.resize(smplN);
 			continue;
-		} 
+		}
 		//1 get gene, sample (deparse)
 		size_t pos = line.find("nt, >");
 		size_t pos2 = line.find("...", pos + 4);
 		string gene = line.substr(pos + 5, pos2 -pos -5 );
-		
+
 		if (!repFound && line.back() == '*') {//report representative gene
 			geneNames << "\t"<<gene<< endl;
 			repFound = true;
@@ -125,13 +125,13 @@ void ClStr2Mat::read_map(const string mapF) {
 	cout << "Reading map " << mapF << " on path " << baseP[curr] << endl;
 	SmplOccurMult CntAssGrps;
 	string line; int cnt(-1); int assGrpN(-1);
-	
+
 	while (getline(in, line)) {
 		cnt ++; int sbcnt(-1);
 		stringstream ss (line); string segments;
 		if (line.substr(0, 1) == "#") { //read column position of smpl id, path & assGrps
 			if (cnt > 0) { continue; }
-			
+
 			while (getline(ss, segments, '\t')) {
 				sbcnt++;
 				if (sbcnt==0 && segments != "#SmplID") { cerr << "Map has to start with tag \"#SmplID\"\n"; exit(83); }
@@ -140,15 +140,15 @@ void ClStr2Mat::read_map(const string mapF) {
 					assGrpN = sbcnt; cout << "Found Assembly groups in map\n";
 				}
 			}
-			continue; 
+			continue;
 		}
 		getline(ss, segments, '\t');
 		string smpID = segments;
 		if (smpls.find(smpID) != smpls.end()) {
 			cerr << "Double sample ID: " << smpID << endl; exit(12);
 		}
-		
-		
+
+
 		getline(ss, segments, '\t');
 		string locality = segments;
 
@@ -163,7 +163,7 @@ void ClStr2Mat::read_map(const string mapF) {
 		} else {
 			CntAssGrps[segments] = vector<int>(1,(int)smplLoc.size());
 		}
-		
+
 		if (CntAssGrps[segments].size() > 1) {
 			string nsmpID = smpID + "M" + to_string(CntAssGrps[segments].size());
 			smpls[nsmpID] = CntAssGrps[segments];//(int)smplLoc.size();

@@ -82,10 +82,6 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 
 
 void helpMsg(){
-	string  AvailableModes = "Available run modes:\nnormalize\nsplitMat\nlineExtr\nmergeMat\nsumMat\nrarefaction\nrare_inmat\nmodule\n";
-	cerr << AvailableModes << "Provide two arguments\nexiting..\n";
-	cerr << "------------------------------\nAuthor: falk.hildebrand@gmail.com\n";
-	std::exit(2);
 }
 
 

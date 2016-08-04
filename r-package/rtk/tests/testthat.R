@@ -1,4 +1,4 @@
 library(testthat)
 library(rtk)
 
-test_check("rarefaction")
+test_check("rtk")
