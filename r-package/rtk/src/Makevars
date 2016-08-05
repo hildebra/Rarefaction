@@ -1,6 +1,7 @@
 ## -*- mode: makefile; -*-
 
 #PKG_CXXFLAGS=-std=c++11
+#PKG_CXXFLAGS="-cflags pauls -fpauls -pauls"
 CC=g++
 CXX=g++
 CXX_STD=CXX11
