@@ -6,7 +6,6 @@
 //#include "Matrix.h"
 #include "ClStr2Mat.h"
 #include "Rare.h"
-#include "options.h"
 
 const char* rar_ver="0.7 beta";
 
@@ -21,9 +20,10 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 	vector< map< uint, uint>> cntsMap;
 	string cntsName;
 	string skippedNames;
+	bool wrAtAll(writeFiles > 0);
 	cur->rarefy(rareDep, outF, repeats,
 					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-					writeFiles, false, writeFiles);
+					writeFiles, false, wrAtAll);
 	//delete cur;
 	//return div;
 	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
@@ -47,9 +47,10 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	vector< map< uint, uint>> cntsMap;
 	string cntsName;
 	string skippedNames;
+	bool wrAtAll(writeFiles > 0);
 	cur->rarefy(rareDep, outF, repeats,
 					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-					writeFiles, false, writeFiles);
+					writeFiles, false, wrAtAll);
 
 	//delete cur;
 	//return div;
@@ -124,15 +125,18 @@ void helpMsg(){
 
 
 
-options::options(int argc, char** argv){
-/*	RefTaxFile(""), blastres(""), outF(""), input_format("bl8"),
-	BLfilter(true), calcHighMats(false), hitRD(false), isReads(false),
-	annotateAll(false), nativeSlVdb(false),
-	numThr(1), taxDepth(defDep), LCAfract(0.9f), idThr(defDep,0),
-	blFiles(0), refDBs(0), Taxlvls(defDep)*/
+options::options(int argc, char** argv) :input(""), output(""), mode(""),
+depth(0), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
+modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false),
+xtra("") {
+	/*	RefTaxFile(""), blastres(""), outF(""), input_format("bl8"),
+		BLfilter(true), calcHighMats(false), hitRD(false), isReads(false),
+		annotateAll(false), nativeSlVdb(false),
+		numThr(1), taxDepth(defDep), LCAfract(0.9f), idThr(defDep,0),
+		blFiles(0), refDBs(0), Taxlvls(defDep)*/
 
 	bool hasErr = false;
-
+	if (argc == 0) { return; }//could be the pseudo mod opt object
 
 	//bool newIDthrs = false; string newIDthStr("");
 	mode = argv[1];
@@ -158,22 +162,39 @@ options::options(int argc, char** argv){
 			verbose = true;
 		else if (!strcmp(argv[i], "-h"))
 			helpMsg();
+		//module specific args
+		else if (!strcmp(argv[i], "-refMods"))
+			modDB = (argv[++i]);
+		else if (!strcmp(argv[i], "-redundancy"))
+			modRedund = atoi(argv[++i]);
+		else if (!strcmp(argv[i], "-enzymeCompl"))
+			modEnzCompl = (float)atof(argv[++i]);
+		else if (!strcmp(argv[i], "-moduleCompl"))
+			modModCompl = (float)atof(argv[++i]);
+		else if (!strcmp(argv[i], "-writeExtraModEstimates"))
+			modWrXtraInfo = true;
+		else if (!strcmp(argv[i], "-xtra"))
+			xtra = (argv[++i]);
 
+		
 
 	}
 
 	// sanity checks
 	// we need input
-	if(input == ""){
-		cerr << "A input must be given\n";
-		hasErr = true;
+	if (input == "") {//just set some defaults
+		//cerr << "A input must be given\n";
+		//hasErr = true;
+		input = argv[2];
+		output = argv[3];
 	}
 
 	if (hasErr) {
 		cerr << "Use \"rtk -h\" to get full help.\n";
-		 exit(5);
+		exit(5);
 	}
-
+}
+void options::print_rare_details(){
 
 	stateVersion();
 	// print run mode:
@@ -227,7 +248,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	int rareDep 	= atoi(arg4.c_str());
 	if(rareDep == 0){
 		// rarefy to smallest colSum
-		rareDep = round(0.95 * Mo->getMinColSum());
+		rareDep = (int)round(0.95f * Mo->getMinColSum());
 		if(rareDep == 0.0){
 			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
 			exit(1);
@@ -250,7 +271,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	while(i < fileNames.size()){
 
 		// allow multithreading
-		int thirds = floor((fileNames.size()-3)/3);
+		int thirds = (int) floor((fileNames.size()-3)/3);
 		if(i < 3 || i % thirds == 0  ){
 			cout << "At Sample " << i+1 << " of " << fileNames.size() << " Samples" << std::endl  ;
 			if(i > 3 && i % thirds == 0 ){
@@ -353,19 +374,15 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 
 int main(int argc, char* argv[])
 {
-	options* opts = new options(argc,argv);
+	if (argc < 2) { cerr << "Not enough arguments. Use \"rtk -h\" for getting started.\n"; exit(3); }
 
-	string inF	 				= opts->input;
-	string outF 				= opts->output;
-	string mode 				= opts->mode;
-	bool storeBinary 		= opts->writeSwap;
-	uint rareDep				= opts->depth;
-	uint repeats 				= opts->repeats;
-	uint numThr 				= opts->threads;
-	uint writeFiles     = opts->write;
-	bool verbose        = opts->verbose;
-	string arg4         = std::to_string(rareDep);
-	vector < vector < string > > tmpMatFiles (writeFiles );
+	options* opts = new options(argc, argv);
+	string inF = opts->input;
+	string outF = opts->output;
+	string mode = opts->mode;
+	uint numThr = opts->threads;
+	string arg4 = std::to_string(opts->depth);
+	bool verbose = opts->verbose;
 
 	//mode = argv[1];
 
@@ -409,18 +426,25 @@ int main(int argc, char* argv[])
 		storeBinary = atoi(argv[8]);
 	}*/
 
+	//all modes that classify as rarefactions:
+	if (mode == "swap" || mode == "memory") {
+		opts->print_rare_details();
+	}
+
+
 	// start the modes
 //	if (argc>3){
 		if (mode == "splitMat") {
 			vector<string> empt;
-			Matrix* Mo = new Matrix(inF, outF, arg4, empt, false);
+			Matrix* Mo = new Matrix(inF, outF, opts->xtra, empt, false);
 			//Mo->splitOnHDD(outF);	//Mo->writeSums(outF);
 			delete Mo;
 			std::exit(0);
 		//}else if (mode == "rare_lowMem") {
 		//	rareLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
 	}else if (mode == "swap") {
-			rareExtremLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr, storeBinary);
+		vector < vector < string > > tmpMatFiles(opts->write);
+		rareExtremLowMem(inF, outF, opts->write,  arg4, opts->repeats, numThr, opts->writeSwap);
 			std::exit(0);
 		}	else if (mode == "correl2"){
 			//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
@@ -437,7 +461,11 @@ int main(int argc, char* argv[])
 			}
 			Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
 			cerr << "Estimate mod AB\n";
-			Mo->estimateModuleAbund(argv,argc);// arg4, outF); //arg4 needs to be module file, outF makes the (several) matrices
+			if (opts->modDB == "") {//try legacy mode
+				Mo->estimateModuleAbund(argv, argc);// arg4, outF); //arg4 needs to be module file, outF makes the (several) matrices
+			} else {
+				Mo->estimateModuleAbund(opts);
+			}
 			delete Mo;
 			std::exit(0);
 		}
@@ -467,9 +495,8 @@ int main(int argc, char* argv[])
 			delete Mo;
 			std::exit(0);
 		} else if (mode == "rarefaction" || mode == "rare_inmat") {
-			rareDep = atoi(arg4.c_str());
-		}
-		else if (mode == "colSums" || mode == "colsums"  || mode == "colSum") {
+			//rareDep = atoi(arg4.c_str());
+		} else if (mode == "colSums" || mode == "colsums"  || mode == "colSum") {
 		 // just load and discard the matrix and report back the colsums
 		 vector<string> fileNames;
 		 Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true, false);
@@ -511,7 +538,7 @@ int main(int argc, char* argv[])
 
 	//testing max mem
 	//int maxSiz = 1;if (verbose){		for(std::vector<char>::size_type sz = 1;   ;  sz *= 2)		{			break;			std::cerr << "attempting sz = " << sz << '\n';			std::vector<unsigned short> v(sz);		}		//cout<<"Max vec size: "<<maxSiz<<endl;	}
-
+	int rareDep = opts->depth;
 	if (mode == "memory"){
 		cout << "Loading input matrix to memory" << std::endl;
 		Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
@@ -521,7 +548,7 @@ int main(int argc, char* argv[])
 
 		if(rareDep == 0){
 			// rarefy to smallest colSum
-			rareDep = round(0.95 * Mo->getMinColSum());
+			rareDep = (uint)round(0.95 * Mo->getMinColSum());
 			if(rareDep == 0.0){
 				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
 				exit(1);
@@ -530,21 +557,23 @@ int main(int argc, char* argv[])
 
 		// hold rarefied matrices
 		// stores : repeats - sampels eg rows - vectors of columns
-		int NoOfMatrices = writeFiles;
+		int NoOfMatrices = opts->write;
 		vector< vector< map<uint, uint > > > MaRare (NoOfMatrices);
 		std::vector<string> cntsNames;
 
 
 		// abundance vectors to hold the number of occurences of genes per row
 		// this will be used for Chao2 estimation
-		vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
-		vector<vector<uint>> occuencesInRow(repeats, vector<uint>(Mo->rowNum(),0));
-
+		vector<vector<uint>> abundInRow(opts->repeats, vector<uint>(Mo->rowNum(),0));
+		vector<vector<uint>> occuencesInRow(opts->repeats, vector<uint>(Mo->rowNum(),0));
+		
+		//object to keep matrices
+		vector < vector < string > > tmpMatFiles(opts->write);
 		//cerr << "TH";
 		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
-			int thirds = floor(( Mo->smplNum()-3)/3);
+			int thirds = (int) floor(( Mo->smplNum()-3)/3);
 			if(i < 3 || i % thirds == 0  ){
 				cout << "At Sample " << i+1 << " of " <<  Mo->smplNum() << " Samples" << std::endl  ;
 				if(i > 3 && i % thirds == 0 ){
@@ -556,12 +585,12 @@ int main(int argc, char* argv[])
 			uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
-				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, repeats, writeFiles);
+				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
 			}
 			//use main thread to calc one sample as well
 			DivEsts * div 	= new DivEsts();
 			rareStruct* tmpRS;
-			tmpRS 			= calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, repeats, writeFiles);
+			tmpRS 			= calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
 
 
 			i++;
@@ -572,10 +601,10 @@ int main(int argc, char* argv[])
 				divvs[i] 		= tmpRS->div;
 				string curS 	= Mo->getSampleName(i);
 				//divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
-
+				
 				// add the matrices to the container
 				if(NoOfMatrices > 0){
-					if(storeBinary == true){
+					if(opts->writeSwap){
 						binaryStoreSample(tmpMatFiles, tmpRS, rowNames,outF, cntsNames, false);
 					}else{
 						memoryStoreSample(tmpRS, MaRare, cntsNames, false);
@@ -591,7 +620,7 @@ int main(int argc, char* argv[])
 
 			// add the matrices to the container
 			if(NoOfMatrices > 0){
-				if(storeBinary == true){
+				if(opts->writeSwap){
 					binaryStoreSample(tmpMatFiles, tmpRS, rowNames,outF, cntsNames, false);
 				}else{
 					memoryStoreSample(tmpRS, MaRare, cntsNames, false);
@@ -609,7 +638,7 @@ int main(int argc, char* argv[])
 		// write rarefaction matrices to disk
 		if(NoOfMatrices > 0){
 			vector< string > rowNames = Mo->getRowNames();
-			if(storeBinary == true){
+			if(opts->writeSwap){
 				printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
 			}else{
 				printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
