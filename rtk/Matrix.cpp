@@ -313,6 +313,7 @@ Modules::Modules(const string& inF) :
 	}
 	//create last module
 	mods.push_back(Module(buffer));
+
 	buffer.resize(0);
 	is.close();
 	//redundancy of KOs
@@ -322,6 +323,12 @@ Modules::Modules(const string& inF) :
 	moduleNames.resize(mods.size(), "");
 	for (size_t i = 0; i < mods.size(); i++) {
 		moduleNames[i] = mods[i].name;
+		//and track position
+		if (ModPos.find(moduleNames[i]) == ModPos.end()) {
+			ModPos[moduleNames[i]] = vector<int>(1, i);
+		} else {
+			ModPos[moduleNames[i]].push_back(i);
+		}
 	}
 	//set up descriptions
 	moduleDescriptions.resize(mods.size(), "");

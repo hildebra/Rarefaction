@@ -133,6 +133,8 @@ private:
 	vector<string> moduleNames, moduleDescriptions;
 	//list of KOs used in DB, and how often they occur
 	ModOccur MO;
+	//in case of double entries, track these
+	unordered_map<string, vector<int>> ModPos;
 
 	//list of options
 	int redund; // max redundancy of KOs used
