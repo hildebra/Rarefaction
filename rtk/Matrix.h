@@ -1,5 +1,6 @@
 #pragma once
 #include "IO.h"
+#include "options.h"
 
 typedef std::map<std::string, int> GeneIDidx;
 //contains gene ID, taxa
@@ -170,6 +171,7 @@ public:
 		else { return 0; }
 	}
 	void estimateModuleAbund(char ** args, int argc);
+	void estimateModuleAbund(options*);
 	//for the R module, all used for rarefactions only
 	void addRow(vector<mat_fl>);//idea is that a single row is added on to the matrix
 	void setSampleNames(vector<string> in) { colIDs = in; }

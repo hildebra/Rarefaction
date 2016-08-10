@@ -74,10 +74,10 @@ cerr<<"Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<ini_
 
 inline mat_fl median(std::vector<mat_fl> vec, bool ignoreZeros)
 {
-	if (vec.size() == 0) { return (mat_fl) 0; }
+	if (vec.size() == 0) { return (mat_fl)0; }
 	//std::nth_element(vec.begin(), vec.begin() + vec.size() / 2, vec.end());
 	sort(vec.begin(), vec.end());
-	size_t i (0);
+	size_t i(0);
 	if (ignoreZeros) {
 		for (; i < vec.size(); i++) {
 			if (vec[i] > 0) {
@@ -107,9 +107,9 @@ string join(const vector<string>& in, const string &X) {
 
 
 //*********************************************************
-ModStep::ModStep(const string & s):alternates(0), redundancy(0) {
+ModStep::ModStep(const string & s) :alternates(0), redundancy(0) {
 	istringstream ss(s);
-	string token(""),tok2("");
+	string token(""), tok2("");
 	//std::istream_iterator<std::string> beg(ss), end;
 	//std::vector<std::string> tokens(beg, end); // done!
 	//for (auto& s : tokens) { cout << s; }
@@ -150,6 +150,7 @@ void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, in
 
 	active.resize(alternates.size(), false);
 	abund.resize(alternates.size(), (mat_fl)0);
+	KOdescr.resize(alternates.size(), "");
 	//actual deep routine to determine if KOs in this step satisfy presence conditions
 	for (size_t i = 0; i < alternates.size(); i++) {
 		size_t altS = alternates[i].size(); float hits(0);
@@ -165,19 +166,23 @@ void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, in
 			auto fn = IDX.find(alternates[i][j]);
 			if (fn == IDX.end()) {
 				tmpAB[j] = 0;
-			} else {
-				hits++;
+			}
+			else {
 				tmpAB[j] = v[fn->second];
+				if (tmpAB[j] > 0) {
+					hits++;
+					KOdescr[i] += alternates[i][j] + ",";
+				}
 			}
 		}
 		if (altS == 0) {
 			//r[i] = (mat_fl)-1;//signal that removed due to redundancy
 			continue;
 		}
-/*		if (hits > 0) {
-			int x = 0;
+		/*		if (hits > 0) {
+		int x = 0;
 		}*/
-		if ( hits / (float)altS >= hitComplRatio) {
+		if (hits / (float)altS >= hitComplRatio) {
 			abund[i] = median(tmpAB);
 			active[i] = true;
 		}
@@ -185,6 +190,8 @@ void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, in
 
 	//return (active);
 }
+
+
 
 //*********************************************************
 Module::Module(vector<string>& n) :name(""), description(""), steps(0){
@@ -199,27 +206,29 @@ Module::Module(vector<string>& n) :name(""), description(""), steps(0){
 		}
 	}
 }
-mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<string, int>& IDX,
-		const int redund, const float PathwCompl, const float enzymCompl, string & savedNmsKO, float& modScoreOut) {
-
+mat_fl Module::pathAbundance(const vector<mat_fl>& v, const unordered_map<string, int>& IDX,
+	const int redund, const float PathwCompl, const float enzymCompl, string & savedNmsKO, float& modScoreOut) {
 	//initial parameters
-	//float PathwCompl(0.6f); //corresponds to -c
-	//float enzymCompl(0.8f);
+	//float PathwCompl(0.6f); //corresponds to -c 
+	//float enzymCompl(0.8f); 
 	//int redund(0);
 
 	vector< vector< mat_fl >> abunds(steps.size(), vector<mat_fl>(0));//contains abundance
 	vector< vector< bool >> active(steps.size());//contains info if path was even active
 	vector<mat_fl> preMed(steps.size(), (mat_fl)0), postMed(steps.size(), (mat_fl)0);
-	vector<vector<string>> altKOs(steps.size(),vector<string>(0));//just for saving which KO's were exactly active
+	vector<vector<string>> altKOs(steps.size(), vector<string>(0));//just for saving which KO's were exactly active
+	if (name == "M00254") {
+		int x = 0;
+	}
+
 	//auto t = IDX.find("xx");
 	for (size_t i = 0; i < steps.size(); i++) {
-		steps[i].abundParts(v, IDX,abunds[i], active[i], altKOs[i], enzymCompl,  redund);
+		steps[i].abundParts(v, IDX, abunds[i], active[i], altKOs[i], enzymCompl, redund);
 		//determine median overall value
 		preMed[i] = median(abunds[i]);
 	}
 	mat_fl pm = median(preMed);
 	mat_fl retval(0);
-
 
 	if (0) {
 		//VAR 1
@@ -236,13 +245,13 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 		//VAR 2
 		//calc abundance for each possible (active) path and substract from others, but add remainders up
 		//vector<mat_fl> tmp(steps.size(), (mat_fl)0);
-		vector<mat_fl> curP(steps.size(),(mat_fl)0);
-		float act(0.f),shldAct((float)steps.size());
+		vector<mat_fl> curP(steps.size(), (mat_fl)0);
+		float act(0.f), shldAct((float)steps.size());
 		vector<int> decIdx(steps.size(), 0);
-//ini decIdx
+		//ini decIdx
 		for (size_t i = 0; i < steps.size(); i++) {
 			size_t dI = 0; double maxAB = 0;
-			while (dI < int (active[i].size() )) {
+			while (dI < int(active[i].size())) {
 				if (abunds[i][dI] > maxAB && active[i][dI]) {
 					decIdx[i] = dI;
 					maxAB = abunds[i][decIdx[i]];
@@ -255,19 +264,19 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 		while (1) { // this loop goes over every possible path combination
 			for (size_t i = 0; i < steps.size(); i++) {
 				if (abunds[i][decIdx[i]] > 0 && active[i][decIdx[i]]) {
-					curP [i] = abunds[i][ decIdx[i] ]; act++;
+					curP[i] = abunds[i][decIdx[i]]; act++;
 					if (saveKOnames) {
 						savedNmsKO += altKOs[i][decIdx[i]];// +",";
 					}
 				} /*else if (!active[i][decIdx[i]]) {
-					shldAct--;
-				} */
+				  shldAct--;
+				  } */
 			}
-			if ( (act / shldAct) >= PathwCompl) { //shldAct > 0 &&
-				//this part parses out the KOs that are actually active
-				mat_fl curM = median(curP,true);
+			if ((act / shldAct) >= PathwCompl) { //shldAct > 0 &&
+												 //this part parses out the KOs that are actually active
+				mat_fl curM = median(curP, true);
 				retval += curM;
-				vecPurge(abunds,curM);
+				vecPurge(abunds, curM);
 				modScoreOut = act / shldAct;
 			}
 			else {
@@ -282,10 +291,11 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v,  const unordered_map<strin
 }
 
 
+
 //*********************************************************
 //read in module file
-Modules::Modules(const string& inF):
-	redund(1),PathwCompl(0.6f), enzymCompl(0.8f) {
+Modules::Modules(const string& inF) :
+	redund(1), PathwCompl(0.6f), enzymCompl(0.8f) {
 	ifstream is(inF.c_str());
 	string line(""); vector<string> buffer(0);
 	string ModToken = "M";
@@ -360,14 +370,15 @@ void Modules::calc_redund() {
 
 vector<mat_fl> Modules::calcModAbund(const vector<mat_fl>& v, const unordered_map<string,
 	int>& IDX, vector<string> &retStr, vector<float> &retScore) {
-	vector<mat_fl> ret(mods.size(),(mat_fl)0);
+	vector<mat_fl> ret(mods.size(), (mat_fl)0);
 	retStr.resize(mods.size(), ""); retScore.resize(mods.size(), 0.f);
 	mat_fl unass_cnt(0.f);//TOGO
-	//vector<bool> usedKOs(v.size()); //initial idea to save KOs used to estimated unassigned fraction - better to scale by seq depth external
-
+						  //vector<bool> usedKOs(v.size()); //initial idea to save KOs used to estimated unassigned fraction - better to scale by seq depth external
 	for (size_t i = 0; i < mods.size(); i++) {
-		ret[i] = mods[i].pathAbundance(v,IDX, redund, PathwCompl, enzymCompl, retStr[i], retScore[i]);
+		ret[i] = mods[i].pathAbundance(v, IDX, redund, PathwCompl, enzymCompl, retStr[i], retScore[i]);
 	}
+	//add unkowns
+	ret.push_back(unass_cnt);
 	return ret;
 }
 
@@ -790,19 +801,35 @@ cerr << "No genes read.. aborting\n";
 }
 
 void Matrix::estimateModuleAbund(char ** argv, int argc) {
-	string moduleFile = argv[4];
-	string outFile = argv[3];
-	string doModKOest = argv[4];
+	char* argX[1];
+	options* psOpt = new options(0, argX);
+	psOpt->modDB = argv[4];
+	psOpt->output = argv[3];
+	//string doModKOest = argv[4];
 	//read module DB
-	Modules* modDB = new Modules(moduleFile);
 
 	//ini options
-	int redundancy = atoi(argv[5]);
-	float pathCompl = (float)atof(argv[6]);
-	float enzyCompl = (float)atof(argv[7]);
-	bool writeKOused = false;
+	psOpt->modRedund = atoi(argv[5]);
+	psOpt->modModCompl = (float)atof(argv[6]);
+	psOpt->modEnzCompl = (float)atof(argv[7]);
+	psOpt->modWrXtraInfo = false;
 	//cout << argv[8] << endl;
-	if (argc > 8 && strcmp(argv[8],"1")==0 ) { writeKOused = true; }
+	if (argc > 8 && strcmp(argv[8], "1") == 0) { psOpt->modWrXtraInfo = true; }
+}
+
+void Matrix::estimateModuleAbund(options* opts) {
+	string outFile = opts->output;
+	//string doModKOest = argv[4];
+	//read module DB
+	Modules* modDB = new Modules(opts->modDB);
+
+	//ini options
+	int redundancy = opts->modRedund;
+	float pathCompl = opts->modModCompl;
+	float enzyCompl = opts->modEnzCompl;
+	bool writeKOused = opts->modWrXtraInfo;
+
+	//modWrXtraInfo
 
 	modDB->setEnzymCompl(enzyCompl);
 	modDB->setPathwCompl(pathCompl);

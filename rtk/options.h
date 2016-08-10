@@ -1,7 +1,12 @@
+#pragma once
+#include "IO.h"
+
+
 struct options
 {
 public:
 	options(int argc, char** argv);
+	void print_rare_details();
 	//~options();
 
 	//vars
@@ -15,4 +20,11 @@ public:
   bool writeSwap = true;
   bool verbose = false;
 
+  string modDB;
+  int modRedund;
+  float modEnzCompl;
+  float modModCompl;
+  bool modWrXtraInfo;
+
+  string xtra;
 };
