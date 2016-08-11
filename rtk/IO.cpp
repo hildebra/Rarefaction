@@ -5,23 +5,23 @@ std::mutex rarefyMutex;
 void lineCntOut(const string inF, const string outF, const string arg4){
 	ifstream in(inF.c_str());
 	ofstream out(outF.c_str(), ios::out);
-	if (!in){ 
+	if (!in){
 #ifdef notRpackage
-cerr << "Can't open infile " << inF << endl; std::exit(99); 
+cerr << "Can't open infile " << inF << endl; std::exit(99);
 #endif
 }
-	if (!out){ 
+	if (!out){
 #ifdef notRpackage
-cerr << "Can't open outfile " << outF << endl; std::exit(99); 
+cerr << "Can't open outfile " << outF << endl; std::exit(99);
 #endif
 }
 	//read file that contains nicely ordered all indexes of lines to be extracted
 	string line;
 	vector<uint> srtTar;
 	ifstream idxS(arg4.c_str());
-	if (!idxS){ 
+	if (!idxS){
 #ifdef notRpackage
-cerr << "Can't open outfile " << arg4 << endl; std::exit(99); 
+cerr << "Can't open outfile " << arg4 << endl; std::exit(99);
 #endif
 }
 	while (getline(idxS, line, '\n')) {
@@ -35,7 +35,7 @@ cerr << "Can't open outfile " << arg4 << endl; std::exit(99);
 	sort(srtTar.begin(), srtTar.end());
 
 	//sort through new file
-	if (!out){ 
+	if (!out){
 #ifdef notRpackage
 cerr << "Can't open outfile " << outF << endl; std::exit(99);
 #endif
@@ -53,7 +53,7 @@ cerr << "Can't open outfile " << outF << endl; std::exit(99);
 
 	in.close(); out.close();
 	if (j != srtTar.size()){
-		
+
 #ifdef notRpackage
 cerr << "Missed " << (srtTar.size() - j) << " entries." << endl;
 #endif
@@ -66,7 +66,7 @@ num_threads(nt), richness(-1), Shannon(-1.f){
 	for (uint i = 0; i < vec.size(); i++){
 		cumSum += vec[i];
 	}
-	if (verbose){ 
+	if (verbose){
 #ifdef notRpackage
 cerr << (long)cumSum << " allocating ";
 #endif
@@ -74,16 +74,16 @@ cerr << (long)cumSum << " allocating ";
 	//arr = (int*) malloc((int)cumSum * sizeof(int));
 	//arr = new unsigned short[(int)cumSum];
 	arr.resize((long)cumSum);
-	if (verbose){ 
+	if (verbose){
 #ifdef notRpackage
-cerr << "memory"; 
+cerr << "memory";
 #endif
 }
 	totSum = cumSum;
 	long k(0); uint posInVec(-1);
 	//numFeatures = 0;
 	for (size_t i = 0; i< vec.size(); i++){
-		
+
 		long maxG = (long)vec[i];
 		IDs.push_back( std::to_string(i));
 
@@ -99,9 +99,9 @@ cerr << "memory";
 	}
 	posInVec++;
 	numFeatures = posInVec;
-	if (verbose){ 
+	if (verbose){
 	#ifdef notRpackage
-	cerr << "..\n"; 
+	cerr << "..\n";
 	#endif
 	}
 }
@@ -119,17 +119,12 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 		vec.push_back(num); IDs.push_back(ID);
 	}
 	in.close();
-	//
-#ifdef notRpackage
-cerr<<"tt";std::vector<unsigned short> v((int)cumSum);
-#endif
+
 	if (verbose){
-#ifdef notRpackage
-cerr<<(long)cumSum<<" allocating ";
-#endif
-}
-	//arr = (int*) malloc((int)cumSum * sizeof(int));
-	//arr = new unsigned short[(int)cumSum];
+		#ifdef notRpackage
+		cerr<<(long)cumSum<<" allocating ";
+		#endif
+	}
 	arr.resize((long)cumSum);
 	if (verbose){
 	#ifdef notRpackage
@@ -139,7 +134,7 @@ cerr<<(long)cumSum<<" allocating ";
 	totSum = cumSum;
 	long k(0); uint posInVec(0);
 	for (size_t i = 0; i< vec.size(); i++){
-		
+
 		long maxG = (long)vec[i];
 		maxG += k;
 		if (maxG == 0){ continue; }//not really a feature, doesnt need ot be counted as cat
@@ -461,9 +456,9 @@ double smplVec::calc_eveness(const vector<uint>& vec){
 void DivEsts::print2file(const string file){
 	if (richness.size()<1){return;}
 	ofstream out(file.c_str());
-	if (!out){ 
+	if (!out){
 #ifdef notRpackage
-cerr << "Couldn't open diversity estimate file " << file << endl; std::exit(99); 
+cerr << "Couldn't open diversity estimate file " << file << endl; std::exit(99);
 #endif
 }
 	out<<"Richness\t"<<richness[0];
@@ -496,14 +491,14 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV ){
 
 	string outFmedian = outF + "median_alpha_diversity.tsv";
 	ofstream out(outFmedian.c_str());
-	if (!out){ 
+	if (!out){
 #ifdef notRpackage
-cerr << "Couldn't open diversity estimate matrix " << outF << endl; std::exit(99); 
+cerr << "Couldn't open diversity estimate matrix " << outF << endl; std::exit(99);
 #endif
 }
 	out << "Smpl\tRichness\tShannon\tSimpson\tInv. Simpson\tChao1\tEveness\n";
 	for (size_t i = 0; i < inD.size(); i++){
-		if (inD[i] == NULL){ 
+		if (inD[i] == NULL){
 #ifdef notRpackage
 cerr << "Empty vector at index " << i << "in div mat building.\n";
 #endif
@@ -599,9 +594,9 @@ cerr << "Empty vector at index " << i << "in div mat building.\n";
 }
 void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId){
 	ofstream out(outF.c_str());
-	if (!out){ 
+	if (!out){
 #ifdef notRpackage
-cerr << "Couldn't open rarefy matrix file " << outF << endl; std::exit(99); 
+cerr << "Couldn't open rarefy matrix file " << outF << endl; std::exit(99);
 #endif
 }
 
@@ -636,9 +631,9 @@ string printSimpleMap(map<uint, uint> vec, string outF, string id, vector<string
 	// to the disk.
 	// this way we dont need memory to do
 	ofstream out(outF.c_str(),  ios::binary);
-	if (!out){ 
+	if (!out){
 #ifdef notRpackage
-cerr << "Couldn't open tmpvec file " << outF << endl; std::exit(99); 
+cerr << "Couldn't open tmpvec file " << outF << endl; std::exit(99);
 #endif
 }
 	for(uint i = 0; i < rowNames.size(); i++){
@@ -689,9 +684,9 @@ void reassembleTmpMat(vector<string> inF, vector< string > rowNames, vector< str
 	}
 
 	ofstream out(outF.c_str());
-	if (!out){ 
+	if (!out){
 #ifdef notRpackage
-cerr << "Couldn't open tmpvec file " << outF << endl; std::exit(99); 
+cerr << "Couldn't open tmpvec file " << outF << endl; std::exit(99);
 #endif
 }
 	out << "Rarefied";
