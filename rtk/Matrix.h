@@ -80,7 +80,7 @@ struct ModStep
 {
 public:
 	ModStep() :alternates(0), redundancy(0){}
-	ModStep(const string&);
+	ModStep(const string&, bool&, vector<string>&);
 	void getAllKOs(list<string>&);
 	void setRedund(ModOccur& m);
 	void abundParts(const vector<mat_fl>& v, const unordered_map<string, int>& IDX,
@@ -106,6 +106,9 @@ public:
 	string name;
 	string description;
 	vector<ModStep> steps;
+//handles module recurrency
+	vector<string> submods;
+	bool containsMods,usedInOtherMods;
 };
 
 class Modules
@@ -118,21 +121,25 @@ public:
 	void setPathwCompl(float x) { PathwCompl = x; }
 	void setEnzymCompl(float x) { enzymCompl = x; }
 
-	vector<mat_fl> calcModAbund(const vector<mat_fl>&, const unordered_map<string, int>&,
+	vector<mat_fl> calcModAbund( vector<mat_fl>&, const unordered_map<string, int>&,
 		vector<string>&, vector<float>& );
 
 
 	vector<string> & modNms() { return moduleNames; }
 	vector<string> & modDescr() { return moduleDescriptions; }
+	vector<string> & getRedundantUsedMods() { return redundantUsedMods; }
 
 
 private:
 	void calc_redund();
 	//contains the modules in the DB, each entry being one module
 	vector<Module> mods;
-	vector<string> moduleNames, moduleDescriptions;
+	vector<string> moduleNames, moduleDescriptions, redundantUsedMods;
 	//list of KOs used in DB, and how often they occur
 	ModOccur MO;
+	//in case of double entries, track these
+	unordered_map<string, vector<int>> ModPos;
+	vector<int> recurrentMods;
 
 	//list of options
 	int redund; // max redundancy of KOs used
@@ -172,6 +179,7 @@ public:
 	}
 	void estimateModuleAbund(char ** args, int argc);
 	void estimateModuleAbund(options*);
+	void resizeMatRows(uint x,mat_fl def=(mat_fl)0);
 	//for the R module, all used for rarefactions only
 	void addRow(vector<mat_fl>);//idea is that a single row is added on to the matrix
 	void setSampleNames(vector<string> in) { colIDs = in; }
@@ -180,40 +188,8 @@ public:
 	vector < string > getRowNames(){ return(rowIDs); }
 	//void addCount(string, int, mat_fl);
 
-
-
-
-		double getMinColSum(){
-			if(colSum.size() > 0){
-				double minE = colSum[0];
-				for(uint i = 0; i < colSum.size(); i++){
-					if(minE > colSum[i]){
-						minE = colSum[i];
-					}
-				}
-				return minE;
-			}else{
-				return 0;
-			}
-		}
-	column getMinColumn(uint offset = 0){
-		column* minimalColumn = new column();
-		if(colSum.size() > 0){
-			double minE = colSum[0];
-			string ID;
-			for(uint i = 0; i < colSum.size(); i++){
-				if(minE > colSum[i]){
-					minE = colSum[i];
-					ID = colIDs[i];
-				}
-			}
-			minimalColumn->id = ID;
-			minimalColumn->colsum = minE;
-			return *minimalColumn;
-		}else{
-			return *minimalColumn;
-		}
-	}
+	double getMinColSum();
+	column getMinColumn(uint offset = 0);
 	vector< pair <double, string>> getColSums(bool sorted = false);
 	void writeColSums(string outF);
 private:
