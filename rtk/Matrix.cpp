@@ -222,9 +222,6 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v, const unordered_map<string
 	vector< vector< bool >> active(steps.size());//contains info if path was even active
 	vector<mat_fl> preMed(steps.size(), (mat_fl)0), postMed(steps.size(), (mat_fl)0);
 	vector<vector<string>> altKOs(steps.size(), vector<string>(0));//just for saving which KO's were exactly active
-	if (name == "M00254") {
-		int x = 0;
-	}
 
 	//auto t = IDX.find("xx");
 	for (size_t i = 0; i < steps.size(); i++) {
@@ -427,8 +424,9 @@ vector<mat_fl> Modules::calcModAbund( vector<mat_fl>& v, const unordered_map<str
 	}
 
 	//estimate modules that contain other modules
-	for (size_t i = 0; i < recurrentMods.size(); i++) {
-		ret[recurrentMods[i]] = mods[recurrentMods[i]].pathAbundance(v, IDX, redund, PathwCompl, enzymCompl, retStr[i], retScore[i]);
+	for (size_t j = 0; j < recurrentMods.size(); j++) {
+		uint i = recurrentMods[j];
+		ret[i] = mods[i].pathAbundance(v, IDX, redund, PathwCompl, enzymCompl, retStr[i], retScore[i]);
 	}
 
 
