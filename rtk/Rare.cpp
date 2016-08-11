@@ -1,5 +1,6 @@
 #include "ClStr2Mat.h"
 #include "Rare.h"
+#include "options.h"
 
 const char* rar_ver="0.9";
 
@@ -125,11 +126,7 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
 depth(0), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
 modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false),
 xtra("") {
-	/*	RefTaxFile(""), blastres(""), outF(""), input_format("bl8"),
-		BLfilter(true), calcHighMats(false), hitRD(false), isReads(false),
-		annotateAll(false), nativeSlVdb(false),
-		numThr(1), taxDepth(defDep), LCAfract(0.9f), idThr(defDep,0),
-		blFiles(0), refDBs(0), Taxlvls(defDep)*/
+
 
 	bool hasErr = false;
 	if (argc == 0) { return; }//could be the pseudo mod opt object
@@ -179,10 +176,12 @@ xtra("") {
 	// sanity checks
 	// we need input
 	if (input == "") {//just set some defaults
-		//cerr << "A input must be given\n";
-		//hasErr = true;
-		input = argv[2];
-		output = argv[3];
+		cerr << "Input must be specified\n";
+		hasErr = true;
+	}
+	if (output == "") {//just set some defaults
+		cerr << "Output must be specified\n";
+		hasErr = true;
 	}
 
 	if (hasErr) {
@@ -372,6 +371,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 
 int main(int argc, char* argv[])
 {
+
 	if (argc < 2) { cerr << "Not enough arguments. Use \"rtk -h\" for getting started.\n"; exit(3); }
 
 	options* opts = new options(argc, argv);
@@ -386,10 +386,6 @@ int main(int argc, char* argv[])
 
 	//all modes that classify as rarefactions:
 	if (mode == "swap" || mode == "memory") {
-		if(opts->input == ""){
-			cerr << "No input file specified. Exiting" << std::endl;
-			exit(0);
-		}
 		opts->print_rare_details();
 	}
 
