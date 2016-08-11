@@ -105,7 +105,7 @@ string join(const vector<string>& in, const string &X) {
 
 
 //*********************************************************
-ModStep::ModStep(const string & s) :alternates(0), redundancy(0) {
+ModStep::ModStep(const string & s, bool & recMod, vector<string>& subMod) :alternates(0), redundancy(0) {
 	istringstream ss(s);
 	string token(""), tok2("");
 	//std::istream_iterator<std::string> beg(ss), end;
@@ -116,6 +116,10 @@ ModStep::ModStep(const string & s) :alternates(0), redundancy(0) {
 		vector<string> tmp(0);
 		while (getline(buff, tok2, ',')) {
 			tmp.push_back(tok2);
+			if (tok2[0] == 'M') {
+				recMod = true;
+				subMod.push_back(tok2);
+			}
 		}
 		alternates.push_back(tmp);
 	}
@@ -192,7 +196,8 @@ void ModStep::abundParts(const vector<mat_fl>& v, const unordered_map<string, in
 
 
 //*********************************************************
-Module::Module(vector<string>& n) :name(""), description(""), steps(0){
+Module::Module(vector<string>& n) :name(""), description(""), steps(0), 
+		submods(0),containsMods(false), usedInOtherMods(false){
 	string token("");
 	for (size_t i = 0; i < n.size(); i++) {
 		if (i == 0) {//module name & description
@@ -200,7 +205,7 @@ Module::Module(vector<string>& n) :name(""), description(""), steps(0){
 			getline(ss, token, '\t'); name = token;
 			getline(ss, token, '\t'); description = token;
 		} else { //actual modules components (e.g. KOs)
-			steps.push_back( ModStep(n[i] ));
+			steps.push_back( ModStep(n[i], containsMods, submods));
 		}
 	}
 }
@@ -293,7 +298,8 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v, const unordered_map<string
 //*********************************************************
 //read in module file
 Modules::Modules(const string& inF) :
-	redund(1), PathwCompl(0.6f), enzymCompl(0.8f) {
+	moduleNames(0), moduleDescriptions(0), redundantUsedMods(0),
+	recurrentMods(0),redund(1), PathwCompl(0.6f), enzymCompl(0.8f) {
 	ifstream is(inF.c_str());
 	string line(""); vector<string> buffer(0);
 	string ModToken = "M";
@@ -301,7 +307,7 @@ Modules::Modules(const string& inF) :
 		//comment
 		if (line[0] == '#') { continue; }
 		//new module opens, create old module
-		if (line.find(ModToken) == 0) {
+		if (buffer.size()>0 && line.find(ModToken) == 0 && line.find("\t") != string::npos) {
 			if (buffer.size() > 0) {
 				mods.push_back(Module(buffer));
 			}
@@ -326,8 +332,29 @@ Modules::Modules(const string& inF) :
 		//and track position
 		if (ModPos.find(moduleNames[i]) == ModPos.end()) {
 			ModPos[moduleNames[i]] = vector<int>(1, i);
-		} else {
+		}
+		else {
 			ModPos[moduleNames[i]].push_back(i);
+		}
+	}
+	//finished off all ModPos entries..
+	for (size_t i = 0; i < mods.size(); i++) {
+		if (mods[i].containsMods) {
+			recurrentMods.push_back(i);
+			for (size_t j = 0; j < mods[i].submods.size(); j++) {
+				bool doAddThMod(true);
+				for (size_t k = 0; k < redundantUsedMods.size(); k++) {
+					if (redundantUsedMods[k] == mods[i].submods[j]) {
+						doAddThMod = false; break;
+					}
+				}
+				if (doAddThMod) {
+					redundantUsedMods.push_back(mods[i].submods[j]);
+					for (size_t kk = 0; kk < ModPos[mods[i].submods[j]].size(); kk++){
+						mods[ModPos[mods[i].submods[j]][kk]].usedInOtherMods = true;
+					}
+				}
+			}
 		}
 	}
 	//set up descriptions
@@ -373,17 +400,38 @@ void Modules::calc_redund() {
 
 }
 
-vector<mat_fl> Modules::calcModAbund(const vector<mat_fl>& v, const unordered_map<string,
+vector<mat_fl> Modules::calcModAbund( vector<mat_fl>& v, const unordered_map<string,
 	int>& IDX, vector<string> &retStr, vector<float> &retScore) {
 	vector<mat_fl> ret(mods.size(), (mat_fl)0);
 	retStr.resize(mods.size(), ""); retScore.resize(mods.size(), 0.f);
-	mat_fl unass_cnt(0.f);//TOGO
+	//mat_fl unass_cnt(0.f);//TOGO
 						  //vector<bool> usedKOs(v.size()); //initial idea to save KOs used to estimated unassigned fraction - better to scale by seq depth external
 	for (size_t i = 0; i < mods.size(); i++) {
+		if (mods[i].containsMods) {
+			if (mods[i].usedInOtherMods) {
+				cerr << "usedInOtherMods && containsMods - fatal error" << endl;
+				exit(823);
+			}
+			continue; 
+		}//these need to be estimated at the end
 		ret[i] = mods[i].pathAbundance(v, IDX, redund, PathwCompl, enzymCompl, retStr[i], retScore[i]);
+		if (mods[i].usedInOtherMods) { // add abundance to vec
+			auto fnd = IDX.find(mods[i].name);
+			if (fnd == IDX.end()) {
+				cerr << "Could not find module " << mods[i].name << " but should be in AB matrix\n"; exit(487);
+			}
+			v[fnd->second] = ret[i];
+		}
 	}
+
+	//estimate modules that contain other modules
+	for (size_t i = 0; i < recurrentMods.size(); i++) {
+		ret[recurrentMods[i]] = mods[recurrentMods[i]].pathAbundance(v, IDX, redund, PathwCompl, enzymCompl, retStr[i], retScore[i]);
+	}
+
+
 	//add unkowns
-	ret.push_back(unass_cnt);
+	//ret.push_back(unass_cnt);
 	return ret;
 }
 
@@ -772,17 +820,69 @@ void Matrix::estimateModuleAbund(char ** argv, int argc) {
 	if (argc > 8 && strcmp(argv[8], "1") == 0) { psOpt->modWrXtraInfo = true; }
 }
 
+//minimal sum per column, used for rarefaction min raredep
+double Matrix::getMinColSum() {
+	if (colSum.size() > 0) {
+		double minE = colSum[0];
+		for (uint i = 0; i < colSum.size(); i++) {
+			if (minE > colSum[i]) {
+				minE = colSum[i];
+			}
+		}
+		return minE;
+	}
+	else {
+		return 0;
+	}
+}
+
+column Matrix::getMinColumn(uint offset ) {
+	column* minimalColumn = new column();
+	if (colSum.size() > 0) {
+		double minE = colSum[0];
+		string ID;
+		for (uint i = 0; i < colSum.size(); i++) {
+			if (minE > colSum[i]) {
+				minE = colSum[i];
+				ID = colIDs[i];
+			}
+		}
+		minimalColumn->id = ID;
+		minimalColumn->colsum = minE;
+		return *minimalColumn;
+	}
+	else {
+		return *minimalColumn;
+	}
+}
+
+void Matrix::resizeMatRows(uint x, mat_fl def ) {
+	for (int i = 0; i < maxCols; i++) {
+		mat[i].resize(x,def);
+	}
+
+}
+
+
 void Matrix::estimateModuleAbund(options* opts) {
 	string outFile = opts->output;
-	//string doModKOest = argv[4];
-	//read module DB
-	Modules* modDB = new Modules(opts->modDB);
-
 	//ini options
 	int redundancy = opts->modRedund;
 	float pathCompl = opts->modModCompl;
 	float enzyCompl = opts->modEnzCompl;
 	bool writeKOused = opts->modWrXtraInfo;
+
+	//read module DB
+	Modules* modDB = new Modules(opts->modDB);
+
+	//get modules that are used in red mods and add them to inKOmatrix )(this matrix)
+	vector<string> recUsedMods= modDB->getRedundantUsedMods();
+	for (size_t i = 0; i < recUsedMods.size(); i++) {
+		rowID_hash[recUsedMods[i]] = rowIDs.size() ;
+		rowIDs.push_back(recUsedMods[i]);
+	}
+	//and resize mat
+	resizeMatRows(rowIDs.size());
 
 	//modWrXtraInfo
 
@@ -799,7 +899,6 @@ void Matrix::estimateModuleAbund(options* opts) {
 		//TODO: add unknown counts
 		modMat.addTtlSmpl(
 			modDB->calcModAbund(mat[i], rowID_hash, modStr[i], modScore[i])
-
 			,i );
 	}
 	//write description
