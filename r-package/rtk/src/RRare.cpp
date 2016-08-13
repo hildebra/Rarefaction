@@ -52,7 +52,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep,
 rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep,
 	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
 	string outF, int repeats, int writeFiles){
-//	cout << i << " ";
+//	Rcout << i << " ";
 	smplVec* cur = new smplVec(fileNames[i],4);
 
 	//div->SampleName = curS;
@@ -74,18 +74,14 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 
 	delete cur;
 
-	if( remove( fileNames[i].c_str() ) != 0 ){
-		cerr << "LowMem: Error deleting file: " << fileNames[i] << std::endl;
-	}
+	//if( remove( fileNames[i].c_str() ) != 0 ){
+		//cerr << "LowMem: Error deleting file: " << fileNames[i] << std::endl;
+	//}
 	return tmpRS;
 }
 
 
 void helpMsg(){
-	string  AvailableModes = "Available run modes:\nnormalize\nsplitMat\nlineExtr\nmergeMat\nsumMat\nrarefaction\nrare_inmat\nmodule\n";
-	cerr << AvailableModes << "Provide two arguments\nexiting..\n";
-	cerr << "------------------------------\nAuthor: falk.hildebrand@gmail.com\n";
-	std::exit(2);
 }
 
 
@@ -103,10 +99,7 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	// the measures are then combines again.
 
 	//split mat code
-	if(verbose == true){
-		cout << " Low mem test" << std::endl;
-		cout << "Tmp dir: " << outF << std::endl;
-	}
+
 	vector<string> fileNames;
 	Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true);
 	vector < string > SampleNames 	= Mo->getSampleNames();
@@ -116,10 +109,10 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	if(rareDep == 0){
 		// rarefy to smallest colSum
 		rareDep = round(0.95 * Mo->getMinColSum());
-		if(rareDep == 0){
-			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-			return;
-		}
+		//if(rareDep == 0){
+		//	cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+		//	return;
+		//}
 	}
 	delete Mo;
 
@@ -135,9 +128,9 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 	while(i < fileNames.size()){
 
 		// allow multithreading
-		if(verbose == true){
-			cerr << "At Sample " << i+1 << " of " << fileNames.size() << " Samples";
-		}
+		//if(verbose == true){
+		//	cerr << "At Sample " << i+1 << " of " << fileNames.size() << " Samples";
+		//}
 		uint toWhere = done + numThr - 1;
 		if ((uint)((uint)fileNames.size() - 2 ) < toWhere){
 			toWhere = fileNames.size() - 2;
@@ -252,22 +245,18 @@ int rarefyMain(string inF, string outF, string mode,
 		}
 
 		if(transpose == true){
-			if(verbose == true){
-				cout << "Will now transpose the matrix\n";
-			}
+
 			Mo->transpose();
-			if(verbose == true){
-				cout << "Done transposing\n";
-			}
+
 		}
 
 		if(rareDep == 0){
 			// rarefy to smallest colSum
 			rareDep = round(0.95 * Mo->getMinColSum());
-			if(rareDep == 0){
-				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-				return 0;
-			}
+			//if(rareDep == 0){
+			//	cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+			//	return 0;
+			//}
 		}
 		rowNames = Mo->getRowNames();
 		// abundance vectors to hold the number of occurences of genes per row
@@ -277,26 +266,14 @@ int rarefyMain(string inF, string outF, string mode,
 
 		//vector<DivEsts*> divvs(Mo->smplNum(),NULL);
 		//divvs->resize(0,NULL); // paul resize the vector
-		if(verbose == true){
-			cout << "Using " << numThr << " threads\n";
-		}
+
 		//cerr << "TH";
 		//std::future<DivEsts*> *tt = new std::future<DivEsts*>[numThr - 1];
 		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
-		//cout << "threads\n";
+		//Rcout << "threads\n";
 		uint i = 0; uint done = 0;
 		while ( i < Mo->smplNum()){
-			if(verbose == true){
-				int thirds = floor(( Mo->smplNum()-3)/3);
-				if(i < 3 || i % thirds == 0  ){
-					cout << "At Sample " << i+1 << " of " <<  Mo->smplNum() << " Samples" << std::endl  ;
-					if(i > 3 && i % thirds == 0 ){
-						cout << "..." << std::endl ;
-					}
-				}else if( i == 3){
-					cout << "..." << std::endl ;
-				}
-			}
+
 			uint toWhere = done+numThr - 1;
 			if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){
 					toWhere = Mo->smplNum() - 2;
@@ -320,7 +297,7 @@ int rarefyMain(string inF, string outF, string mode,
 
 
 
-			//cout <<'\n' <<  i << " retCnts: " << tmpCDr->retCnts.size();
+			//Rcout <<'\n' <<  i << " retCnts: " << tmpCDr->retCnts.size();
 			i++;
 			i 			= done;
 			for (; i < toWhere; i++){

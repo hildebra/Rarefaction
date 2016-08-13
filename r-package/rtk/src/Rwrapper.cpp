@@ -144,8 +144,8 @@ List rcpp_rarefaction(Rcpp::String input,
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
 	if(verbose == true){
-		cout << "Done rarefying, will now produce R objects in Cpp\n";
-		cout << "and pass them to R\n";
+		Rcout << "Done rarefying, will now produce R objects in Cpp\n";
+		Rcout << "and pass them to R\n";
 	}
 
     // convert output to R
@@ -154,7 +154,7 @@ List rcpp_rarefaction(Rcpp::String input,
     // list of all divs of each sample
     std::list<Rcpp::List> majorLst;
 	if(verbose == true){
-		cout << "Will now prepare diversity measures for R\n";
+		Rcout << "Will now prepare diversity measures for R\n";
 	}
 	for(uint i = 0; i < divvs->size(); i++){
 		// create a Lst from div pointer
@@ -170,7 +170,7 @@ List rcpp_rarefaction(Rcpp::String input,
     if(NoOfMatrices > 0){
       // matrices with all the counts
 	  if(verbose == true){
-		  cout << "Will now prepare rarefied matrices for R\n";
+		  Rcout << "Will now prepare rarefied matrices for R\n";
 	  }
 	  for(int i=0; i < NoOfMatrices; i++){
 		  if(retCnts[i].size() > 0){
@@ -180,7 +180,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	  }
     }
 	if(verbose == true){
-		cout << "All R objects were produced\n";
+		Rcout << "All R objects were produced\n";
 	}
 
     // create R object to return to R

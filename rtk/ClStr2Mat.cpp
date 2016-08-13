@@ -1,7 +1,7 @@
 #include "ClStr2Mat.h"
 
 
-ClStr2Mat::ClStr2Mat(const string inF, const string outF, 
+ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 	const string mapF, const string basePX):
 	GAs(0), CCH(NULL),smplLoc(0), baseP(0), smplN(0), curr(-1) {
 	ifstream incl;
@@ -12,25 +12,45 @@ ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 
 	ofstream matO, geneNames;
 	matO.open(outF + ".mat");
-	if (!matO) { cerr << "Couldn't open matrix output " << outF + ".mat" << endl; exit(57); }
+	if (!matO) {
+ #ifdef notRpackage
+cerr << "Couldn't open matrix output " << outF + ".mat" << endl;
+exit(57);
+#endif
+}
 	geneNames.open(outF + ".genes2rows.txt");
-	if (!geneNames) { cerr << "Couldn't open report file " << outF + ".genes2rows.txt" << endl; exit(56); }
+	if (!geneNames) {
+ #ifdef notRpackage
+cerr << "Couldn't open report file " << outF + ".genes2rows.txt" << endl;
+exit(56);
+#endif
+}
 	incl.open(inF.c_str());
-	if (!incl) { cerr << "Couldn't open clustering file " << inF << endl; exit(55); }
+	if (!incl) {
+ #ifdef notRpackage
+cerr << "Couldn't open clustering file " << inF << endl;
+exit(55);
+#endif
+}
 
-	//read map(s) and check that 
+	//read map(s) and check that
 	stringstream ss2(mapF);
 	while (getline(ss2, segments, ',')) {
 		read_map(segments);
 	}
-	if ( baseP.size() > curr+1) { cerr << "more maps than basePs\n"; exit(72); }
+	if ( baseP.size() > curr+1) {
+ #ifdef notRpackage
+cerr << "more maps than basePs\n";
+exit(72);
+#endif
+}
 
 
 	//smplnames in out matrix
 	vector<string> SmplNmsVec(smplN, "");
 	for (auto it = smpls.begin(); it != smpls.end(); it++) {
 		vector<int> XX = (*it).second;
-		SmplNmsVec[ XX[XX.size()-1] ] = (*it).first; 
+		SmplNmsVec[ XX[XX.size()-1] ] = (*it).first;
 	}
 	matO << "Genes";
 	for (size_t i = 0; i < SmplNmsVec.size(); i++) {
@@ -42,33 +62,36 @@ ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 	CCH = new ContigCrossHit((int)smplN);
 	CCH->setSmplNms(SmplNmsVec);
 	//SparseMatrix * mat = new SparseMatrix();
-	string line; 
+	string line;
 	int CLidx = 1;
 	const string sampleSeq = "__";
 	vector<smat_fl> repVec(smplN, 0.f), SmplSum(smplN, 0.f);
-	bool repFound = false; 
+	bool repFound = false;
 	while (getline(incl, line)) {
 		if (line.substr(0, 1) == ">") {//new cluster, add line to matrix
 			//mat->newRow();//itos(CLidx)
 			//write the vector out
-			if (CLidx >= 2) { 
+			if (CLidx >= 2) {
 				//report part is here
-				printVec(matO, repVec, itos(CLidx)); 
+				printVec(matO, repVec, itos(CLidx));
 				if (!repFound) {
 					geneNames << "\t?\n";
-					cerr << "No RepSeq found for " << line <<" -1"<< endl;
+
+				 #ifdef notRpackage
+				cerr << "No RepSeq found for " << line <<" -1"<< endl;
+				#endif
 				}
 			}
 			CLidx++; repFound = false;
 			geneNames << itos(CLidx) << "\t" << line;
 			repVec.clear(); repVec.resize(smplN);
 			continue;
-		} 
+		}
 		//1 get gene, sample (deparse)
 		size_t pos = line.find("nt, >");
 		size_t pos2 = line.find("...", pos + 4);
 		string gene = line.substr(pos + 5, pos2 -pos -5 );
-		
+
 		if (!repFound && line.back() == '*') {//report representative gene
 			geneNames << "\t"<<gene<< endl;
 			repFound = true;
@@ -80,7 +103,12 @@ ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 
 		//2 get abundance
 		SmplOccurITmult smNum = smpls.find(sample);
-		if (smNum == smpls.end()) { cerr << "incorrect sample name: "<< sample<<endl<<gene<<endl; exit(55); }
+		if (smNum == smpls.end()) {
+#ifdef notRpackage
+cerr << "incorrect sample name: "<< sample<<endl<<gene<<endl;
+exit(55);
+#endif
+ }
 		//Contig + Sample Info will allow to create contig linkage between samples (CCH)
 		int contig = atoi(gene.substr(pos + 3, pos2-pos-3).c_str());
 		//can be several samples (combined assembly)
@@ -99,7 +127,7 @@ ClStr2Mat::ClStr2Mat(const string inF, const string outF,
 	matO.open(outF + ".mat.sum");
 	//print sample sum
 	for (size_t i = 0; i < SmplNmsVec.size(); i++) {
-		cout << SmplNmsVec[i] << "\t" << SmplSum[i] << endl;
+		//cout << SmplNmsVec[i] << "\t" << SmplSum[i] << endl;
 		matO << SmplNmsVec[i] << "\t" << SmplSum[i] << endl;
 	}
 	matO.close();
@@ -119,36 +147,64 @@ void ClStr2Mat::read_map(const string mapF) {
 	ifstream in;
 	curr++;//keep track of different maps and inPaths
 	int preMapSize((int)smplLoc.size());
-	if (curr > baseP.size()) { cerr << "more maps than basePs\n"; exit(72); }
+	if (curr > baseP.size()) {
+ #ifdef notRpackage
+cerr << "more maps than basePs\n";
+exit(72);
+#endif
+}
 	in.open(mapF.c_str());
-	if (!in) { cerr << "Couldn't open mapping file " << mapF << endl; exit(55); }
+	if (!in) {
+ #ifdef notRpackage
+cerr << "Couldn't open mapping file " << mapF << endl;
+exit(55);
+#endif
+ }
+	#ifdef notRpackage
 	cout << "Reading map " << mapF << " on path " << baseP[curr] << endl;
+	#endif
 	SmplOccurMult CntAssGrps;
 	string line; int cnt(-1); int assGrpN(-1);
-	
+
 	while (getline(in, line)) {
 		cnt ++; int sbcnt(-1);
 		stringstream ss (line); string segments;
 		if (line.substr(0, 1) == "#") { //read column position of smpl id, path & assGrps
 			if (cnt > 0) { continue; }
-			
+
 			while (getline(ss, segments, '\t')) {
 				sbcnt++;
-				if (sbcnt==0 && segments != "#SmplID") { cerr << "Map has to start with tag \"#SmplID\"\n"; exit(83); }
-				if (sbcnt == 1 && segments != "Path") { cerr << "Map has to have tag \"Path\" as second entry\n"; exit(83); }
+				if (sbcnt==0 && segments != "#SmplID") {
+ #ifdef notRpackage
+cerr << "Map has to start with tag \"#SmplID\"\n";
+exit(83);
+#endif
+}
+				if (sbcnt == 1 && segments != "Path") {
+ #ifdef notRpackage
+cerr << "Map has to have tag \"Path\" as second entry\n";
+exit(83);
+#endif
+}
 				if (segments== "AssmblGrps") {
+					#ifdef notRpackage
 					assGrpN = sbcnt; cout << "Found Assembly groups in map\n";
+					#endif
 				}
 			}
-			continue; 
+			continue;
 		}
 		getline(ss, segments, '\t');
 		string smpID = segments;
 		if (smpls.find(smpID) != smpls.end()) {
-			cerr << "Double sample ID: " << smpID << endl; exit(12);
+
+ #ifdef notRpackage
+cerr << "Double sample ID: " << smpID << endl;
+exit(12);
+#endif
 		}
-		
-		
+
+
 		getline(ss, segments, '\t');
 		string locality = segments;
 
@@ -163,7 +219,7 @@ void ClStr2Mat::read_map(const string mapF) {
 		} else {
 			CntAssGrps[segments] = vector<int>(1,(int)smplLoc.size());
 		}
-		
+
 		if (CntAssGrps[segments].size() > 1) {
 			string nsmpID = smpID + "M" + to_string(CntAssGrps[segments].size());
 			smpls[nsmpID] = CntAssGrps[segments];//(int)smplLoc.size();
@@ -181,8 +237,11 @@ void ClStr2Mat::read_map(const string mapF) {
 	//read the gene abundances sample-wise in
 	for (uint i = preMapSize; i < smplN; i++) {
 		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i] + path2abundance));
-		cerr << baseP[curr] + "/" + smplLoc[i] << endl;
-	}
+
+ #ifdef notRpackage
+cerr << baseP[curr] + "/" + smplLoc[i] << endl;
+#endif
+}
 }
 
 
@@ -197,7 +256,12 @@ void ContigCrossHit::addHit(int Smpl, int Ctg) {
 GeneAbundance::GeneAbundance(const string abunF) {
 	ifstream in;
 	in.open(abunF.c_str());
-	if (!in) { cerr << "Couldn't open gene abundance file " << abunF << endl; exit(56); }
+	if (!in) {
+ #ifdef notRpackage
+cerr << "Couldn't open gene abundance file " << abunF << endl;
+exit(56);
+#endif
+}
 	string line;
 	while (getline(in, line)) {
 		size_t pos = line.find("\t");
@@ -210,7 +274,11 @@ smat_fl GeneAbundance::getAbundance(const string x) {
 	SmplAbunIT fnd = GeneAbu.find(x);
 	if (fnd == GeneAbu.end()) {
 		return (smat_fl) 0;
-		cerr << "Can't find " << x << endl; exit(33);
+
+ #ifdef notRpackage
+cerr << "Can't find " << x << endl;
+exit(33);
+#endif
 	}
 	return (*fnd).second;
 }

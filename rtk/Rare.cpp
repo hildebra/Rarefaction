@@ -1,13 +1,8 @@
-// rarefaction.cpp
-// usage: rarefaction in_matrix outfile
-//outfile contains richness and sample sum; in same dir several files are created
-//C:\Users\Falk\SkyDrive\science\data\test\test.mat.subs
-
-//#include "Matrix.h"
 #include "ClStr2Mat.h"
 #include "Rare.h"
+#include "options.h"
 
-const char* rar_ver="0.7 beta";
+const char* rar_ver="0.9";
 
 
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
@@ -39,6 +34,8 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep,
 	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow, string outF,
 	int repeats, int writeFiles){
+
+		exit(0);
 //	cout << i << " ";
 	smplVec* cur = new smplVec(fileNames[i],4);
 
@@ -129,11 +126,7 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
 depth(0), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
 modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), modCollapse(false),
 xtra("") {
-	/*	RefTaxFile(""), blastres(""), outF(""), input_format("bl8"),
-		BLfilter(true), calcHighMats(false), hitRD(false), isReads(false),
-		annotateAll(false), nativeSlVdb(false),
-		numThr(1), taxDepth(defDep), LCAfract(0.9f), idThr(defDep,0),
-		blFiles(0), refDBs(0), Taxlvls(defDep)*/
+
 
 	bool hasErr = false;
 	if (argc == 0) { return; }//could be the pseudo mod opt object
@@ -178,17 +171,19 @@ xtra("") {
 		else if (!strcmp(argv[i], "-xtra"))
 			xtra = (argv[++i]);
 
-		
+
 
 	}
 
 	// sanity checks
 	// we need input
 	if (input == "") {//just set some defaults
-		//cerr << "A input must be given\n";
-		//hasErr = true;
-		input = argv[2];
-		output = argv[3];
+		cerr << "Input must be specified\n";
+		hasErr = true;
+	}
+	if (output == "") {//just set some defaults
+		cerr << "Output must be specified\n";
+		hasErr = true;
 	}
 
 	if (hasErr) {
@@ -282,6 +277,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 		}else if( i == 3){
 			cout << "..." << std::endl ;
 		}
+
 		uint toWhere = done + numThr - 1;
 		if ((uint)((uint)fileNames.size() - 2 ) < toWhere){
 			toWhere = fileNames.size() - 2;
@@ -298,6 +294,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 		rareStruct* tmpRS;
 		tmpRS = calcDivRarVec(i, fileNames,  div, rareDep, &abundInRow, &occuencesInRow, outF, repeats, writeFiles);
 		i++;
+
 
 		// process created data, first threads, then main thread
 		i = done;
@@ -376,6 +373,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 
 int main(int argc, char* argv[])
 {
+
 	if (argc < 2) { cerr << "Not enough arguments. Use \"rtk -h\" for getting started.\n"; exit(3); }
 
 	options* opts = new options(argc, argv);
@@ -386,47 +384,7 @@ int main(int argc, char* argv[])
 	string arg4 = std::to_string(opts->depth);
 	bool verbose = opts->verbose;
 
-	//mode = argv[1];
 
-	/*
-	long rareDep = 1000;	int repeats (1);
-	//bool splitMode(false),mergeMode(false),sumUpMode(false);
-	string inF = argv[2];
-	string outF = argv[3];
-	// hardcode mode, as the others are excluded for newRow
-	// can be removed, as soon as other functionality is ready
-	// to be used. June 2016
-	//string mode = argv[1];
-	string mode = argv[1];
-	string arg4 = "";
-	uint numThr = 1; //number of threads to use
-
-
-	if (argc>=5){
-		arg4 = argv[4];
-	}
-
-	if (argc>5){
-		repeats = atoi(argv[5]);
-	}
-	int writeFiles = repeats;
-	if (argc>6){
-		writeFiles = atoi(argv[6]);
-	}
-	if (argc > 7){
-		numThr = atoi(argv[7]);
-	}
-	if( writeFiles > repeats){
-		cerr << "Can not write more files than repeats. Set writefiles to repeats" << std::endl;
-		int writeFiles = repeats;
-	}
-
-	// flag to store data on disk
-	bool storeBinary = true;
-	vector < vector < string > > tmpMatFiles (writeFiles );
-	if (argc > 8){
-		storeBinary = atoi(argv[8]);
-	}*/
 
 	//all modes that classify as rarefactions:
 	if (mode == "swap" || mode == "memory") {
@@ -568,7 +526,7 @@ int main(int argc, char* argv[])
 		// this will be used for Chao2 estimation
 		vector<vector<uint>> abundInRow(opts->repeats, vector<uint>(Mo->rowNum(),0));
 		vector<vector<uint>> occuencesInRow(opts->repeats, vector<uint>(Mo->rowNum(),0));
-		
+
 		//object to keep matrices
 		vector < vector < string > > tmpMatFiles(opts->write);
 		//cerr << "TH";
@@ -603,7 +561,7 @@ int main(int argc, char* argv[])
 				divvs[i] 		= tmpRS->div;
 				string curS 	= Mo->getSampleName(i);
 				//divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
-				
+
 				// add the matrices to the container
 				if(NoOfMatrices > 0){
 					if(opts->writeSwap){

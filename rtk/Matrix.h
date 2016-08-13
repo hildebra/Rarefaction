@@ -189,7 +189,11 @@ class SigMatrix :public Matrix {
 public:
 	SigMatrix(const string& inf) { Matrix(inf, ""); }
 private:
-	void estimateBinModel() { cerr << "todo estimateBinModel"; exit(33); }
+	void estimateBinModel() { 
+#ifdef notRpackage
+cerr << "todo estimateBinModel"; exit(33); 
+#endif
+}
 	//functions to determine parameters
 	//stored model parameters
 

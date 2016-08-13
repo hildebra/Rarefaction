@@ -1,7 +1,8 @@
-\name{plot.rtk}
+\name{plot}
 \alias{rarefactioncurve}
 \alias{plot}
 \alias{plot.rtk}
+
 
 
 \title{Plot rarfeaction results}
@@ -9,8 +10,9 @@
 \description{ Rarefy datasets in R or from a path. }
 
 \usage{
-plot.rtk(x, div = c("richness"),  groups = NA, col = NULL, lty = 1, pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft", log.dim = "", boxplot = FALSE, ...)
-plot(...)
+\method{plot}{rtk}(x, div = c("richness"),  groups = NA, col = NULL, lty = 1,
+         pch = NA, fit = "arrhenius", legend = TRUE, legend.pos = "topleft",
+         log.dim = "", boxplot = FALSE, ...)
 }
 
 \arguments{
@@ -24,6 +26,7 @@ plot(...)
   \item{legend}{Logical indicating if a legend should be created or not}
   \item{legend.pos}{Position of the said legend}
   \item{log.dim}{Character vector indicating which scale log log transform for plotting rarefaction curves.}
+  \item{boxplot}{If a boxplot should be added to the lineplot of the rarefaction curve.}
   \item{...}{Other plotting input will be passed to \code{plot} or \code{boxplot} repectivly}
 
 }
@@ -36,8 +39,7 @@ Rarefaction curves can be fittet to either the arrhenius-equation, the michaelis
 
 
 \references{
-  Our paper here
-
+ To be filled someday
 }
 
 
@@ -48,7 +50,8 @@ Rarefaction curves can be fittet to either the arrhenius-equation, the michaelis
 \examples{
 require("rtk")
 # generate semi sparse example data
-data            <- matrix(sample(x = c(rep(0, 1500),rep(1:10, 500),1:1000),size = 120, replace = TRUE), 40)
+data            <- matrix(sample(x = c(rep(0, 1500),rep(1:10, 500),1:1000),
+                          size = 120, replace = TRUE), 40)
 # find the column with the lowest aboundance
 samplesize      <- min(colSums(data))
 # rarefy the dataset, so each column contains the same number of samples

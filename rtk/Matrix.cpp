@@ -23,7 +23,9 @@ Matrix::Matrix(const string inF):rowIDs(0),colIDs(0),sampleNameSep("")
 			ini_ColPerRow = ColsPerRow;
 		} else {
 			if (ColsPerRow != ini_ColPerRow){
-				cerr<<"Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<ini_ColPerRow<<" columns.\n";
+
+#ifdef notRpackage
+cerr<<"Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<ini_ColPerRow<<" columns.\n";
 				std::exit(6);
 			}
 		}
@@ -521,7 +523,11 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	}
 	string line;
 	ifstream in(inF.c_str());
-	if (!in){ cerr << "Cant open file " << inF << endl; std::exit(11); }
+	if (!in){
+#ifdef notRpackage
+cerr << "Cant open file " << inF << endl; std::exit(11);
+#endif
+}
 	int ini_ColPerRow(0),cnt(0);
 
 
@@ -541,8 +547,12 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 			ini_ColPerRow = ColsPerRow;
 		} else {
 			if (ColsPerRow != ini_ColPerRow){
-				cerr<<"C1: Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<ini_ColPerRow<<" columns.\n"<<line<<endl;
+
+#ifdef notRpackage
+cerr<<"C1: Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<ini_ColPerRow<<" columns.\n"<<line<<endl;
 				std::exit(6);
+#endif
+
 			}
 		}
 		cnt++;
@@ -569,7 +579,11 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	while (getline(sso,segments,'\t')) {
 		cnt2++;
 		if (segments.length() > 150){
-			cerr << segments << " error!\n"; std::exit(5);
+
+#ifdef notRpackage
+cerr << segments << " error!\n"; std::exit(5);
+#endif
+
 		}
 		if (cnt2==-1){continue;}
 		colIDs[cnt2] = segments;
@@ -616,8 +630,12 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 						taxa = vector<string>(maxLvl, "-1");
 						cntNA++;
 						if (cntNA < 100) {
-							cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit(24);
-							if (cntNA == 99) { cout << " ..\n"; }
+							#ifdef notRpackage
+							cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit24);
+
+							if (cntNA == 99) {
+								cout << " ..\n"; }
+							#endif
 						}
 					}
 					else {
@@ -650,8 +668,12 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 			continue;
 		}
 		if (cnt2+2 != ini_ColPerRow){
-			cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
+
+#ifdef notRpackage
+cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
 			std::exit(62);
+#endif
+
 		}
 		if (cnt % 1000 == 0 && writeTmpFiles){
 			// every 1000 lines, write to file. The rest will be written later
@@ -697,7 +719,9 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		out<<colIDs[smpl]<<"\t"<<colSum[smpl]<<endl;
 	}
 	out.close();*/
+	#ifdef notRpackage
 	cout << "Read " << geneCnt << " genes" << endl;
+	#endif
 }
 
 
@@ -716,7 +740,11 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 	}
 	string line;
 	ifstream in(inF.c_str());
-	if (!in){ cerr << "Cant open file " << inF << endl; std::exit(11); }
+	if (!in){
+#ifdef notRpackage
+cerr << "Cant open file " << inF << endl; std::exit(11);
+#endif
+}
 	int ini_ColPerRow(0), cnt(0);
 
 
@@ -737,15 +765,23 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 		}
 		else {
 			if (ColsPerRow != ini_ColPerRow){
-				cerr << "C1: Number of columns on line " << cnt << " is " << ColsPerRow << ". Expected " << ini_ColPerRow << " columns.\n" << line << endl;
+
+#ifdef notRpackage
+cerr << "C1: Number of columns on line " << cnt << " is " << ColsPerRow << ". Expected " << ini_ColPerRow << " columns.\n" << line << endl;
 				std::exit(63);
+#endif
+
 			}
 		}
 		cnt++;
 		if (cnt>10){ break; }
 	}
 	if (ini_ColPerRow == 0) {
-		cerr << "Empty matrix provided\n";
+
+#ifdef notRpackage
+cerr << "Empty matrix provided\n";
+#endif
+
 		return;
 	}
 	colIDs.resize(ini_ColPerRow - 1, "");
@@ -766,7 +802,11 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 	while (getline(sso, segments, '\t')) {
 		cnt2++;
 		if (segments.length() > 150){
-			cerr << segments << " error!\n"; std::exit(5);
+
+#ifdef notRpackage
+cerr << segments << " error!\n"; std::exit(5);
+#endif
+
 		}
 		if (cnt2 == -1){ continue; }
 		colIDs[cnt2] = segments;
@@ -814,8 +854,10 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 						taxa = vector<string>(maxLvl, "-1");
 						cntNA++;
 						if (cntNA < 100) {
+							#ifdef notRpackage
 							cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit(24);
 							if (cntNA == 99) { cout << " ..\n"; }
+							#endif
 						}
 					}
 					else {
@@ -850,18 +892,28 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 			continue;
 		}
 		if (cnt2 + 2 != ini_ColPerRow){
-			cerr << "C2: Number of columns on line " << cnt << " is " << cnt2 + 2 << ". Expected " << ini_ColPerRow << " columns.\n";
+
+#ifdef notRpackage
+cerr << "C2: Number of columns on line " << cnt << " is " << cnt2 + 2 << ". Expected " << ini_ColPerRow << " columns.\n";
 			std::exit(64);
+#endif
+
 		}
 
 	}
 	in.close();
 	maxCols = (int)mat.size();
+	#ifdef notRpackage
 	cout << "Read " << geneCnt << " genes" << endl;
+	#endif
 
 	if (geneCnt == 0) {
-		cerr << "No genes read.. aborting\n";
+
+#ifdef notRpackage
+cerr << "No genes read.. aborting\n";
 		exit(0);
+#endif
+
 	}
 }
 Matrix::Matrix(const vector<string>& rnms, const vector<string>& cnms) :
@@ -968,7 +1020,11 @@ void Matrix::estimateModuleAbund(options* opts) {
 	vector<vector<string>> modStr(maxCols);
 	vector<vector<float>> modScore(maxCols);
 	for (int i = 0; i < maxCols; i++) {
-//		cerr << i << " ";
+//
+#ifdef notRpackage
+cerr << i << " ";
+#endif
+
 		//TODO: add unknown counts
 		
 		modDB->calcModAbund(mat[i], i, rowID_hash, modStr[i], modScore[i]);
@@ -1013,7 +1069,9 @@ void Matrix::estimateModuleAbund(options* opts) {
 	}
 
 	//write module matrix
-	cerr << "Write Matrix\n";
+	#ifdef notRpackage
+		cerr << "Write Matrix\n";
+	#endif
 	modDB->writeMatrix(outFile+".mat",true,opts->modCollapse);//ModPos
 	delete modDB;
 
@@ -1131,7 +1189,11 @@ void Matrix::read_subset_genes(const string xtra){
 	string line;
 	ifstream in(xtra.c_str());
 	string ID = ""; int cnt = 0;
-	if (!in){ cerr << "Can't open geneID file " << xtra << endl; std::exit(13); }
+	if (!in){
+#ifdef notRpackage
+cerr << "Can't open geneID file " << xtra << endl; std::exit(13);
+#endif
+ }
 	while (getline(in, ID, '\n')) {
 		subset[ID] = 1;
 		cnt++;
@@ -1140,7 +1202,9 @@ void Matrix::read_subset_genes(const string xtra){
 	//just check that something was read
 	if (cnt >= 1){
 		doSubsets = true;
+		#ifdef notRpackage
 		cout << "Read " << cnt << " gene subsets\n";
+		#endif
 	}
 }
 void Matrix::read_hierachy(const string xtra){
@@ -1149,7 +1213,11 @@ void Matrix::read_hierachy(const string xtra){
 	string line;
 	ifstream in(xtra.c_str());
 	int cnt = 0;
-	if (!in){ cerr << "Can't open hierachy file " << xtra << endl; std::exit(13); }
+	if (!in){
+#ifdef notRpackage
+cerr << "Can't open hierachy file " << xtra << endl; std::exit(13);
+#endif
+}
 	for (int k = 0; k < maxHir; k++){
 		//string tmp = ;
 		LvlNms.push_back("L" + stringify((double)k));
@@ -1181,7 +1249,9 @@ void Matrix::read_hierachy(const string xtra){
 		LUp[segs] = pseudo;
 	}
 	in.close();
+	#ifdef notRpackage
 	cout << "Read hierachy. Found " << maxLvl << " hierachical levels.\n";
+	#endif
 }
 void Matrix::splitOnHDD(string out_seed){
 	for (size_t smpl=0;smpl<(colIDs.size()-1); smpl++){
@@ -1309,11 +1379,19 @@ void HMat::set(string kk, int j, mat_fl v) {
 			mat.push_back(empty);
 			FeatureNs.push_back(yy);
 			i = Feat2mat.find(yy);
-			//cerr << "Could not find entry " << yy << " in registered subset\nAborting.";
+			//
+#ifdef notRpackage
+cerr << "Could not find entry " << yy << " in registered subset\nAborting.";
 			//std::exit(23);
+#endif
+
 		}
 		if ((*i).second > (int)mat.size()){
-			cerr << "implied row index larger than high level mat!\nAborting.."; std::exit(25);
+
+#ifdef notRpackage
+cerr << "implied row index larger than high level mat!\nAborting.."; std::exit(25);
+#endif
+
 		}
 		mat[(*i).second][j] += v/div;
 	}
