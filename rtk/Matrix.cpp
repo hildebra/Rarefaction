@@ -1020,15 +1020,7 @@ void Matrix::estimateModuleAbund(options* opts) {
 	vector<vector<string>> modStr(maxCols);
 	vector<vector<float>> modScore(maxCols);
 	for (int i = 0; i < maxCols; i++) {
-//
-#ifdef notRpackage
-cerr << i << " ";
-#endif
-
-		//TODO: add unknown counts
-		
-		modDB->calcModAbund(mat[i], i, rowID_hash, modStr[i], modScore[i]);
-			
+		modDB->calcModAbund(mat[i], i, rowID_hash, modStr[i], modScore[i]);			
 	}
 	//write description
 	ofstream of; ofstream of2; vector<string> moD = modDB->modDescr(); 
