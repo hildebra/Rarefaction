@@ -25,6 +25,7 @@ public:
   float modEnzCompl;
   float modModCompl;
   bool modWrXtraInfo;
+  bool modCollapse;
 
   string xtra;
 };

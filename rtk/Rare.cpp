@@ -124,7 +124,7 @@ void helpMsg(){
 
 options::options(int argc, char** argv) :input(""), output(""), mode(""),
 depth(0), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
-modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false),
+modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), modCollapse(false),
 xtra("") {
 
 
@@ -166,6 +166,8 @@ xtra("") {
 			modModCompl = (float)atof(argv[++i]);
 		else if (!strcmp(argv[i], "-writeExtraModEstimates"))
 			modWrXtraInfo = true;
+		else if (!strcmp(argv[i], "-collapseDblModules"))
+			modCollapse = true;
 		else if (!strcmp(argv[i], "-xtra"))
 			xtra = (argv[++i]);
 

@@ -296,9 +296,16 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v, const unordered_map<string
 
 //*********************************************************
 //read in module file
-Modules::Modules(const string& inF) :
-	moduleNames(0), moduleDescriptions(0), redundantUsedMods(0),
-	recurrentMods(0),redund(1), PathwCompl(0.6f), enzymCompl(0.8f) {
+Modules::Modules(const string& inF, vector<string> cns) :
+	Matrix(),
+	moduleDescriptions(0), redundantUsedMods(0),
+	recurrentMods(0),redund(1), PathwCompl(0.6f), enzymCompl(0.8f) 
+{
+	//ini matrix base class members
+	colIDs = cns; 
+	maxCols = ((int)colIDs.size());
+
+
 	ifstream is(inF.c_str());
 	string line(""); vector<string> buffer(0);
 	string ModToken = "M";
@@ -325,15 +332,15 @@ Modules::Modules(const string& inF) :
 	calc_redund();
 
 	//set up names
-	moduleNames.resize(mods.size(), "");
+	rowIDs.resize(mods.size(), "");
 	for (size_t i = 0; i < mods.size(); i++) {
-		moduleNames[i] = mods[i].name;
+		rowIDs[i] = mods[i].name;
 		//and track position
-		if (ModPos.find(moduleNames[i]) == ModPos.end()) {
-			ModPos[moduleNames[i]] = vector<int>(1, i);
+		if (ModPos.find(rowIDs[i]) == ModPos.end()) {
+			ModPos[rowIDs[i]] = vector<int>(1, i);
 		}
 		else {
-			ModPos[moduleNames[i]].push_back(i);
+			ModPos[rowIDs[i]].push_back(i);
 		}
 	}
 	//finished off all ModPos entries..
@@ -361,6 +368,11 @@ Modules::Modules(const string& inF) :
 	for (size_t i = 0; i < mods.size(); i++) {
 		moduleDescriptions[i] = mods[i].description;
 	}
+
+	//ini base class
+	//Matrix(this->modNms(), colIDs);
+	this->ini_mat();
+
 }
 void Modules::calc_redund() {
 	list<string> fL; //full list of KOs
@@ -398,8 +410,64 @@ void Modules::calc_redund() {
 	}
 
 }
+void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeats) {
+	ofstream out;
+	out.open(of.c_str(), ios_base::out);
+	out.precision(8); out << "Gene";
+	for (size_t smpl = 0; smpl < (colIDs.size()); smpl++) {
+		out << "\t" << colIDs[smpl];
+	}
+	out << endl;
+	unordered_map<string, int> ModCnt;
+	vector<mat_fl> rowSums;
+	size_t cidS(colIDs.size());
+	if (onlyFilled) { rowSums = getRowSums(); }
+	for (size_t i = 0; i<rowIDs.size(); i++) {
+		if (onlyFilled && rowSums[i] == 0) {
+			continue;
+		}
+		vector<mat_fl> wrVec (cidS,0.f);
+		if (collapseDblFeats && ModPos[rowIDs[i]].size() > 1) {//this is collapseable
+			if (ModCnt.find(rowIDs[i]) != ModCnt.end()) { 
+				continue;
+			}
+			ModCnt[rowIDs[i]] = 1;
+			//go over all alt representations of this mod and sum them up
+			for (size_t x = 0; x < ModPos[rowIDs[i]].size(); x++) {
+				int jj = ModPos[rowIDs[i]][x];
+				for (size_t smpl = 0; smpl < cidS; smpl++) {
+					wrVec[smpl] += mat[smpl][jj];
+				}
+			}
 
-vector<mat_fl> Modules::calcModAbund( vector<mat_fl>& v, const unordered_map<string,
+		} else {
+			for (size_t smpl = 0; smpl < cidS; smpl++) {
+				wrVec[smpl] = mat[smpl][i];
+			}
+
+		}
+		out << rowIDs[i];
+		for (size_t smpl = 0; smpl < cidS; smpl++) {
+			out << "\t" << wrVec[smpl];
+		}
+
+		out << endl;
+	}
+	out.close();
+}
+
+vector<string> Modules::modNms_numbered() {
+	vector<string> out = rowIDs;
+	for (auto it = ModPos.begin(); it != ModPos.end(); ++it) {
+		vector<int> pps = it->second;
+		for (size_t i = 0; i < pps.size(); i++) {
+			out[pps[i]] += "."+itos(i);
+		}
+	}
+	return out;
+}
+
+void Modules::calcModAbund( vector<mat_fl>& v, const int pos, const unordered_map<string,
 	int>& IDX, vector<string> &retStr, vector<float> &retScore) {
 	vector<mat_fl> ret(mods.size(), (mat_fl)0);
 	retStr.resize(mods.size(), ""); retScore.resize(mods.size(), 0.f);
@@ -432,7 +500,8 @@ vector<mat_fl> Modules::calcModAbund( vector<mat_fl>& v, const unordered_map<str
 
 	//add unkowns
 	//ret.push_back(unass_cnt);
-	return ret;
+	//return ret;
+	this->addTtlSmpl(ret, pos);
 }
 
 
@@ -657,12 +726,7 @@ cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_
 
 
 
-Matrix::Matrix(const vector<string>& rnms, const vector<string>& cnms):
-	rowIDs(rnms),colIDs(cnms), maxCols((int)cnms.size())
-{
-	vector<mat_fl> iniV = vector<mat_fl>(rnms.size(), (mat_fl)0);
-	mat.resize(maxCols, iniV);
-}
+
 Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
@@ -852,7 +916,18 @@ cerr << "No genes read.. aborting\n";
 
 	}
 }
-
+Matrix::Matrix(const vector<string>& rnms, const vector<string>& cnms) :
+	rowIDs(rnms), colIDs(cnms), maxCols((int)cnms.size())
+{
+	ini_mat();
+}
+void Matrix::ini_mat() {
+	if (maxCols != (int)colIDs.size()) {
+		maxCols = (int)colIDs.size();
+	}
+	vector<mat_fl> iniV = vector<mat_fl>(rowIDs.size(), (mat_fl)0);
+	mat.resize(maxCols, iniV);
+}
 void Matrix::estimateModuleAbund(char ** argv, int argc) {
 	char* argX[1];
 	options* psOpt = new options(0, argX);
@@ -923,8 +998,8 @@ void Matrix::estimateModuleAbund(options* opts) {
 	bool writeKOused = opts->modWrXtraInfo;
 
 	//read module DB
-	Modules* modDB = new Modules(opts->modDB);
-
+	Modules* modDB = new Modules(opts->modDB, colIDs);
+	
 	//get modules that are used in red mods and add them to inKOmatrix )(this matrix)
 	vector<string> recUsedMods= modDB->getRedundantUsedMods();
 	for (size_t i = 0; i < recUsedMods.size(); i++) {
@@ -935,28 +1010,21 @@ void Matrix::estimateModuleAbund(options* opts) {
 	resizeMatRows(rowIDs.size());
 
 	//modWrXtraInfo
-
+	
 	modDB->setEnzymCompl(enzyCompl);
 	modDB->setPathwCompl(pathCompl);
 	modDB->setRedund(redundancy);
 	//matrix vector of module abudnance
 	//vector<vector<mat_fl>> modMat(maxCols);
-	Matrix modMat = Matrix(modDB->modNms(), colIDs);
+//	Matrix modMat = Matrix(modDB->modNms(), colIDs);
 	vector<vector<string>> modStr(maxCols);
 	vector<vector<float>> modScore(maxCols);
 	for (int i = 0; i < maxCols; i++) {
-//
-#ifdef notRpackage
-cerr << i << " ";
-#endif
-
-		//TODO: add unknown counts
-		modMat.addTtlSmpl(
-			modDB->calcModAbund(mat[i], rowID_hash, modStr[i], modScore[i])
-			,i );
+		modDB->calcModAbund(mat[i], i, rowID_hash, modStr[i], modScore[i]);			
 	}
 	//write description
-	ofstream of; ofstream of2; vector<string> moD = modDB->modDescr(); vector<string> moN = modDB->modNms();
+	ofstream of; ofstream of2; vector<string> moD = modDB->modDescr(); 
+	vector<string> moN = modDB->modNms_numbered();
 	string nos = outFile+".descr";
 	of.open(nos.c_str());
 	for (size_t i = 0; i < moD.size(); i++) {
@@ -993,12 +1061,10 @@ cerr << i << " ";
 	}
 
 	//write module matrix
-
-#ifdef notRpackage
-cerr << "Write Matrix\n";
-#endif
-
-	modMat.writeMatrix(outFile+".mat",true);
+	#ifdef notRpackage
+		cerr << "Write Matrix\n";
+	#endif
+	modDB->writeMatrix(outFile+".mat",true,opts->modCollapse);//ModPos
 	delete modDB;
 
 }
@@ -1101,6 +1167,7 @@ void Matrix::writeMatrix(const string of, bool onlyFilled) {
 		if (onlyFilled && rowSums[i]==0) {
 			continue;
 		}
+		
 		out << rowIDs[i] ;
 		for (size_t smpl = 0; smpl<cidS; smpl++) {
 			out << "\t" << mat[smpl][i];
