@@ -420,12 +420,14 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 	out << endl;
 	unordered_map<string, int> ModCnt;
 	vector<mat_fl> rowSums;
+	uint writeCnt(0);
 	size_t cidS(colIDs.size());
 	if (onlyFilled) { rowSums = getRowSums(); }
 	for (size_t i = 0; i<rowIDs.size(); i++) {
 		if (onlyFilled && rowSums[i] == 0) {
 			continue;
 		}
+		writeCnt++;
 		vector<mat_fl> wrVec (cidS,0.f);
 		if (collapseDblFeats && ModPos[rowIDs[i]].size() > 1) {//this is collapseable
 			if (ModCnt.find(rowIDs[i]) != ModCnt.end()) { 
@@ -454,6 +456,7 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 		out << endl;
 	}
 	out.close();
+	cout << "Wrote " << writeCnt << " modules in final matrix\n";
 }
 
 vector<string> Modules::modNms_numbered() {

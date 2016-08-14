@@ -2,7 +2,7 @@
 #include "Rare.h"
 #include "options.h"
 
-const char* rar_ver="0.9";
+const char* rar_ver="0.91";
 
 
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
