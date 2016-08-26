@@ -34,12 +34,9 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep,
 	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow, string outF,
 	int repeats, int writeFiles){
-
-		exit(0);
-//	cout << i << " ";
+	
 	smplVec* cur = new smplVec(fileNames[i],4);
 
-	//div->SampleName = curS;
 	std::vector<vector<uint>> cnts;
 	vector< map< uint, uint>> cntsMap;
 	string cntsName;
@@ -49,8 +46,6 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
 					writeFiles, false, wrAtAll);
 
-	//delete cur;
-	//return div;
 	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
 	tmpRS->div 							= div;
 	tmpRS->cnts 						= cntsMap;
@@ -382,7 +377,7 @@ int main(int argc, char* argv[])
 	string mode = opts->mode;
 	uint numThr = opts->threads;
 	string arg4 = std::to_string(opts->depth);
-	bool verbose = opts->verbose;
+	//bool verbose = opts->verbose;
 
 
 
@@ -409,7 +404,7 @@ int main(int argc, char* argv[])
 		}	else if (mode == "correl2"){
 			//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
 			//reads in signature matrix (e.g. 40 marker genes)
-			SigMatrix* Sig = new SigMatrix(inF);
+			//SigMatrix* Sig = new SigMatrix(inF);
 			//Sig->estimateBinModel();
 			//readMatrixLinebyLine(arg4,Sig);
 
@@ -623,7 +618,7 @@ int main(int argc, char* argv[])
 
 
 	//old way of reading single samples..
-	smplVec* cur = new smplVec(inF,4);
+	//smplVec* cur = new smplVec(inF,4);
 	DivEsts * div = new DivEsts();
 
 

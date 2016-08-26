@@ -40,7 +40,7 @@ cerr << "Can't open outfile " << arg4 << endl; std::exit(99);
 cerr << "Can't open outfile " << outF << endl; std::exit(99);
 #endif
  }
-	int cnt(1); uint j(0);
+	uint cnt(1); uint j(0);
 	while (getline(in, line, '\n')) {
 		if (cnt == srtTar[j]){
 			out << line << endl;
@@ -217,7 +217,7 @@ cerr<<"shed\n";
 		// save abundance for chao2 calculations later
 		rarefyMutex.lock();
 		for(uint i = 0; i < IDs.size(); i++){
-			uint value = 0;
+			//uint value = 0;
 			int id = std::stoi(IDs[i]);
 			auto fnd = cntsMap.find(i);
 			if(fnd != cntsMap.end()){

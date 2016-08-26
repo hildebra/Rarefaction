@@ -253,7 +253,7 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v, const unordered_map<string
 		//ini decIdx
 		for (size_t i = 0; i < steps.size(); i++) {
 			size_t dI = 0; double maxAB = 0;
-			while (dI < int(active[i].size())) {
+			while (dI < uint(active[i].size())) {
 				if (abunds[i][dI] > maxAB && active[i][dI]) {
 					decIdx[i] = dI;
 					maxAB = abunds[i][decIdx[i]];
