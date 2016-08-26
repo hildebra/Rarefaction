@@ -39,11 +39,11 @@ exit(55);
 		read_map(segments);
 	}
 	if ( baseP.size() > curr+1) {
- #ifdef notRpackage
-cerr << "more maps than basePs\n";
-exit(72);
-#endif
-}
+	 #ifdef notRpackage
+	cerr << "more maps than basePs\n";
+	exit(72);
+	#endif
+	}
 
 
 	//smplnames in out matrix
@@ -146,7 +146,7 @@ void ClStr2Mat::printVec(ofstream& of,vector<smat_fl>& pr,const string&rowN) {
 void ClStr2Mat::read_map(const string mapF) {
 	ifstream in;
 	curr++;//keep track of different maps and inPaths
-	int preMapSize((int)smplLoc.size());
+	uint preMapSize((int)smplLoc.size());
 	if (curr > baseP.size()) {
  #ifdef notRpackage
 cerr << "more maps than basePs\n";
