@@ -49,6 +49,6 @@ private:
 	vector<string> smplLoc;
 	vector<string> baseP;
 	size_t smplN;
-	int curr ;
+	size_t curr ;
 };
 

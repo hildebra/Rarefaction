@@ -153,7 +153,7 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 
 
 void smplVec::rarefy(long dep, string ofile, int rep,
-					DivEsts* divs, std::vector<map<uint, uint>> & RareSample,
+					DivEsts* divs, std::vector<rare_map> & RareSample,
 					string& retCntsSampleName, string& skippedSample,
 					vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
 					int writes,bool write, bool fillret){
@@ -181,7 +181,7 @@ cerr<<"shed\n";
 
 		//count up
 		vector<unsigned int> cnts(numFeatures, 0);
-		map<uint, uint> cntsMap;
+		rare_map cntsMap;
 		for (long i=(0+curIdx);i<(dep+curIdx);i++){
 			cnts[arr[i]]++;
 			cntsMap[arr[i]]++;
@@ -592,7 +592,7 @@ cerr << "Empty vector at index " << i << "in div mat building.\n";
 	}
 
 }
-void printRareMat(const string outF, vector< map< uint, uint >>& rMat, vector< string >& sampleNames, vector < string >& rowId){
+void printRareMat(const string outF, const vector< rare_map>& rMat, vector< string >& sampleNames, vector < string >& rowId){
 	ofstream out(outF.c_str());
 	if (!out){
 #ifdef notRpackage
@@ -626,7 +626,7 @@ cerr << "Couldn't open rarefy matrix file " << outF << endl; std::exit(99);
 
 
 
-string printSimpleMap(map<uint, uint> vec, string outF, string id, vector<string> rowNames){
+string printSimpleMap(const rare_map & vec, string outF, string id, vector<string> rowNames){
 	// takes a map from the rarefaction function and writes the vector
 	// to the disk.
 	// this way we dont need memory to do
