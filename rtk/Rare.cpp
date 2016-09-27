@@ -1,6 +1,4 @@
-#include "ClStr2Mat.h"
 #include "Rare.h"
-#include "options.h"
 
 const char* rar_ver="0.91";
 
@@ -12,7 +10,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 	string curS = Mo->getSampleName(i);
 	div->SampleName = curS;
 	std::vector<vector<uint>> cnts;
-	vector< map< uint, uint>> cntsMap;
+	vector<rare_map> cntsMap;
 	string cntsName;
 	string skippedNames;
 	bool wrAtAll(writeFiles > 0);
@@ -38,7 +36,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	smplVec* cur = new smplVec(fileNames[i],4);
 
 	std::vector<vector<uint>> cnts;
-	vector< map< uint, uint>> cntsMap;
+	vector< rare_map> cntsMap;
 	string cntsName;
 	string skippedNames;
 	bool wrAtAll(writeFiles > 0);
@@ -183,7 +181,7 @@ xtra("") {
 
 	if (hasErr) {
 		cerr << "Use \"rtk -h\" to get full help.\n";
-		exit(5);
+		exit(98);
 	}
 }
 void options::print_rare_details(){
@@ -250,7 +248,7 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 
 
 	int NoOfMatrices = writeFiles;
-	vector< vector< map< uint, uint > > > MaRare (NoOfMatrices);
+	vector< vector< rare_map > > MaRare (NoOfMatrices);
 	std::vector<string> cntsNames;
 	vector < vector < string > > tmpMatFiles (NoOfMatrices );
 	int done = 0; // number of samples processed for multithreading
@@ -513,7 +511,7 @@ int main(int argc, char* argv[])
 		// hold rarefied matrices
 		// stores : repeats - sampels eg rows - vectors of columns
 		int NoOfMatrices = opts->write;
-		vector< vector< map<uint, uint > > > MaRare (NoOfMatrices);
+		vector< vector< rare_map > > MaRare (NoOfMatrices);
 		std::vector<string> cntsNames;
 
 
@@ -654,12 +652,12 @@ void binaryStoreSample(vector< vector< string> >& tmpMatFiles, rareStruct* tmpRS
 		for(uint i = 0; i < tmpRS->cnts.size(); i++){
 			// reshape each vector, as some are zero, and we need to rematch values and rows
 			// we use the row Ids which we created correctly when splitting the vector from the input file
-			std::map <uint, uint> tmpVec;
-				for (auto const& x : tmpRS->cnts[i]){
-					tmpVec[nrowIDs[x.first]] = x.second;
-				}
-				string vecLocation = printSimpleMap(tmpVec,	outF + "tmp_" + std::to_string(i) + tmpRS->cntsName + ".binary",	tmpRS->cntsName, rowNames);
-				tmpMatFiles[i].push_back(vecLocation);
+			rare_map tmpVec;
+			for (auto const& x : tmpRS->cnts[i]){
+				tmpVec[nrowIDs[x.first]] = x.second;
+			}
+			string vecLocation = printSimpleMap(tmpVec,	outF + "tmp_" + std::to_string(i) + tmpRS->cntsName + ".binary",	tmpRS->cntsName, rowNames);
+			tmpMatFiles[i].push_back(vecLocation);
 		}
 	}else{
 		for(uint i = 0; i < tmpRS->cnts.size(); i++){
@@ -673,7 +671,7 @@ void binaryStoreSample(vector< vector< string> >& tmpMatFiles, rareStruct* tmpRS
 	}
 }
 
-void memoryStoreSample(rareStruct* tmpRS, vector< vector< map<uint, uint > > >& MaRare,  vector<string>& cntsNames, bool reshapeMap){
+void memoryStoreSample(rareStruct* tmpRS, vector< vector< rare_map > >& MaRare,  vector<string>& cntsNames, bool reshapeMap){
 	if(reshapeMap){
 		vector < string > rowIDs = tmpRS->IDs;
 		vector < uint > nrowIDs(rowIDs.size());
@@ -684,7 +682,7 @@ void memoryStoreSample(rareStruct* tmpRS, vector< vector< map<uint, uint > > >& 
 		for(uint i = 0; i < tmpRS->cnts.size(); i++){
 			// reshape each vector, as some are zero, and we need to rematch values and rows
 			// we use the row Ids which we created correctly when splitting the vector from the input file
-			std::map <uint, uint> tmpVec;
+			rare_map tmpVec;
 				for (auto const& x : tmpRS->cnts[i]){
 					tmpVec[nrowIDs[x.first]] = x.second;
 				}
@@ -719,7 +717,7 @@ void printRarefactionMatrix(vector< vector < string > >& tmpMatFiles, string out
 	}
 
 }
-void printRarefactionMatrix(vector<vector< map < uint, uint>>>& MaRare, string outF, int rareDep, vector<string>& cntsNames, vector<string>& rowNames){
+void printRarefactionMatrix(const vector<vector< rare_map>>& MaRare, string outF, int rareDep, vector<string>& cntsNames, vector<string>& rowNames){
 	for(uint i = 0; i < MaRare.size(); i++){
 		printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 	}

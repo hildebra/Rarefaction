@@ -319,6 +319,9 @@ Modules::Modules(const string& inF, vector<string> cns) :
 			}
 			buffer.resize(0);
 		}
+		if (line[0] == ' ') {
+			line.erase(0, 1);
+		}
 		if (line.size() > 3) {
 			buffer.push_back(line);
 		}
@@ -369,9 +372,12 @@ Modules::Modules(const string& inF, vector<string> cns) :
 		moduleDescriptions[i] = mods[i].description;
 	}
 
+	cout << "Read " << mods.size() << " modules\n";
+
 	//ini base class
 	//Matrix(this->modNms(), colIDs);
 	this->ini_mat();
+
 
 }
 void Modules::calc_redund() {
@@ -477,6 +483,8 @@ void Modules::calcModAbund( vector<mat_fl>& v, const int pos, const unordered_ma
 	//mat_fl unass_cnt(0.f);//TOGO
 						  //vector<bool> usedKOs(v.size()); //initial idea to save KOs used to estimated unassigned fraction - better to scale by seq depth external
 	for (size_t i = 0; i < mods.size(); i++) {
+		if (mods[i].name == "M00022") {
+			int x = 0;		} /**/
 		if (mods[i].containsMods) {
 			if (mods[i].usedInOtherMods) {
 				cerr << "usedInOtherMods && containsMods - fatal error" << endl;
@@ -1064,9 +1072,6 @@ void Matrix::estimateModuleAbund(options* opts) {
 	}
 
 	//write module matrix
-	#ifdef notRpackage
-		cerr << "Write Matrix\n";
-	#endif
 	modDB->writeMatrix(outFile+".mat",true,opts->modCollapse);//ModPos
 	delete modDB;
 
