@@ -203,7 +203,7 @@ void options::print_rare_details(){
 	cout << "threads:        " << threads  << std::endl;
 	cout << "use swap:       ";
 	if(writeSwap == false){
-		cout << "true" << std::endl;
+		cout << "false" << std::endl;
 	}else{
 		cout << "true" << std::endl;
 	}
