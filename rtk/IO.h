@@ -17,6 +17,7 @@
 #include <random>
 #include <assert.h>
 #include <unordered_map>
+#include <numeric>
 #include <future>
 #include <mutex>
 
