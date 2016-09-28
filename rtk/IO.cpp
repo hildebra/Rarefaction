@@ -180,10 +180,8 @@ cerr<<"shed\n";
 		}
 
 		//count up
-		vector<unsigned int> cnts(numFeatures, 0);
 		rare_map cntsMap;
 		for (long i=(0+curIdx);i<(dep+curIdx);i++){
-			cnts[arr[i]]++;
 			cntsMap[arr[i]]++;
 		}
 
@@ -194,9 +192,9 @@ cerr<<"shed\n";
 			oss<<curRep;
 			t_out += "_" +oss.str();
 		}
-		if (curRep < writes && write){
+		/*if (curRep < writes && write){
 			print2File(cnts,t_out);
-		}
+		}*/
 		if (curRep < writes && fillret) {
 			RareSample.push_back(cntsMap);
 
@@ -205,13 +203,13 @@ cerr<<"shed\n";
 			}
 		}
 		richness = 0;
-		divs->richness.push_back(this->getRichness(cnts));
-		vector<double> three = this->calc_div(cnts, 4);
+		divs->richness.push_back(this->getRichness(cntsMap));
+		vector<double> three = this->calc_div(cntsMap, 4);
 		divs->shannon.push_back(three[0]);
 		divs->simpson.push_back(three[1]);
 		divs->invsimpson.push_back(three[2]);
-		divs->chao1.push_back(this->calc_chao1(cnts,1));
-		divs->eve.push_back(this->calc_eveness(cnts));
+		divs->chao1.push_back(this->calc_chao1(cntsMap,1));
+		divs->eve.push_back(this->calc_eveness(cntsMap));
 		richness = 0;
 
 		// save abundance for chao2 calculations later
@@ -229,13 +227,8 @@ cerr<<"shed\n";
 	}
 }
 
-long smplVec::getRichness(const vector<unsigned int>& cnts){
-	for (size_t i = 0; i<cnts.size(); i++){
-		//out<<IDs[i]<<"\t"<<cnts[i]<<endl;
-		if (cnts[i]>0){
-			richness++;
-		}
-	}
+long smplVec::getRichness(rare_map& cnts){
+	richness = cnts.size(); // set richness for other functions here
 	return richness;
 }
 
@@ -387,67 +380,94 @@ int smplVec::binarySearch( vector<float> vec, const float toFind)
 	}
 	/*/
 
-double smplVec::calc_chao1(const vector<uint> & vec,int corrBias=1){
+double smplVec::calc_chao1(rare_map& cnts,int corrBias=1){
 	double Sobs((double)richness);
 	double singl(0); double doubl(0);
+	float est(0);
+	typedef rare_map::iterator it;
+	for(it iterator = cnts.begin(); iterator != cnts.end(); iterator++) {
+		if (iterator->second == 1){
+			singl++;
+		}else if(iterator->second == 2){
+			doubl++;
+		}
+	}
+
+	/*
 	for (size_t i=0;i<vec.size();i++){
 		if (vec[i]==1){singl++;}
 		else if (vec[i]==2){doubl++;}
 	}
-	double est=0.0;
+	*/
 	if (corrBias==0){
 		est = float( Sobs + (singl*singl)/(2*doubl) );
 	} else {
 		est = float( Sobs + (singl*(singl-1))/(2*(doubl+1)) );
 	}
-	/*if (conf.int){
-	N = apply(M,2,sum)
-	P = exp(-N/Sobs)
-	P1 =Sobs/(1-P)
-	P2 = 1.96*sqrt((Sobs*P)/(1-P))
-	low =  P1 - P2
-	idx = low<Sobs
-	low[idx] = Sobs[idx]
-	hi = P1 + P2
-	}*/
-	return (est);
+
+	return est;
 }
 
 
-vector<double> smplVec::calc_div(const vector<uint>& vec,int meth=1, float base){
+vector<double> smplVec::calc_div(rare_map& cnts,int meth=1, float base){
 	double sum = 0;
-	for (size_t i=0; i<vec.size();i++){sum+=(double)vec[i];}
+	vector<double> H(3, 0.0); double H1(0.0), H2(0.0), H3(0.0);
+	//for (size_t i=0; i<vec.size();i++){sum+=(double)vec[i];}
+	sum = std::accumulate(std::begin(cnts), std::end(cnts), 0, [] (int value, const rare_map::value_type& p){ return value + p.second; });
+
+	// copy counts into x
+	unordered_map <uint, double> x;
+	x.insert(cnts.begin(), cnts.end());
+	typedef unordered_map <uint, double>::iterator it;
+	for(it iterator = x.begin(); iterator != x.end(); iterator++) {
+		// iterator->first = key
+		 iterator->second /= sum;
+	}
+	/*
 	vector<double> x(vec.begin(),vec.end());
-	for (size_t i=0; i<x.size();i++){x[i] /= sum;}
+	for (size_t i=0; i<x.size();i++){x[i] /= sum;}*/
+	
+	
 	bool doexp = false;
 	if (base <= 2.718284f && base >= 2.718280f){ // account for machine imprecission
 		doexp = true;
 	}
-	vector<double> H(3, 0.0); double H1(0.0), H2(0.0), H3(0.0);
+
 	if (meth == 1 || meth == 4){
 		if (doexp){
-			for (size_t i=0; i<x.size();i++){if (x[i]>0){H1 += x[i] * -log(x[i])  ;}}
+			typedef unordered_map <uint, double>::iterator it;
+			for(it iterator = x.begin(); iterator != x.end(); iterator++) {
+				if (iterator->second>0){H1 += iterator->second * -log(iterator->second)  ;}
+			}
+			//for (size_t i=0; i<x.size();i++){if (x[i]>0){H1 += x[i] * -log(x[i])  ;}}
 		} else {
 			float div = -log10(base);
-			for (size_t i = 0; i<x.size(); i++){ if (x[i]>0){ H1 += x[i] * log10(x[i]) / div; } }
+			typedef unordered_map <uint, double>::iterator it;
+			for(it iterator = x.begin(); iterator != x.end(); iterator++) {
+				if (iterator->second>0){H1 += iterator->second * -log10(iterator->second)/ div;}
+			}
+			//for (size_t i = 0; i<x.size(); i++){ if (x[i]>0){ H1 += x[i] * log10(x[i]) / div; } }
 		}
 		Shannon = H1;
 	}
+	
 	if (meth == 3 || meth == 4 || meth == 2) {
-		for (size_t i = 0; i<x.size(); i++){ H2 += x[i] * x[i]; }
+		typedef unordered_map <uint, double>::iterator it;
+		for(it iterator = x.begin(); iterator != x.end(); iterator++) {
+			H2 += iterator->second * iterator->second;
+		}
+		//for (size_t i = 0; i<x.size(); i++){ H2 += x[i] * x[i]; }
 		H3 = H2;
 		H2 = 1 - H2;//simpson
 		H3 = 1 / H3; //invsimpson
 	}
-	//for (size_t i=0; i<x.size();i++){H += x[i];}
-	//if (meth == (int)2) {		H = 1 - H;	}else if (meth == 3)		H = 1/H;	}
 	H[0] = H1; H[1] = H2; H[2] = H3;
-
+	
 	return(H);
 }
-double smplVec::calc_eveness(const vector<uint>& vec){
+double smplVec::calc_eveness(rare_map& cnts){
 	//double sha = calc_div(vec,1);
-	if (Shannon == -1.f){ vector<double> tm = calc_div(vec, 1); }
+	if (Shannon == -1.f){ vector<double> tm = calc_div(cnts, 1); }
 	return(Shannon / log((double)richness));
 }
 

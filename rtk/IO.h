@@ -96,7 +96,7 @@ public:
 	}
 	void rarefy(long,string o,int rep,DivEsts*, vector<rare_map>& RareSample,
 		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* ,vector<vector<uint>>* , int=0,bool=false, bool=false);
-	long getRichness(const vector<unsigned int>& cnts);
+	long getRichness(rare_map& cnts);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
 	vector < string > getRowNames(){ return(IDs); }
 
@@ -107,9 +107,9 @@ private:
 
 	//diversity indices
 	//method: 1=shannon, 2=simpson, 3=invsimpson
-	vector <double> calc_div(const vector<uint>& , int meth, float base=2.718282f);
-	double calc_chao1(const vector<uint>& , int corrBias); //corrBias: 0/1
-	double calc_eveness(const vector<uint>& );
+	vector <double> calc_div(rare_map& , int meth, float base=2.718282f);
+	double calc_chao1(rare_map& , int corrBias); //corrBias: 0/1
+	double calc_eveness(rare_map& );
 
 	void print2File(const vector<unsigned int>&,const string);
 	//unsigned short * arr;
