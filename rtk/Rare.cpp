@@ -5,7 +5,11 @@ const char* rar_ver="0.91";
 
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
-	string outF, int repeats, int writeFiles){
+	const vector<long>* shuffleTemplate, options* opts){
+	//string outF, int repeats, int writeFiles){
+	string outF ( opts->output);
+	int repeats(opts->repeats);
+	int writeFiles(opts->write);
 	smplVec* cur = Mo->getSampleVec(i);
 	string curS = Mo->getSampleName(i);
 	div->SampleName = curS;
@@ -16,7 +20,8 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 	bool wrAtAll(writeFiles > 0);
 	cur->rarefy(rareDep, outF, repeats,
 					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-					writeFiles, false, wrAtAll);
+					*shuffleTemplate,
+					writeFiles, false, wrAtAll );
 	//delete cur;
 	//return div;
 	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
@@ -30,8 +35,9 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 
 
 rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep,
-	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow, string outF,
-	int repeats, int writeFiles){
+	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow, 
+	const vector<long>* shuffleTemplate, options* opts){
+	//string outF, int repeats, int writeFiles){
 	
 	smplVec* cur = new smplVec(fileNames[i],4);
 
@@ -532,6 +538,10 @@ int main(int argc, char* argv[])
 		//cerr << "TH";
 		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
 		uint i = 0; uint done = 0;
+
+		//get precomputed shuffle vector 
+		vector<long> shuffleTemplate = Mo->suffle_pre();
+
 		while ( i < Mo->smplNum()){
 			int thirds = (int) floor(( Mo->smplNum()-3)/3);
 			if(i < 3 || i % thirds == 0  ){
@@ -545,12 +555,12 @@ int main(int argc, char* argv[])
 			uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
 			for (; i < toWhere; i++){
 				DivEsts * div = new DivEsts();
-				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, &shuffleTemplate, opts);//outF, opts->repeats, opts->write);
 			}
 			//use main thread to calc one sample as well
 			DivEsts * div 	= new DivEsts();
 			rareStruct* tmpRS;
-			tmpRS 			= calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+			tmpRS = calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, &shuffleTemplate, opts); outF, opts->repeats, opts->write);
 
 
 			i++;

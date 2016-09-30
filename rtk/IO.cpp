@@ -156,7 +156,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 					DivEsts* divs, std::vector<rare_map> & RareSample,
 					string& retCntsSampleName, string& skippedSample,
 					vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
-					int writes,bool write, bool fillret){
+					const vector<long>& shuffleTemplate, int writes,bool write, bool fillret){
 	if (dep>totSum){
 		skippedSample = divs->SampleName;
 		if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
@@ -168,14 +168,18 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 	for (int curRep=0;curRep<rep;curRep++){
 		if(curIdx+dep >= (long) totSum){
 			if (verbose){
-#ifdef notRpackage
-cerr<<"shuffle \n";
-#endif
-}		shuffle_singl();		if (verbose){
-#ifdef notRpackage
-cerr<<"shed\n";
-#endif
-}
+			#ifdef notRpackage
+			cerr<<"shuffle \n";
+			#endif
+			}		
+			//shuffle_singl(); //old
+			shuffle_singl(shuffleTemplate); //new
+			
+			if (verbose){
+			#ifdef notRpackage
+			cerr<<"shed\n";
+			#endif
+			}
 			curIdx=0;
 		}
 
@@ -292,11 +296,39 @@ cerr<<"fini";
 }
 }
 */
-void smplVec::shuffle_singl(){
+void smplVec::incrementi2(size_t mS) {
+	i2++;
+	if (i2 >= mS) {
+		i2 = 0;
+	}
+}
+void smplVec::shuffle_singl(const vector<long>& shftmpl) {
+	unsigned long j; unsigned int temp; 
+	size_t maxShflTmpSiz = shftmpl.size();
+	i2 = 0;//TODO: random start
+	unsigned long tS ((unsigned long)totSum);
+	for (unsigned long i = 0; i < tS; i++) {
+		while (shftmpl[i2] >= tS) { incrementi2(maxShflTmpSiz); }
+		j = shftmpl[i2]; incrementi2(maxShflTmpSiz);
+		temp = arr[i];
+		arr[i] = arr[j];
+		arr[j] = temp;
+	}
+	if (verbose) {
+#ifdef notRpackage
+		cerr << "fini";
+#endif
+	}
+}
+
+
+
+void 
+::shuffle_singl_old(){
 	time_t seed_val=time(NULL);           // populate somehow
 	rng.seed((long)seed_val);
 	unsigned long j; unsigned int temp;
-	for (unsigned long i = 0 ; i < (unsigned long)totSum - 1; i++) {
+	for (unsigned long i = 0 ; i < (unsigned long)totSum ; i++) {
 		std::uniform_int_distribution<unsigned long> uint_distx(0,i);
 		j = uint_distx(rng);
 		temp = arr[i] ;

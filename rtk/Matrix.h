@@ -153,9 +153,12 @@ public:
 	//void addCount(string, int, mat_fl);
 
 	double getMinColSum();
+	double getMaxColSum(); //TODO
 	column getMinColumn(uint offset = 0);
 	vector< pair <double, string>> getColSums(bool sorted = false);
 	void writeColSums(string outF);
+	vector<long> suffle_pre();
+
 protected:
 	//subroutines
 	void read_subset_genes(const string);
@@ -178,6 +181,8 @@ protected:
 	GeneIDidx subset;
 	bool doSubsets, doHigh;
 	vector<double> colSum;
+
+
 
 	vector< pair <double, string>> colsums;
 };

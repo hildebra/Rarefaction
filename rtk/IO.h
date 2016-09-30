@@ -90,6 +90,9 @@ void printRareMat(const string outF,const vector< rare_map>& rMat, vector< strin
 string printSimpleMap(const rare_map &vec, string outF, string id, vector<string> rowNames);
 void reassembleTmpMat(vector<string> inF, vector< string > rowNames,vector< string > colNames, string outF);
 
+
+
+
 class smplVec{
 public:
 	smplVec(const string, const int);
@@ -98,7 +101,8 @@ public:
 		//delete[] arr;
 	}
 	void rarefy(long,string o,int rep,DivEsts*, vector<rare_map>& RareSample,
-		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* ,vector<vector<uint>>* , int=0,bool=false, bool=false);
+		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* ,vector<vector<uint>>* , 
+		const vector<long>&, int=0,bool=false, bool=false);
 	long getRichness(rare_map& cnts);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
 	vector < string > getRowNames(){ return(IDs); }
@@ -106,7 +110,9 @@ public:
 private:
 	int binarySearch(vector<float>,const float x);
 	//void shuffle();
-	void shuffle_singl();
+	inline void incrementi2(size_t);
+	void shuffle_singl(const vector<long>&);
+	void shuffle_singl_old();//shuffles really every sample anew
 
 	//diversity indices
 	//method: 1=shannon, 2=simpson, 3=invsimpson
@@ -120,6 +126,9 @@ private:
 	vector<unsigned int> arr;
 	double totSum;
 	vector<MyRNG> rng_P;
+	//goes through shuffle vector
+	unsigned long i2;
+
 	MyRNG rng;
 	int num_threads;
 	long richness;

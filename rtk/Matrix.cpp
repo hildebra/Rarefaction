@@ -939,6 +939,30 @@ void Matrix::ini_mat() {
 	vector<mat_fl> iniV = vector<mat_fl>(rowIDs.size(), (mat_fl)0);
 	mat.resize(maxCols, iniV);
 }
+vector<long> Matrix::suffle_pre() {
+	long maxCS = (long) this->getMaxColSum();
+	vector<long> shuffle_list;//saves precomputed shuffle vars
+	shuffle_list.resize(maxCS);
+	//fill in with non-random entries
+	for (long i = 0; i < maxCS; i++) {
+		shuffle_list[i] = i;
+	}
+	//shuffle (randomize)
+	time_t seed_val = time(NULL);           // populate somehow
+	MyRNG rng;
+	rng.seed((long)seed_val);
+	unsigned long j; unsigned int temp;
+	for (unsigned long i = 0; i < (unsigned long)shuffle_list.size(); i++) {
+		std::uniform_int_distribution<unsigned long> uint_distx(0, i);
+		j = uint_distx(rng);
+		temp = shuffle_list[i];
+		shuffle_list[i] = shuffle_list[j];
+		shuffle_list[j] = temp;
+		//swap(arr[i],arr[j]);
+	}
+}
+
+
 void Matrix::estimateModuleAbund(char ** argv, int argc) {
 	char* argX[1];
 	options* psOpt = new options(0, argX);
