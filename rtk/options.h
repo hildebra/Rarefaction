@@ -13,6 +13,8 @@ public:
   string input = "";
   string output = "";
   string mode  = "";
+  string referenceDir = "";
+  string map = "";
   uint depth = 0;
   uint repeats = 10;
   uint write = 0;

@@ -294,11 +294,11 @@ cerr<<"fini";
 void smplVec::shuffle_singl(){
 	time_t seed_val=time(NULL);           // populate somehow
 	rng.seed((long)seed_val);
-
-	for (unsigned long i = (unsigned long)totSum- 1; i > 0; i--) {
+	unsigned long j; unsigned int temp;
+	for (unsigned long i = 0 ; i < (unsigned long)totSum - 1; i++) {
 		std::uniform_int_distribution<unsigned long> uint_distx(0,i);
-		unsigned long j = uint_distx(rng);
-		unsigned int temp = arr[i] ;
+		j = uint_distx(rng);
+		temp = arr[i] ;
 		arr[i] = arr[j];
 		arr[j] = temp;
 		//swap(arr[i],arr[j]);

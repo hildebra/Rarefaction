@@ -97,29 +97,35 @@ exit(55);
 			repFound = true;
 		}
 
+		bool geneInAssembl(true);
 		pos = gene.find(sampleSeq);
-		string sample = gene.substr(0, pos);
-		pos2 = gene.find("_L", pos + 3);
-
-		//2 get abundance
-		SmplOccurITmult smNum = smpls.find(sample);
-		if (smNum == smpls.end()) {
+		string sample;
+		SmplOccurITmult smNum;
+		if (pos != string::npos) { //has the characteristic "__" sample separator
+			sample = gene.substr(0, pos);
+			pos2 = gene.find("_L", pos + 3);
+			smNum = smpls.find(sample);
+			if (smNum == smpls.end()) {
 #ifdef notRpackage
-cerr << "incorrect sample name: "<< sample<<endl<<gene<<endl;
-exit(55);
+				cerr << "incorrect sample name: " << sample << endl << gene << endl;
+				exit(55);
 #endif
- }
-		//Contig + Sample Info will allow to create contig linkage between samples (CCH)
-		int contig = atoi(gene.substr(pos + 3, pos2-pos-3).c_str());
-		//can be several samples (combined assembly)
-		vector<int> smplLocs = (*smNum).second;
-		for (size_t jj = 0; jj < smplLocs.size(); jj++) {
-			CCH->addHit(smplLocs[jj], contig);
-			smat_fl abundance = GAs[smplLocs[jj]]->getAbundance(gene);
-			//3 add to matrix / output vector
-			repVec[smplLocs[jj]] += abundance;
-			SmplSum[smplLocs[jj]] += abundance;
-			//mat->addCount(sample, CLidx, abundance);
+			}
+			//2 get abundance
+			//Contig + Sample Info will allow to create contig linkage between samples (CCH)
+			//int contig = atoi(gene.substr(pos + 3, pos2-pos-3).c_str());
+			//can be several samples (combined assembly)
+			vector<int> smplLocs = (*smNum).second;
+			for (size_t jj = 0; jj < smplLocs.size(); jj++) { //the loop takes account for multiple samples being grouped together in map
+															  //CCH->addHit(smplLocs[jj], contig);
+				smat_fl abundance = GAs[smplLocs[jj]]->getAbundance(gene);
+				//3 add to matrix / output vector
+				repVec[smplLocs[jj]] += abundance;
+				SmplSum[smplLocs[jj]] += abundance;
+				//mat->addCount(sample, CLidx, abundance);
+			}
+		} else {
+			geneInAssembl = false;
 		}
 	}
 	incl.close();
@@ -157,7 +163,7 @@ exit(72);
 	if (!in) {
  #ifdef notRpackage
 cerr << "Couldn't open mapping file " << mapF << endl;
-exit(55);
+exit(56);
 #endif
  }
 	#ifdef notRpackage
