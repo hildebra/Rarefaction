@@ -182,6 +182,7 @@ cerr<<"shed\n";
 		//count up
 		rare_map cntsMap;
 		for (long i=(0+curIdx);i<(dep+curIdx);i++){
+			//reverse to vector<uint>
 			cntsMap[arr[i]]++;
 		}
 
