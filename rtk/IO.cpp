@@ -167,24 +167,14 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 
 	for (int curRep=0;curRep<rep;curRep++){
 		if(curIdx+dep >= (long) totSum){
-			if (verbose){
-#ifdef notRpackage
-cerr<<"shuffle \n";
-#endif
-}		shuffle_singl();		if (verbose){
-#ifdef notRpackage
-cerr<<"shed\n";
-#endif
-}
+			shuffle_singl();	
 			curIdx=0;
 		}
 
 		//count up
-		vector<unsigned int> cnts(numFeatures, 0);
-		rare_map cntsMap;
+		vector<uint> cnts(numFeatures, 0);
 		for (long i=(0+curIdx);i<(dep+curIdx);i++){
 			cnts[arr[i]]++;
-			//cntsMap[arr[i]]++;
 		}
 
 		curIdx += dep;
@@ -198,6 +188,13 @@ cerr<<"shed\n";
 			print2File(cnts,t_out);
 		}*/
 		if (curRep < writes && fillret) {
+			rare_map cntsMap;
+			// fill map:
+			for(uint i = 0; i < cnts.size(); i++){
+				if(cnts[i] != 0){
+					cntsMap.insert( std::make_pair(i, cnts[i]) );
+				}
+			}
 			RareSample.push_back(cntsMap);
 
 			if(curRep == 0){
@@ -216,13 +213,12 @@ cerr<<"shed\n";
 
 		// save abundance for chao2 calculations later
 		rarefyMutex.lock();
+		occuencesInRow->at(curRep) = cnts;
 		for(uint i = 0; i < IDs.size(); i++){
-			//uint value = 0;
+			//sparse convertions in swap mode
 			int id = std::stoi(IDs[i]);
-			auto fnd = cntsMap.find(i);
-			if(fnd != cntsMap.end()){
-				abundInRow->at(curRep)[id]++;
-				occuencesInRow->at(curRep)[id] = occuencesInRow->at(curRep)[id] + fnd->second;
+			if(cnts[id] != 0){
+				abundInRow->at(curRep)[id]++;	
 			}
 		}
 		rarefyMutex.unlock();
