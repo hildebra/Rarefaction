@@ -960,6 +960,7 @@ vector<long> Matrix::suffle_pre() {
 		shuffle_list[j] = temp;
 		//swap(arr[i],arr[j]);
 	}
+	return(shuffle_list);
 }
 
 
@@ -990,6 +991,20 @@ double Matrix::getMinColSum() {
 			}
 		}
 		return minE;
+	}
+	else {
+		return 0;
+	}
+}
+double Matrix::getMaxColSum() {
+	if (colSum.size() > 0) {
+		double maxE = colSum[0];
+		for (uint i = 0; i < colSum.size(); i++) {
+			if (maxE < colSum[i]) {
+				maxE = colSum[i];
+			}
+		}
+		return maxE;
 	}
 	else {
 		return 0;

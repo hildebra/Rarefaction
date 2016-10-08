@@ -164,19 +164,23 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 	}
 	long curIdx=(long)totSum+1;
 
-
+    cout << "rarefy 1" <<std::endl;
 	for (int curRep=0;curRep<rep;curRep++){
+    vector<uint> cnts(numFeatures, 0);
+	cout << "rarefy 2" <<std::endl;
 		if(curIdx+dep >= (long) totSum){
-			shuffle_singl();	
+		cout << "rarefy 3" <<std::endl;
 
+			shuffle_singl(shuffleTemplate, cnts);	
+cout << "rarefy 4" <<std::endl;
 			curIdx=0;
 		}
-
+cout << "rarefy 5" <<std::endl;
 		//count up
-		vector<uint> cnts(numFeatures, 0);
+		/*vector<uint> cnts(numFeatures, 0);
 		for (long i=(0+curIdx);i<(dep+curIdx);i++){
 			cnts[arr[i]]++;
-		}
+		}*/
 
 		curIdx += dep;
 		string t_out = ofile;
@@ -469,29 +473,26 @@ void smplVec::incrementi2(size_t mS) {
 		i2 = 0;
 	}
 }
-void smplVec::shuffle_singl(const vector<long>& shftmpl) {
+void smplVec::shuffle_singl(const vector<long>& shftmpl, vector<uint>& cnts) {
+
 	unsigned long j; unsigned int temp; 
 	size_t maxShflTmpSiz = shftmpl.size();
 	i2 = 0;//TODO: random start
+	
 	unsigned long tS ((unsigned long)totSum);
 	for (unsigned long i = 0; i < tS; i++) {
+	    // move on, while index out of possible rangedl;
 		while (shftmpl[i2] >= tS) { incrementi2(maxShflTmpSiz); }
-		j = shftmpl[i2]; incrementi2(maxShflTmpSiz);
-		temp = arr[i];
-		arr[i] = arr[j];
-		arr[j] = temp;
-	}
-	if (verbose) {
-#ifdef notRpackage
-		cerr << "fini";
-#endif
+		temp       = arr[shftmpl[i2]];
+		incrementi2(maxShflTmpSiz); 
+	    cnts[temp]++;
+			
 	}
 }
 
 
 
-void 
-::shuffle_singl_old(){
+void smplVec::shuffle_singl_old(){
 	time_t seed_val=time(NULL);           // populate somehow
 	rng.seed((long)seed_val);
 	unsigned long j; unsigned int temp;
@@ -503,11 +504,6 @@ void
 		arr[j] = temp;
 		//swap(arr[i],arr[j]);
 	}
-	if (verbose){
-#ifdef notRpackage
-cerr<<"fini";
-#endif
-}
 }
 
 

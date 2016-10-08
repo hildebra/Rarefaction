@@ -153,7 +153,7 @@ public:
 	//void addCount(string, int, mat_fl);
 
 	double getMinColSum();
-	double getMaxColSum(); //TODO
+	double getMaxColSum(); 
 	column getMinColumn(uint offset = 0);
 	vector< pair <double, string>> getColSums(bool sorted = false);
 	void writeColSums(string outF);

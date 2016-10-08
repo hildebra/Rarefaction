@@ -112,7 +112,7 @@ private:
 	int binarySearch(vector<float>,const float x);
 	//void shuffle();
 	inline void incrementi2(size_t);
-	void shuffle_singl(const vector<long>&);
+	void shuffle_singl(const vector<long>&, vector<uint>&);
 	void shuffle_singl_old();//shuffles really every sample anew
 
 	//diversity indices
@@ -138,6 +138,7 @@ private:
 	long richness;
 	double Shannon;
 	int numFeatures;
+	
 
 	//vector<float> vec;
 };
