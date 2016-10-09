@@ -164,18 +164,15 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 	}
 	long curIdx=(long)totSum+1;
 
-    cout << "rarefy 1" <<std::endl;
+
 	for (int curRep=0;curRep<rep;curRep++){
     vector<uint> cnts(numFeatures, 0);
-	cout << "rarefy 2" <<std::endl;
-		if(curIdx+dep >= (long) totSum){
-		cout << "rarefy 3" <<std::endl;
 
+		if(curIdx+dep >= (long) totSum){
 			shuffle_singl(shuffleTemplate, cnts);	
-cout << "rarefy 4" <<std::endl;
 			curIdx=0;
 		}
-cout << "rarefy 5" <<std::endl;
+
 		//count up
 		/*vector<uint> cnts(numFeatures, 0);
 		for (long i=(0+curIdx);i<(dep+curIdx);i++){
@@ -477,12 +474,19 @@ void smplVec::shuffle_singl(const vector<long>& shftmpl, vector<uint>& cnts) {
 
 	unsigned long j; unsigned int temp; 
 	size_t maxShflTmpSiz = shftmpl.size();
-	i2 = 0;//TODO: random start
 	
+	// create at least a random start in template
+	time_t seed_val = time(NULL);          
+	rng.seed((long)seed_val);
+    std::uniform_int_distribution<unsigned long> uint_distx(0,maxShflTmpSiz);
+    i2              = uint_distx(rng);
+
 	unsigned long tS ((unsigned long)totSum);
 	for (unsigned long i = 0; i < tS; i++) {
 	    // move on, while index out of possible rangedl;
-		while (shftmpl[i2] >= tS) { incrementi2(maxShflTmpSiz); }
+		while (shftmpl[i2] >= tS) { 
+		    incrementi2(maxShflTmpSiz);
+		   }
 		temp       = arr[shftmpl[i2]];
 		incrementi2(maxShflTmpSiz); 
 	    cnts[temp]++;
