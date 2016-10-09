@@ -169,7 +169,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
     vector<uint> cnts(numFeatures, 0);
 
 		if(curIdx+dep >= (long) totSum){
-			shuffle_singl(shuffleTemplate, cnts);	
+			shuffle_singl(shuffleTemplate, cnts, dep);	
 			curIdx=0;
 		}
 
@@ -470,7 +470,7 @@ void smplVec::incrementi2(size_t mS) {
 		i2 = 0;
 	}
 }
-void smplVec::shuffle_singl(const vector<long>& shftmpl, vector<uint>& cnts) {
+void smplVec::shuffle_singl(const vector<long>& shftmpl, vector<uint>& cnts, long dep) {
 
 	unsigned long j; unsigned int temp; 
 	size_t maxShflTmpSiz = shftmpl.size();
@@ -480,17 +480,16 @@ void smplVec::shuffle_singl(const vector<long>& shftmpl, vector<uint>& cnts) {
 	rng.seed((long)seed_val);
     std::uniform_int_distribution<unsigned long> uint_distx(0,maxShflTmpSiz);
     i2              = uint_distx(rng);
-
+    //cout << i2 << std::endl;
 	unsigned long tS ((unsigned long)totSum);
-	for (unsigned long i = 0; i < tS; i++) {
+	for (unsigned long i = 0; i < dep; i++) {
 	    // move on, while index out of possible rangedl;
 		while (shftmpl[i2] >= tS) { 
 		    incrementi2(maxShflTmpSiz);
 		   }
 		temp       = arr[shftmpl[i2]];
 		incrementi2(maxShflTmpSiz); 
-	    cnts[temp]++;
-			
+	    cnts[temp]++;	
 	}
 }
 
