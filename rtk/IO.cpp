@@ -166,14 +166,13 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 
 
 	for (int curRep=0;curRep<rep;curRep++){
-    vector<uint> cnts(numFeatures, 0);
+        
+        
         // randomly pick elements until dep is reached using a shuffel template
-		if(curIdx+dep >= (long) totSum){
-			shuffle_singl(shuffleTemplate, cnts, dep);	
-			curIdx=0;
-		}
+        vector<uint> cnts(numFeatures, 0);
+	    shuffle_singl(shuffleTemplate, cnts, dep);	
+		
 
-		curIdx += dep;
 		string t_out = ofile;
 		if (rep!=1){
 			std::ostringstream oss;
@@ -473,7 +472,6 @@ void smplVec::shuffle_singl(const vector<long>& shftmpl, vector<uint>& cnts, lon
 	rng.seed((long)seed_val);
     std::uniform_int_distribution<unsigned long> uint_distx(0,maxShflTmpSiz);
     i2              = uint_distx(rng);
-    cout << i2 << std::endl;
 	unsigned long tS ((unsigned long)totSum);
 	for (unsigned long i = 0; i < dep; i++) {
 	    // move on, while index out of possible rangedl;
