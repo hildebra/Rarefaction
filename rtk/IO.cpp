@@ -167,17 +167,11 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 
 	for (int curRep=0;curRep<rep;curRep++){
     vector<uint> cnts(numFeatures, 0);
-
+        // randomly pick elements until dep is reached using a shuffel template
 		if(curIdx+dep >= (long) totSum){
 			shuffle_singl(shuffleTemplate, cnts, dep);	
 			curIdx=0;
 		}
-
-		//count up
-		/*vector<uint> cnts(numFeatures, 0);
-		for (long i=(0+curIdx);i<(dep+curIdx);i++){
-			cnts[arr[i]]++;
-		}*/
 
 		curIdx += dep;
 		string t_out = ofile;
@@ -186,9 +180,8 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			oss<<curRep;
 			t_out += "_" +oss.str();
 		}
-		/*if (curRep < writes && write){
-			print2File(cnts,t_out);
-		}*/
+
+
 		if (curRep < writes && fillret) {
 			rare_map cntsMap;
 			// fill map:
@@ -476,11 +469,11 @@ void smplVec::shuffle_singl(const vector<long>& shftmpl, vector<uint>& cnts, lon
 	size_t maxShflTmpSiz = shftmpl.size();
 	
 	// create at least a random start in template
-	time_t seed_val = time(NULL);          
+	time_t seed_val = std::chrono::system_clock::now().time_since_epoch().count();;          
 	rng.seed((long)seed_val);
     std::uniform_int_distribution<unsigned long> uint_distx(0,maxShflTmpSiz);
     i2              = uint_distx(rng);
-    //cout << i2 << std::endl;
+    cout << i2 << std::endl;
 	unsigned long tS ((unsigned long)totSum);
 	for (unsigned long i = 0; i < dep; i++) {
 	    // move on, while index out of possible rangedl;

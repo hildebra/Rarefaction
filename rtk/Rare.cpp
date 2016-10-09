@@ -249,11 +249,11 @@ void rareExtremLowMem(options* opts, string arg4){
 	vector<vector<uint>> occuencesInRow(opts->repeats, vector<uint>(Mo->rowNum(),0));
 	vector<vector<uint>> abundInRow(opts->repeats, vector<uint>(Mo->rowNum(),0));
 
-	int rareDep 	= atoi(arg4.c_str());
-	if(rareDep == 0){
+
+	if(opts->depth == 0){
 		// rarefy to smallest colSum
-		rareDep = (int)round(0.95f * Mo->getMinColSum());
-		if(rareDep == 0.0){
+		opts->depth = (int)round(0.95f * Mo->getMinColSum());
+		if(opts->depth == 0.0){
 			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
 			exit(1);
 		}
@@ -261,13 +261,13 @@ void rareExtremLowMem(options* opts, string arg4){
 	delete Mo;
 
 
-	int NoOfMatrices = opts->write;
+	int NoOfMatrices                = opts->write;
 	vector< vector< rare_map > > MaRare (NoOfMatrices);
 	std::vector<string> cntsNames;
 	vector < vector < string > > tmpMatFiles (NoOfMatrices );
-	int done = 0; // number of samples processed for multithreading
-	uint i = 0;
-	std::future<rareStruct*> *tt = new std::future<rareStruct*>[opts->threads - 1];
+	int done    = 0; // number of samples processed for multithreading
+	uint i      = 0;
+	std::future<rareStruct*> *tt    = new std::future<rareStruct*>[opts->threads - 1];
 
 
 	//rarefection code
