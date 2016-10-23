@@ -1,5 +1,6 @@
-
+#pragma once
 #include "ClStr2Mat.h"
+#include "options.h"
 
 int rarefyMain(string inF, string outF, string mode ,
     int repeats, long rareDep, unsigned int numThr, bool verbose,
