@@ -8,14 +8,14 @@ struct cDR{
 	DivEsts* div;
 	std::vector<vector<vector<uint>>> retCnts;
 	string retCntsSampleName;
-	vector<map<uint, uint>> RareSample;
+	vector<rare_map> RareSample;
 	string skippedSample;
 };
 
 struct rareStruct{
 	DivEsts* div;
 	string cntsName;
-	vector< map< uint, uint>> cnts;
+	vector< rare_map> cnts;
 	string skippedNames;
 };
 
@@ -31,7 +31,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div,  long rareDep,
 
 	// vector holding the rarefaction results for this sample
 	// repeat times
-	std::vector<map<uint, uint>> cnts;
+	std::vector<rare_map> cnts;
 	string cntsName;
 	string skippedNames;
 	cur->rarefy(rareDep, outF, repeats, div, cnts, cntsName, skippedNames,
@@ -57,7 +57,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 
 	//div->SampleName = curS;
 	std::vector<vector<uint>> cnts;
-	vector< map< uint, uint>> cntsMap;
+	vector<rare_map> cntsMap;
 	string cntsName;
 	string skippedNames;
 	cur->rarefy(rareDep, outF, repeats,
@@ -88,7 +88,7 @@ void helpMsg(){
 
 void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeats,
 	vector<DivEsts*> *  divvs,
-	std::vector<vector<map<uint, uint>>>& MaRare,
+	std::vector<vector<rare_map>>& MaRare,
 	std::vector<string>& cntsNames,
 	std::vector<string>& skippedNames,
 	std::vector<string>& rowNames, int numThr, bool verbose ){
@@ -215,7 +215,7 @@ int rarefyMain(string inF, string outF, string mode,
 	vector<vector<mat_fl>> rmatrix,
 	vector< string > cnames , vector< string > rnames ,
 	vector<DivEsts*> *  divvs,
-	std::vector<vector<map<uint, uint>>> &retCnts,
+	std::vector<vector<rare_map>> &retCnts,
 	std::vector<string>& cntsNames,
 	std::vector<string>& skippedNames,
 	std::vector<mat_fl>& ACE,
