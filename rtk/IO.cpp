@@ -171,11 +171,13 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			curIdx=0;
 		}
 
+
 		//count up
 		vector<uint> cnts(numFeatures, 0);
 		for (long i=(0+curIdx);i<(dep+curIdx);i++){
 			cnts[arr[i]]++;
 		}
+
 
 		curIdx += dep;
 		string t_out = ofile;
@@ -184,9 +186,7 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 			oss<<curRep;
 			t_out += "_" +oss.str();
 		}
-		/*if (curRep < writes && write){
-			print2File(cnts,t_out);
-		}*/
+
 		if (curRep < writes && fillret) {
 			rare_map cntsMap;
 			// fill map:
@@ -213,12 +213,12 @@ void smplVec::rarefy(long dep, string ofile, int rep,
 
 		// save abundance for chao2 calculations later
 		rarefyMutex.lock();
-		occuencesInRow->at(curRep) = cnts;
 		for(uint i = 0; i < IDs.size(); i++){
 			//sparse convertions in swap mode
 			int id = std::stoi(IDs[i]);
-			if(cnts[id] != 0){
+			if(cnts[i] != 0){
 				abundInRow->at(curRep)[id]++;	
+				occuencesInRow->at(curRep)[id] += cnts[i];
 			}
 		}
 		rarefyMutex.unlock();
