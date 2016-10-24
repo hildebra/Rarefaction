@@ -367,3 +367,12 @@ int rarefyMain(string inF, string outF, string mode,
 
 	return 0;
 }
+
+
+
+options::options(int argc, char** argv) :input(""), output(""), mode(""),
+depth(0), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
+modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false),
+xtra("") {
+  
+}
