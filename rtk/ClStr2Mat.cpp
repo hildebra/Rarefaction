@@ -97,29 +97,35 @@ exit(55);
 			repFound = true;
 		}
 
+		bool geneInAssembl(true);
 		pos = gene.find(sampleSeq);
-		string sample = gene.substr(0, pos);
-		pos2 = gene.find("_L", pos + 3);
-
-		//2 get abundance
-		SmplOccurITmult smNum = smpls.find(sample);
-		if (smNum == smpls.end()) {
+		string sample;
+		SmplOccurITmult smNum;
+		if (pos != string::npos) { //has the characteristic "__" sample separator
+			sample = gene.substr(0, pos);
+			pos2 = gene.find("_L", pos + 3);
+			smNum = smpls.find(sample);
+			if (smNum == smpls.end()) {
 #ifdef notRpackage
-cerr << "incorrect sample name: "<< sample<<endl<<gene<<endl;
-exit(55);
+				cerr << "incorrect sample name: " << sample << endl << gene << endl;
+				exit(55);
 #endif
- }
-		//Contig + Sample Info will allow to create contig linkage between samples (CCH)
-		int contig = atoi(gene.substr(pos + 3, pos2-pos-3).c_str());
-		//can be several samples (combined assembly)
-		vector<int> smplLocs = (*smNum).second;
-		for (size_t jj = 0; jj < smplLocs.size(); jj++) {
-			CCH->addHit(smplLocs[jj], contig);
-			smat_fl abundance = GAs[smplLocs[jj]]->getAbundance(gene);
-			//3 add to matrix / output vector
-			repVec[smplLocs[jj]] += abundance;
-			SmplSum[smplLocs[jj]] += abundance;
-			//mat->addCount(sample, CLidx, abundance);
+			}
+			//2 get abundance
+			//Contig + Sample Info will allow to create contig linkage between samples (CCH)
+			//int contig = atoi(gene.substr(pos + 3, pos2-pos-3).c_str());
+			//can be several samples (combined assembly)
+			vector<int> smplLocs = (*smNum).second;
+			for (size_t jj = 0; jj < smplLocs.size(); jj++) { //the loop takes account for multiple samples being grouped together in map
+															  //CCH->addHit(smplLocs[jj], contig);
+				smat_fl abundance = GAs[smplLocs[jj]]->getAbundance(gene);
+				//3 add to matrix / output vector
+				repVec[smplLocs[jj]] += abundance;
+				SmplSum[smplLocs[jj]] += abundance;
+				//mat->addCount(sample, CLidx, abundance);
+			}
+		} else {
+			geneInAssembl = false;
 		}
 	}
 	incl.close();
@@ -157,14 +163,14 @@ exit(72);
 	if (!in) {
  #ifdef notRpackage
 cerr << "Couldn't open mapping file " << mapF << endl;
-exit(55);
+exit(56);
 #endif
  }
 	#ifdef notRpackage
 	cout << "Reading map " << mapF << " on path " << baseP[curr] << endl;
 	#endif
 	SmplOccurMult CntAssGrps;
-	string line; int cnt(-1); int assGrpN(-1);
+	string line; int cnt(-1); int assGrpN(-1); int artiCntAssGrps(0);
 
 	while (getline(in, line)) {
 		cnt ++; int sbcnt(-1);
@@ -175,17 +181,16 @@ exit(55);
 			while (getline(ss, segments, '\t')) {
 				sbcnt++;
 				if (sbcnt==0 && segments != "#SmplID") {
- #ifdef notRpackage
-cerr << "Map has to start with tag \"#SmplID\"\n";
-exit(83);
-#endif
-}
+					 #ifdef notRpackage
+					cerr << "Map has to start with tag \"#SmplID\"\n";exit(83);
+					#endif
+				}
 				if (sbcnt == 1 && segments != "Path") {
- #ifdef notRpackage
-cerr << "Map has to have tag \"Path\" as second entry\n";
-exit(83);
-#endif
-}
+					#ifdef notRpackage
+					cerr << "Map has to have tag \"Path\" as second entry\n";
+					exit(83);
+					#endif
+				}
 				if (segments== "AssmblGrps") {
 					#ifdef notRpackage
 					assGrpN = sbcnt; cout << "Found Assembly groups in map\n";
@@ -197,11 +202,10 @@ exit(83);
 		getline(ss, segments, '\t');
 		string smpID = segments;
 		if (smpls.find(smpID) != smpls.end()) {
-
- #ifdef notRpackage
-cerr << "Double sample ID: " << smpID << endl;
-exit(12);
-#endif
+			#ifdef notRpackage
+			cerr << "Double sample ID: " << smpID << endl;
+			exit(12);
+			#endif
 		}
 
 
@@ -209,10 +213,14 @@ exit(12);
 		string locality = segments;
 
 		sbcnt = 2;
-		if (assGrpN == -1) { continue; }
-		//handles assembly groups from here
-		while (sbcnt <= assGrpN) {
-			sbcnt++; getline(ss, segments, '\t');
+		if (assGrpN != -1) {
+			//handles assembly groups from here
+			while (sbcnt <= assGrpN) {
+				sbcnt++; getline(ss, segments, '\t');
+			}
+		} else {//simulate CntAssGrps
+			segments = itos(artiCntAssGrps);
+			artiCntAssGrps++;
 		}
 		if (CntAssGrps.find(segments) != CntAssGrps.end()) {
 			CntAssGrps[segments].push_back( (int)smplLoc.size());
@@ -237,11 +245,10 @@ exit(12);
 	//read the gene abundances sample-wise in
 	for (uint i = preMapSize; i < smplN; i++) {
 		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i] + path2abundance));
-
- #ifdef notRpackage
-cerr << baseP[curr] + "/" + smplLoc[i] << endl;
-#endif
-}
+		#ifdef notRpackage
+		cerr << baseP[curr] + "/" + smplLoc[i] << endl;
+		#endif
+	}
 }
 
 

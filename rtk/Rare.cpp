@@ -148,6 +148,11 @@ xtra("") {
 			verbose = true;
 		else if (!strcmp(argv[i], "-h"))
 			helpMsg();
+//geneMat specific args
+		else if (!strcmp(argv[i], "-map"))
+			map = argv[++i];
+		else if (!strcmp(argv[i], "-refD"))
+			referenceDir = argv[++i];
 		//module specific args
 		else if (!strcmp(argv[i], "-refMods"))
 			modDB = (argv[++i]);
@@ -375,6 +380,8 @@ int main(int argc, char* argv[])
 	string mode = opts->mode;
 	uint numThr = opts->threads;
 	string arg4 = std::to_string(opts->depth);
+	string map = opts->map;
+	string refD = opts->referenceDir;
 	//bool verbose = opts->verbose;
 
 
@@ -444,7 +451,7 @@ int main(int argc, char* argv[])
 			std::exit(0);
 		} else if (mode == "sumMat") {
 			vector<string> empt;
-			Matrix* Mo = new Matrix(inF, outF, arg4, empt, true);
+			Matrix* Mo = new Matrix(inF, outF, refD, empt, true);
 			delete Mo;
 			std::exit(0);
 		} else if (mode == "rarefaction" || mode == "rare_inmat") {
@@ -473,8 +480,8 @@ int main(int argc, char* argv[])
 		else if (mode == "geneMat"){
 			cout << "Gene clustering matrix creation\n";
 			if (argc < 5) {cerr << "Needs at least 4 arguments\n"; std::exit(0);}
-			//ClStr2Mat* cl = new ClStr2Mat(inF,outF,arg4,argv[5]);
-			//delete cl;
+			ClStr2Mat* cl = new ClStr2Mat(inF,outF, map, refD);
+			delete cl;
 			std::exit(0);
 		}  else if(mode == "memory"){
 		}else {
@@ -621,10 +628,10 @@ int main(int argc, char* argv[])
 
 
 	//placeholder for R function, not to be filled here
-	std::vector<map<uint, uint>> emptyRet;
-	string emptySmp;
-	string skippedSample;
-	vector<vector<uint>> abundInRow;
+	//std::vector<map<uint, uint>> emptyRet;
+	//string emptySmp;
+	//string skippedSample;
+	//vector<vector<uint>> abundInRow;
 	//cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, &abundInRow, writeFiles,true,false);
 
 

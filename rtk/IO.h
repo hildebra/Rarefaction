@@ -60,6 +60,8 @@ template<typename T> T getMedian(vector<T>& in){
 }
 void lineCntOut(const string inF, const string outF, const string arg4);
 
+
+
 inline std::string stringify(double x)
  {
    std::ostringstream o;
@@ -98,6 +100,7 @@ public:
 	void rarefy(long,string o,int rep,DivEsts*, vector<rare_map>& RareSample,
 		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* ,vector<vector<uint>>* , int=0,bool=false, bool=false);
 	long getRichness(rare_map& cnts);
+	long getRichness(const vector<unsigned int>&);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
 	vector < string > getRowNames(){ return(IDs); }
 
@@ -108,8 +111,11 @@ private:
 
 	//diversity indices
 	//method: 1=shannon, 2=simpson, 3=invsimpson
-	vector <double> calc_div(rare_map& , int meth, float base=2.718282f);
-	double calc_chao1(rare_map& , int corrBias); //corrBias: 0/1
+	vector<double> calc_div(const vector<uint>& vec,int meth=1, float base=2.718282f);
+	vector <double> calc_div(rare_map& , int meth=1, float base=2.718282f);
+	double calc_chao1(const vector<uint> & vec,int corrBias=1);
+	double calc_chao1(rare_map& , int corrBias=1); //corrBias: 0/1
+	double calc_eveness(const vector<uint>& vec);
 	double calc_eveness(rare_map& );
 
 	void print2File(const vector<unsigned int>&,const string);
