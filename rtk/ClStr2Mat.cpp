@@ -170,7 +170,7 @@ exit(56);
 	cout << "Reading map " << mapF << " on path " << baseP[curr] << endl;
 	#endif
 	SmplOccurMult CntAssGrps;
-	string line; int cnt(-1); int assGrpN(-1);
+	string line; int cnt(-1); int assGrpN(-1); int artiCntAssGrps(0);
 
 	while (getline(in, line)) {
 		cnt ++; int sbcnt(-1);
@@ -181,17 +181,16 @@ exit(56);
 			while (getline(ss, segments, '\t')) {
 				sbcnt++;
 				if (sbcnt==0 && segments != "#SmplID") {
- #ifdef notRpackage
-cerr << "Map has to start with tag \"#SmplID\"\n";
-exit(83);
-#endif
-}
+					 #ifdef notRpackage
+					cerr << "Map has to start with tag \"#SmplID\"\n";exit(83);
+					#endif
+				}
 				if (sbcnt == 1 && segments != "Path") {
- #ifdef notRpackage
-cerr << "Map has to have tag \"Path\" as second entry\n";
-exit(83);
-#endif
-}
+					#ifdef notRpackage
+					cerr << "Map has to have tag \"Path\" as second entry\n";
+					exit(83);
+					#endif
+				}
 				if (segments== "AssmblGrps") {
 					#ifdef notRpackage
 					assGrpN = sbcnt; cout << "Found Assembly groups in map\n";
@@ -203,11 +202,10 @@ exit(83);
 		getline(ss, segments, '\t');
 		string smpID = segments;
 		if (smpls.find(smpID) != smpls.end()) {
-
- #ifdef notRpackage
-cerr << "Double sample ID: " << smpID << endl;
-exit(12);
-#endif
+			#ifdef notRpackage
+			cerr << "Double sample ID: " << smpID << endl;
+			exit(12);
+			#endif
 		}
 
 
@@ -215,10 +213,14 @@ exit(12);
 		string locality = segments;
 
 		sbcnt = 2;
-		if (assGrpN == -1) { continue; }
-		//handles assembly groups from here
-		while (sbcnt <= assGrpN) {
-			sbcnt++; getline(ss, segments, '\t');
+		if (assGrpN != -1) {
+			//handles assembly groups from here
+			while (sbcnt <= assGrpN) {
+				sbcnt++; getline(ss, segments, '\t');
+			}
+		} else {//simulate CntAssGrps
+			segments = itos(artiCntAssGrps);
+			artiCntAssGrps++;
 		}
 		if (CntAssGrps.find(segments) != CntAssGrps.end()) {
 			CntAssGrps[segments].push_back( (int)smplLoc.size());
@@ -243,11 +245,10 @@ exit(12);
 	//read the gene abundances sample-wise in
 	for (uint i = preMapSize; i < smplN; i++) {
 		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i] + path2abundance));
-
- #ifdef notRpackage
-cerr << baseP[curr] + "/" + smplLoc[i] << endl;
-#endif
-}
+		#ifdef notRpackage
+		cerr << baseP[curr] + "/" + smplLoc[i] << endl;
+		#endif
+	}
 }
 
 
