@@ -101,9 +101,9 @@ exit(55);
 		pos = gene.find(sampleSeq);
 		string sample;
 		SmplOccurITmult smNum;
-		if (pos != string::npos) { //has the characteristic "__" sample separator
+		pos2 = gene.find("_L", pos + 3);
+		if (pos != string::npos && pos2 != string::npos) { //has the characteristic "__" sample separator
 			sample = gene.substr(0, pos);
-			pos2 = gene.find("_L", pos + 3);
 			smNum = smpls.find(sample);
 			if (smNum == smpls.end()) {
 #ifdef notRpackage
@@ -264,10 +264,10 @@ GeneAbundance::GeneAbundance(const string abunF) {
 	ifstream in;
 	in.open(abunF.c_str());
 	if (!in) {
- #ifdef notRpackage
-cerr << "Couldn't open gene abundance file " << abunF << endl;
-exit(56);
-#endif
+	 #ifdef notRpackage
+	cerr << "Couldn't open gene abundance file " << abunF << endl;
+	exit(56);
+	#endif
 }
 	string line;
 	while (getline(in, line)) {
