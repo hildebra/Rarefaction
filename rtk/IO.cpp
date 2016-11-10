@@ -462,11 +462,11 @@ cerr<<"fini";
 }
 }
 */
-void smplVec::shuffle_singl(){
+/*void smplVec::shuffle_singl(){
 	time_t seed_val=time(NULL);           // populate somehow
 	rng.seed((long)seed_val);
 	unsigned long j; unsigned int temp;
-	for (unsigned long i = 0 ; i < (unsigned long)totSum - 1; i++) {
+	for (unsigned long i = 0 ; i < (unsigned long)(totSum - 1); i++) {
 		std::uniform_int_distribution<unsigned long> uint_distx(0,i);
 		j = uint_distx(rng);
 		temp = arr[i] ;
@@ -475,12 +475,17 @@ void smplVec::shuffle_singl(){
 		//swap(arr[i],arr[j]);
 	}
 	if (verbose){
-#ifdef notRpackage
-cerr<<"fini";
-#endif
-}
-}
+	#ifdef notRpackage
+	//cerr<<"fini";
+	#endif
+	}
+}*/
 
+void smplVec::shuffle_singl() {
+	//auto engine = std::default_random_engine{};
+	auto engine = std::mt19937_64{};
+	std::shuffle(std::begin(arr), std::end(arr), engine);	
+}
 
 
 int smplVec::binarySearch( vector<float> vec, const float toFind)

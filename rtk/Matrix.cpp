@@ -535,10 +535,10 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	string line;
 	ifstream in(inF.c_str());
 	if (!in){
-#ifdef notRpackage
-cerr << "Cant open file " << inF << endl; std::exit(11);
-#endif
-}
+		#ifdef notRpackage
+		cerr << "Cant open file " << inF << endl; std::exit(11);
+		#endif		
+	}
 	int ini_ColPerRow(0),cnt(0);
 
 
@@ -568,6 +568,9 @@ cerr<<"C1: Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<
 		}
 		cnt++;
 		if (cnt>10){break;}
+	}
+	if (ini_ColPerRow == 0) {
+		cerr << "Could not find valid columns in matrix.. exiting\n"; exit(432);
 	}
 	colIDs.resize(ini_ColPerRow-1,"");
 	colSum.resize(ini_ColPerRow-1,0.0);

@@ -371,289 +371,6 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 
 
 
-
-
-int main(int argc, char* argv[])
-{
-
-	if (argc < 2) { cerr << "Not enough arguments. Use \"rtk -h\" for getting started.\n"; exit(3); }
-
-	options* opts = new options(argc, argv);
-	string inF = opts->input;
-	string outF = opts->output;
-	string mode = opts->mode;
-	uint numThr = opts->threads;
-	string arg4 = std::to_string(opts->depth);
-	string map = opts->map;
-	string refD = opts->referenceDir;
-	//bool verbose = opts->verbose;
-
-
-
-	//all modes that classify as rarefactions:
-	if (mode == "rarefaction" || mode == "swap"  || mode == "memory") {
-		opts->print_rare_details();
-	}
-
-
-	// start the modes
-//	if (argc>3){
-		if (mode == "splitMat") {
-			vector<string> empt;
-			Matrix* Mo = new Matrix(inF, outF, opts->xtra, empt, false);
-			//Mo->splitOnHDD(outF);	//Mo->writeSums(outF);
-			delete Mo;
-			std::exit(0);
-		//}else if (mode == "rare_lowMem") {
-		//	rareLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
-	}else if (mode == "swap") {
-		vector < vector < string > > tmpMatFiles(opts->write);
-		rareExtremLowMem(inF, outF, opts->write,  arg4, opts->repeats, numThr, opts->writeSwap);
-			std::exit(0);
-		}	else if (mode == "correl2"){
-			//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
-			//reads in signature matrix (e.g. 40 marker genes)
-			//SigMatrix* Sig = new SigMatrix(inF);
-			//Sig->estimateBinModel();
-			//readMatrixLinebyLine(arg4,Sig);
-
-		}else if (mode == "module") {
-			if (argc < 7) {
-				cout << "Usage: ./rare module [KO matrix] [outputfile] [module DB file] [KO redundancy, int] [Pathway completeness, float 0-1] [Enzyme completeness, float 0-1]\n";
-				cerr << "Not enough arguments for \"module\" function\n";
-				exit(3);
-			}
-			Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
-			cerr << "Estimate mod AB\n";
-			if (opts->modDB == "") {//try legacy mode
-				Mo->estimateModuleAbund(argv, argc);// arg4, outF); //arg4 needs to be module file, outF makes the (several) matrices
-			} else {
-				Mo->estimateModuleAbund(opts);
-			}
-			delete Mo;
-			std::exit(0);
-		}
-		else if (mode == "normalize") {
-			if (argc < 4) {
-				cout << "Usage: ./rare normalize [in matrix] [outputfile]\n";
-				cerr << "Not enough arguments for \"normalize\" function\n";
-				exit(3);
-			}
-			Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
-			Mo->normalize();
-			Mo->writeMatrix(outF);
-			delete Mo;
-			std::exit(0);
-		} else if (mode == "help" || mode == "-help" || mode == "-h" || mode == "--help"){
-			helpMsg();
-		} else if (mode == "lineExtr"){
-			lineCntOut(inF, outF, arg4);
-			std::exit(0);
-		} else if (mode == "mergeMat") {
-			VecFiles* VFs = new VecFiles(inF, outF, arg4);
-			delete VFs;
-			std::exit(0);
-		} else if (mode == "sumMat") {
-			vector<string> empt;
-			Matrix* Mo = new Matrix(inF, outF, refD, empt, true);
-			delete Mo;
-			std::exit(0);
-		} else if (mode == "rarefaction" || mode == "rare_inmat") {
-			//rareDep = atoi(arg4.c_str());
-			mode = "memory";
-		} else if (mode == "colSums" || mode == "colsums"  || mode == "colSum") {
-		 // just load and discard the matrix and report back the colsums
-		 vector<string> fileNames;
-		 Matrix* Mo 	= new Matrix(inF, outF, "", fileNames, false, true, false);
-		 column co 		= Mo->getMinColumn();
-		 vector< pair< double, string>> colsums = Mo->getColSums();
-		 Mo->writeColSums(outF);
-
-		 cout << "" << std::endl;
-		 cout << "------------------------------------" << std::endl;
-		 cout << "ColSums output" << std::endl;
-		 cout << "Smallest column: " << co.id << std::endl;
-		 cout << "With counts:     " << co.colsum << std::endl;
-		 cout << "" << std::endl;
-		 cout << "Colsums where written into the files:" << std::endl;
-		 cout << "    " << outF << "colSums.txt" << std::endl;
-		 cout << "    " << outF << "colSums_sorted.txt" << std::endl;
-
-		 delete Mo;
-		 std::exit(0);
-	 	}
-		else if (mode == "geneMat"){
-			cout << "Gene clustering matrix creation\n";
-			if (argc < 5) {cerr << "Needs at least 4 arguments\n"; std::exit(0);}
-			ClStr2Mat* cl = new ClStr2Mat(inF,outF, map, refD);
-			delete cl;
-			std::exit(0);
-		}  else if(mode == "memory"){
-		}else {
-			cout << "rtk run mode \""<< mode<<"\" undefined.\nSee ./rtk -h for more information.\n";
-			//helpMsg();
-		}
-//	}
-
-
-
-
-	MyRNG rng;
-	//test rand numbers.. check
-	//std::uniform_int_distribution<unsigned long> uint_distx(0,2223951715);	for (int i=0;i<100;i++){cout<<uint_distx(rng)<<" ";}	int i;	cin>>i;	std::exit(2);
-
-	//testing max mem
-	//int maxSiz = 1;if (verbose){		for(std::vector<char>::size_type sz = 1;   ;  sz *= 2)		{			break;			std::cerr << "attempting sz = " << sz << '\n';			std::vector<unsigned short> v(sz);		}		//cout<<"Max vec size: "<<maxSiz<<endl;	}
-	if (mode == "memory"){
-		cout << "Loading input matrix to memory" << std::endl;
-		Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
-		vector<DivEsts*> divvs(Mo->smplNum(),NULL);
-		vector< string > rowNames = Mo->getRowNames();
-		cout << "Done loading matrix" << std::endl;
-
-		double rareDep2 = opts->depth;
-		if(rareDep2 < 1.){
-			// rarefy to smallest colSum
-			rareDep2 = (uint)round(rareDep2 * Mo->getMinColSum());
-			if(rareDep2 == 0.0){
-				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-				exit(1);
-			}
-		}
-		uint rareDep = uint(rareDep2);
-
-		// hold rarefied matrices
-		// stores : repeats - sampels eg rows - vectors of columns
-		int NoOfMatrices = opts->write;
-		vector< vector< rare_map > > MaRare (NoOfMatrices);
-		std::vector<string> cntsNames;
-
-
-		// abundance vectors to hold the number of occurences of genes per row
-		// this will be used for Chao2 estimation
-		vector<vector<uint>> abundInRow(opts->repeats, vector<uint>(Mo->rowNum(),0));
-		vector<vector<uint>> occuencesInRow(opts->repeats, vector<uint>(Mo->rowNum(),0));
-
-		//object to keep matrices
-		vector < vector < string > > tmpMatFiles(opts->write);
-		//cerr << "TH";
-		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
-		uint i = 0; uint done = 0;
-		while ( i < Mo->smplNum()){
-			int thirds = (int) floor(( Mo->smplNum()-3)/3);
-			if(i < 3 || i % thirds == 0  ){
-				cout << "At Sample " << i+1 << " of " <<  Mo->smplNum() << " Samples" << std::endl  ;
-				if(i > 3 && i % thirds == 0 ){
-					cout << "..." << std::endl ;
-				}
-			}else if( i == 3){
-				cout << "..." << std::endl ;
-			}
-			uint toWhere = done+numThr - 1; if ((uint)((uint)Mo->smplNum() - 2 ) < toWhere){ toWhere = Mo->smplNum() - 2; }
-			for (; i < toWhere; i++){
-				DivEsts * div = new DivEsts();
-				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
-			}
-			//use main thread to calc one sample as well
-			DivEsts * div 	= new DivEsts();
-			rareStruct* tmpRS;
-			tmpRS 			= calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
-
-
-			i++;
-			i = done;
-			for (; i < toWhere; i++){
-				rareStruct* tmpRS;
-				tmpRS 		= tt[i-done].get();
-				divvs[i] 		= tmpRS->div;
-				string curS 	= Mo->getSampleName(i);
-				//divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
-
-				// add the matrices to the container
-				if(NoOfMatrices > 0){
-					if(opts->writeSwap){
-						binaryStoreSample(tmpMatFiles, tmpRS, rowNames,outF, cntsNames, false);
-					}else{
-						memoryStoreSample(tmpRS, MaRare, cntsNames, false);
-					}
-				}
-
-				delete tmpRS;
-			}
-			// main thread divv push back
-			divvs[i] = tmpRS->div;
-			string curS 	= Mo->getSampleName(i);
-			//divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
-
-			// add the matrices to the container
-			if(NoOfMatrices > 0){
-				if(opts->writeSwap){
-					binaryStoreSample(tmpMatFiles, tmpRS, rowNames,outF, cntsNames, false);
-				}else{
-					memoryStoreSample(tmpRS, MaRare, cntsNames, false);
-				}
-			}
-			delete tmpRS;
-			i++;
-			done = i;
-		}
-		printDivMat(outF , divvs, true);
-		for (size_t i = 0; i < divvs.size(); i++){
-			delete divvs[i];
-		}
-
-		// write rarefaction matrices to disk
-		if(NoOfMatrices > 0){
-			vector< string > rowNames = Mo->getRowNames();
-			if(opts->writeSwap){
-				printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
-			}else{
-				printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
-			}
-		}
-
-		delete Mo;
-
-
-		// compute chao2, ACE, ICE and write to file
-		vector<mat_fl> chao2;
-		vector<mat_fl> ICE;
-		vector<mat_fl> ACE;
-		computeChao2(chao2, abundInRow);
-		computeCE(ICE, abundInRow);
-		computeCE(ACE, occuencesInRow);
-		writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
-
-		cout << "Finished\n";
-		std::exit(0);
-	}
-
-
-	//old way of reading single samples..
-	//smplVec* cur = new smplVec(inF,4);
-	DivEsts * div = new DivEsts();
-
-
-	//placeholder for R function, not to be filled here
-	//std::vector<map<uint, uint>> emptyRet;
-	//string emptySmp;
-	//string skippedSample;
-	//vector<vector<uint>> abundInRow;
-	//cur->rarefy(rareDep,outF,repeats,div, emptyRet, emptySmp, skippedSample, &abundInRow, writeFiles,true,false);
-
-
-	div->print2file(outF+"_estimates");
-
-	return 0;
-}
-
-
-
-
-
-
-
-
 void binaryStoreSample(vector< vector< string> >& tmpMatFiles, rareStruct* tmpRS, vector<string>& rowNames, string outF,  vector<string>& cntsNames, bool reshapeMap){
 	// store vectors of rarefied matrix on hard disk for memory reduction
 	if(reshapeMap){
@@ -735,4 +452,275 @@ void printRarefactionMatrix(const vector<vector< rare_map>>& MaRare, string outF
 	for(uint i = 0; i < MaRare.size(); i++){
 		printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
 	}
+}
+
+
+
+
+
+int main(int argc, char* argv[])
+{
+
+	if (argc < 2) { cerr << "Not enough arguments. Use \"rtk -h\" for getting started.\n"; exit(3); }
+
+	clock_t tStart = clock();
+
+	options* opts = new options(argc, argv);
+	string inF = opts->input;
+	string outF = opts->output;
+	string mode = opts->mode;
+	uint numThr = opts->threads;
+	string arg4 = std::to_string(opts->depth);
+	string map = opts->map;
+	string refD = opts->referenceDir;
+	//bool verbose = opts->verbose;
+
+
+
+	//all modes that classify as rarefactions:
+	if (mode == "rarefaction" || mode == "swap" || mode == "memory") {
+		opts->print_rare_details();
+	}
+
+
+	// start the modes
+	//	if (argc>3){
+	if (mode == "splitMat") {
+		vector<string> empt;
+		Matrix* Mo = new Matrix(inF, outF, opts->xtra, empt, false);
+		//Mo->splitOnHDD(outF);	//Mo->writeSums(outF);
+		delete Mo;
+		std::exit(0);
+		//}else if (mode == "rare_lowMem") {
+		//	rareLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
+	}
+	else if (mode == "correl2") {
+		//usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
+		//reads in signature matrix (e.g. 40 marker genes)
+		//SigMatrix* Sig = new SigMatrix(inF);
+		//Sig->estimateBinModel();
+		//readMatrixLinebyLine(arg4,Sig);
+
+	}
+	else if (mode == "module") {
+		if (argc < 7) {
+			cout << "Usage: ./rare module [KO matrix] [outputfile] [module DB file] [KO redundancy, int] [Pathway completeness, float 0-1] [Enzyme completeness, float 0-1]\n";
+			cerr << "Not enough arguments for \"module\" function\n";
+			exit(3);
+		}
+		Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
+		cerr << "Estimate mod AB\n";
+		if (opts->modDB == "") {//try legacy mode
+			Mo->estimateModuleAbund(argv, argc);// arg4, outF); //arg4 needs to be module file, outF makes the (several) matrices
+		}
+		else {
+			Mo->estimateModuleAbund(opts);
+		}
+		delete Mo;
+		std::exit(0);
+	}
+	else if (mode == "normalize") {
+		if (argc < 4) {
+			cout << "Usage: ./rare normalize [in matrix] [outputfile]\n";
+			cerr << "Not enough arguments for \"normalize\" function\n";
+			exit(3);
+		}
+		Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
+		Mo->normalize();
+		Mo->writeMatrix(outF);
+		delete Mo;
+		std::exit(0);
+	}
+	else if (mode == "help" || mode == "-help" || mode == "-h" || mode == "--help") {
+		helpMsg();
+	}
+	else if (mode == "lineExtr") {
+		lineCntOut(inF, outF, arg4);
+		std::exit(0);
+	}
+	else if (mode == "mergeMat") {
+		VecFiles* VFs = new VecFiles(inF, outF, arg4);
+		delete VFs;
+		std::exit(0);
+	}
+	else if (mode == "sumMat") {
+		vector<string> empt;
+		Matrix* Mo = new Matrix(inF, outF, refD, empt, true);
+		delete Mo;
+		std::exit(0);
+	}
+	else if (mode == "rarefaction" || mode == "rare_inmat") {
+		//rareDep = atoi(arg4.c_str());
+		mode = "memory";
+	}
+	else if (mode == "colSums" || mode == "colsums" || mode == "colSum") {
+		// just load and discard the matrix and report back the colsums
+		vector<string> fileNames;
+		Matrix* Mo = new Matrix(inF, outF, "", fileNames, false, true, false);
+		column co = Mo->getMinColumn();
+		vector< pair< double, string>> colsums = Mo->getColSums();
+		Mo->writeColSums(outF);
+
+		cout << "" << std::endl;
+		cout << "------------------------------------" << std::endl;
+		cout << "ColSums output" << std::endl;
+		cout << "Smallest column: " << co.id << std::endl;
+		cout << "With counts:     " << co.colsum << std::endl;
+		cout << "" << std::endl;
+		cout << "Colsums where written into the files:" << std::endl;
+		cout << "    " << outF << "colSums.txt" << std::endl;
+		cout << "    " << outF << "colSums_sorted.txt" << std::endl;
+
+		delete Mo;
+		std::exit(0);
+	}
+	else if (mode == "geneMat") {
+		cout << "Gene clustering matrix creation\n";
+		if (argc < 5) { cerr << "Needs at least 4 arguments\n"; std::exit(0); }
+		ClStr2Mat* cl = new ClStr2Mat(inF, outF, map, refD);
+		delete cl;
+		std::exit(0);
+	}
+	else if (mode == "swap") {
+		vector < vector < string > > tmpMatFiles(opts->write);
+		rareExtremLowMem(inF, outF, opts->write, arg4, opts->repeats, numThr, opts->writeSwap);
+		printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+		std::exit(0);
+	}
+	else if (mode == "memory") {
+		cout << "Loading input matrix to memory" << std::endl;
+		Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
+		vector<DivEsts*> divvs(Mo->smplNum(), NULL);
+		vector< string > rowNames = Mo->getRowNames();
+		cout << "Done loading matrix" << std::endl;
+
+		double rareDep2 = opts->depth;
+		if (rareDep2 < 1.) {
+			// rarefy to smallest colSum
+			rareDep2 = (uint)round(rareDep2 * Mo->getMinColSum());
+			if (rareDep2 == 0.0) {
+				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+				exit(1);
+			}
+		}
+		uint rareDep = uint(rareDep2);
+
+		// hold rarefied matrices
+		// stores : repeats - sampels eg rows - vectors of columns
+		int NoOfMatrices = opts->write;
+		vector< vector< rare_map > > MaRare(NoOfMatrices);
+		std::vector<string> cntsNames;
+
+
+		// abundance vectors to hold the number of occurences of genes per row
+		// this will be used for Chao2 estimation
+		vector<vector<uint>> abundInRow(opts->repeats, vector<uint>(Mo->rowNum(), 0));
+		vector<vector<uint>> occuencesInRow(opts->repeats, vector<uint>(Mo->rowNum(), 0));
+
+		//object to keep matrices
+		vector < vector < string > > tmpMatFiles(opts->write);
+		//cerr << "TH";
+		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
+		uint i = 0; uint done = 0;
+		while (i < Mo->smplNum()) {
+			int thirds = (int)floor((Mo->smplNum() - 3) / 3);
+			if (i < 3 || i % thirds == 0) {
+				cout << "At Sample " << i + 1 << " of " << Mo->smplNum() << " Samples" << std::endl;
+				if (i > 3 && i % thirds == 0) {
+					cout << "..." << std::endl;
+				}
+			}
+			else if (i == 3) {
+				cout << "..." << std::endl;
+			}
+			uint toWhere = done + numThr - 1; if ((uint)((uint)Mo->smplNum() - 2) < toWhere) { toWhere = Mo->smplNum() - 2; }
+			for (; i < toWhere; i++) {
+				DivEsts * div = new DivEsts();
+				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+			}
+			//use main thread to calc one sample as well
+			DivEsts * div = new DivEsts();
+			rareStruct* tmpRS;
+			tmpRS = calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+
+
+			i++;
+			i = done;
+			for (; i < toWhere; i++) {
+				rareStruct* tmpRS;
+				tmpRS = tt[i - done].get();
+				divvs[i] = tmpRS->div;
+				string curS = Mo->getSampleName(i);
+				//divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
+
+				// add the matrices to the container
+				if (NoOfMatrices > 0) {
+					if (opts->writeSwap) {
+						binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+					}
+					else {
+						memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+					}
+				}
+
+				delete tmpRS;
+			}
+			// main thread divv push back
+			divvs[i] = tmpRS->div;
+			string curS = Mo->getSampleName(i);
+			//divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
+
+			// add the matrices to the container
+			if (NoOfMatrices > 0) {
+				if (opts->writeSwap) {
+					binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+				}
+				else {
+					memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+				}
+			}
+			delete tmpRS;
+			i++;
+			done = i;
+		}
+		printDivMat(outF, divvs, true);
+		for (size_t i = 0; i < divvs.size(); i++) {
+			delete divvs[i];
+		}
+
+		// write rarefaction matrices to disk
+		if (NoOfMatrices > 0) {
+			vector< string > rowNames = Mo->getRowNames();
+			if (opts->writeSwap) {
+				printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
+			}
+			else {
+				printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
+			}
+		}
+
+		delete Mo;
+
+
+		// compute chao2, ACE, ICE and write to file
+		vector<mat_fl> chao2;
+		vector<mat_fl> ICE;
+		vector<mat_fl> ACE;
+		computeChao2(chao2, abundInRow);
+		computeCE(ICE, abundInRow);
+		computeCE(ACE, occuencesInRow);
+		writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
+
+		printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+		//cout << "Finished\n";
+		std::exit(0);
+	}
+	else {
+		cout << "rtk run mode \"" << mode << "\" undefined.\nSee ./rtk -h for more information.\n";
+		//helpMsg();
+	}
+
+
+
+	return 0;
 }
