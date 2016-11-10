@@ -188,6 +188,10 @@ xtra("") {
 		cerr << "Use \"rtk -h\" to get full help.\n";
 		exit(98);
 	}
+	if (mode == "rarefaction") {
+		if (writeSwap) { mode = "swap"; 
+		} else { mode = "memory"; }
+	}
 }
 void options::print_rare_details(){
 
@@ -387,7 +391,7 @@ int main(int argc, char* argv[])
 
 
 	//all modes that classify as rarefactions:
-	if (mode == "swap" || mode == "memory") {
+	if (mode == "rarefaction" || mode == "swap"  || mode == "memory") {
 		opts->print_rare_details();
 	}
 
@@ -456,6 +460,7 @@ int main(int argc, char* argv[])
 			std::exit(0);
 		} else if (mode == "rarefaction" || mode == "rare_inmat") {
 			//rareDep = atoi(arg4.c_str());
+			mode = "memory";
 		} else if (mode == "colSums" || mode == "colsums"  || mode == "colSum") {
 		 // just load and discard the matrix and report back the colsums
 		 vector<string> fileNames;
@@ -485,7 +490,8 @@ int main(int argc, char* argv[])
 			std::exit(0);
 		}  else if(mode == "memory"){
 		}else {
-			helpMsg();
+			cout << "rtk run mode \""<< mode<<"\" undefined.\nSee ./rtk -h for more information.\n";
+			//helpMsg();
 		}
 //	}
 
