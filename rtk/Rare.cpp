@@ -116,7 +116,7 @@ void helpMsg(){
 
 
 options::options(int argc, char** argv) :input(""), output(""), mode(""),
-depth(0), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
+depth(0.95), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
 modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), modCollapse(false),
 xtra("") {
 
@@ -135,7 +135,7 @@ xtra("") {
 			output = argv[++i];
 		///else if (!strcmp(argv[i], "-m"))
 		else if (!strcmp(argv[i], "-d"))
-			depth = atoi(argv[++i]);
+			depth =  atof(argv[++i]);
 		else if (!strcmp(argv[i], "-r"))
 			repeats = atoi(argv[++i]);
 		else if (!strcmp(argv[i], "-w"))
@@ -240,17 +240,17 @@ void rareExtremLowMem(string inF, string outF, int writeFiles, string arg4, int 
 	vector<vector<uint>> occuencesInRow(repeats, vector<uint>(Mo->rowNum(),0));
 	vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
 
-	int rareDep 	= atoi(arg4.c_str());
-	if(rareDep == 0){
+	double rareDep2 	= atof(arg4.c_str());
+	if(rareDep2 < 1.){
 		// rarefy to smallest colSum
-		rareDep = (int)round(0.95f * Mo->getMinColSum());
-		if(rareDep == 0.0){
+		rareDep2 = (int)round(rareDep2 * Mo->getMinColSum());
+		if(rareDep2 == 0.0){
 			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
 			exit(1);
 		}
 	}
 	delete Mo;
-
+	uint rareDep = uint(rareDep2);
 
 	int NoOfMatrices = writeFiles;
 	vector< vector< rare_map > > MaRare (NoOfMatrices);
@@ -498,7 +498,6 @@ int main(int argc, char* argv[])
 
 	//testing max mem
 	//int maxSiz = 1;if (verbose){		for(std::vector<char>::size_type sz = 1;   ;  sz *= 2)		{			break;			std::cerr << "attempting sz = " << sz << '\n';			std::vector<unsigned short> v(sz);		}		//cout<<"Max vec size: "<<maxSiz<<endl;	}
-	int rareDep = opts->depth;
 	if (mode == "memory"){
 		cout << "Loading input matrix to memory" << std::endl;
 		Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
@@ -506,14 +505,16 @@ int main(int argc, char* argv[])
 		vector< string > rowNames = Mo->getRowNames();
 		cout << "Done loading matrix" << std::endl;
 
-		if(rareDep == 0){
+		double rareDep2 = opts->depth;
+		if(rareDep2 < 1.){
 			// rarefy to smallest colSum
-			rareDep = (uint)round(0.95 * Mo->getMinColSum());
-			if(rareDep == 0.0){
+			rareDep2 = (uint)round(rareDep2 * Mo->getMinColSum());
+			if(rareDep2 == 0.0){
 				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
 				exit(1);
 			}
 		}
+		uint rareDep = uint(rareDep2);
 
 		// hold rarefied matrices
 		// stores : repeats - sampels eg rows - vectors of columns

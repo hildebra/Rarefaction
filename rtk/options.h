@@ -15,7 +15,7 @@ public:
   string mode  = "";
   string referenceDir = "";
   string map = "";
-  uint depth = 0;
+  double depth = 0.95;
   uint repeats = 10;
   uint write = 0;
   uint threads = 1;
