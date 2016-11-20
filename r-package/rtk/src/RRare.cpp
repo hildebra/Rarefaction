@@ -74,9 +74,9 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 
 	delete cur;
 
-	//if( remove( fileNames[i].c_str() ) != 0 ){
-		//cerr << "LowMem: Error deleting file: " << fileNames[i] << std::endl;
-	//}
+	if( remove( fileNames[i].c_str() ) != 0 ){
+		cerr << "LowMem: Error deleting file: " << fileNames[i] << std::endl;
+	}
 	return tmpRS;
 }
 
