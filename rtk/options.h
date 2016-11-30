@@ -14,6 +14,7 @@ public:
   string output = "";
   string mode  = "";
   string referenceDir = "";
+  string referenceFile = "";
   string map = "";
   double depth = 0.95;
   uint repeats = 10;

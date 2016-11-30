@@ -116,6 +116,7 @@ void helpMsg(){
 
 
 options::options(int argc, char** argv) :input(""), output(""), mode(""),
+referenceDir(""), referenceFile(""),
 depth(0.95), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
 modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), modCollapse(false),
 xtra("") {
@@ -153,6 +154,8 @@ xtra("") {
 			map = argv[++i];
 		else if (!strcmp(argv[i], "-refD"))
 			referenceDir = argv[++i];
+		else if (!strcmp(argv[i], "-reference"))
+			referenceFile = argv[++i];
 		//module specific args
 		else if (!strcmp(argv[i], "-refMods"))
 			modDB = (argv[++i]);
@@ -535,7 +538,7 @@ int main(int argc, char* argv[])
 		helpMsg();
 	}
 	else if (mode == "lineExtr") {
-		lineCntOut(inF, outF, arg4);
+		lineCntOut(inF, outF, opts->referenceFile);
 		std::exit(0);
 	}
 	else if (mode == "mergeMat") {
