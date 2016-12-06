@@ -54,6 +54,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
                                     rownames(input), repeats, d,
                                     ReturnMatrix, verbose, threads,
                                     margin, "NULL", FALSE)
+            gc()
 
             # remove col and/or row names, as we've added them for
             # the Cpp software to work well
@@ -67,6 +68,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
                 res$raremat <- lapply(res$raremat, function(x) {colnames(x) <- NULL; return (x)})
               }
             }
+            gc()
             return(res)
           })
 
@@ -95,6 +97,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
                                        ReturnMatrix,
                                        verbose, threads,
                                        margin, tmpdir, uselowmem)
+              gc()
               return(res)
             })
   }else{
@@ -123,7 +126,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
   result$depths    <- depth
   result$repeats   <- repeats
   class(result)    <- "rtk";
-
+  gc()
   return(result)
 }
 

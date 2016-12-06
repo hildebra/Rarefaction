@@ -487,8 +487,13 @@ void Modules::calcModAbund( vector<mat_fl>& v, const int pos, const unordered_ma
 			int x = 0;		} /**/
 		if (mods[i].containsMods) {
 			if (mods[i].usedInOtherMods) {
+    			#ifdef notRpackage
+    			// everyone knows, this is not the best fix, but what can we do then?
+    			// we need to not have exit commands in the code for R
+    			// termination should happen more pretty somehow
 				cerr << "usedInOtherMods && containsMods - fatal error" << endl;
 				exit(823);
+				#endif
 			}
 			continue; 
 		}//these need to be estimated at the end
@@ -496,7 +501,9 @@ void Modules::calcModAbund( vector<mat_fl>& v, const int pos, const unordered_ma
 		if (mods[i].usedInOtherMods) { // add abundance to vec
 			auto fnd = IDX.find(mods[i].name);
 			if (fnd == IDX.end()) {
+			    #ifdef notRpackage
 				cerr << "Could not find module " << mods[i].name << " but should be in AB matrix\n"; exit(487);
+				#endif
 			}
 			v[fnd->second] = ret[i];
 		}
@@ -570,7 +577,9 @@ cerr<<"C1: Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<
 		if (cnt>10){break;}
 	}
 	if (ini_ColPerRow == 0) {
+    	#ifdef notRpackage
 		cerr << "Could not find valid columns in matrix.. exiting\n"; exit(432);
+		#endif
 	}
 	colIDs.resize(ini_ColPerRow-1,"");
 	colSum.resize(ini_ColPerRow-1,0.0);

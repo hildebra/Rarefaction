@@ -119,9 +119,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	}
 
     // create variables to be filled
-    vector<DivEsts*> * divvs;
-    divvs 			=  new vector<DivEsts*>;
-
+    vector<DivEsts*>  divvs(0,NULL);
 	// return vector for counts
 	std::vector<vector<rare_map>> retCnts(NoOfMatrices); // initialize a vector of matrices with the number of repeats
 	std::vector<string> retCntsSampleNames;
@@ -156,13 +154,13 @@ List rcpp_rarefaction(Rcpp::String input,
 	if(verbose == true){
 		Rcout << "Will now prepare diversity measures for R\n";
 	}
-	for(uint i = 0; i < divvs->size(); i++){
+	for(uint i = 0; i < divvs.size(); i++){
 		// create a Lst from div pointer
-		List tmpDivLst = createDivList((*divvs)[i]);
+		List tmpDivLst = createDivList(divvs[i]);
 		majorLst.push_back(tmpDivLst);
-		delete (*divvs)[i];
+		//delete divvs[i];
 	}
-	delete divvs;
+
 
 
 	std::vector<Rcpp::IntegerMatrix> RrarefyMatrices(NoOfMatrices); // vector to hold te matrices
