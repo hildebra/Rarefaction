@@ -2,6 +2,7 @@
 #include "Matrix.h"
 
 const string path2abundance = "/assemblies/metag/ContigStats/Coverage.pergene";
+const string path2counts = "/assemblies/metag/ContigStats/Coverage.count_pergene";
 
 //typedef std::unordered_map<uint, uint>::iterator SmplAbunIT;
 //typedef std::unordered_map<uint, uint> SmplAbun;
@@ -37,10 +38,10 @@ class ClStr2Mat
 {
 	//class for gene catalog creation with cd-hit
 public:
-	ClStr2Mat(const string inF, const string outF, const string mapF, const string baseP);
+	ClStr2Mat(const string inF, const string outF, const string mapF, const string baseP, bool covCalc);
 	virtual ~ClStr2Mat();
 private:
-	void read_map(const string);
+	void read_map(const string,bool);
 	void printVec(ofstream&, vector<smat_fl>&,const string&);
 
 	vector<GeneAbundance*> GAs;
