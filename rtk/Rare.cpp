@@ -118,7 +118,8 @@ void helpMsg(){
 options::options(int argc, char** argv) :input(""), output(""), mode(""),
 referenceDir(""), referenceFile(""),
 depth(0.95), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
-modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), modCollapse(false),
+modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
+modCollapse(false), calcCoverage(false),
 xtra("") {
 
 
@@ -169,6 +170,8 @@ xtra("") {
 			modWrXtraInfo = true;
 		else if (!strcmp(argv[i], "-collapseDblModules"))
 			modCollapse = true;
+		else if (!strcmp(argv[i], "-useCoverage"))//for gene catalog, default is counts
+			calcCoverage = true;
 		else if (!strcmp(argv[i], "-xtra"))
 			xtra = (argv[++i]);
 
@@ -580,7 +583,7 @@ int main(int argc, char* argv[])
 	else if (mode == "geneMat") {
 		cout << "Gene clustering matrix creation\n";
 		if (argc < 5) { cerr << "Needs at least 4 arguments\n"; std::exit(0); }
-		ClStr2Mat* cl = new ClStr2Mat(inF, outF, map, refD);
+		ClStr2Mat* cl = new ClStr2Mat(inF, outF, map, refD,opts->calcCoverage);
 		delete cl;
 		std::exit(0);
 	}

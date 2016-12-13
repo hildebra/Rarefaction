@@ -2,7 +2,7 @@
 
 
 ClStr2Mat::ClStr2Mat(const string inF, const string outF,
-	const string mapF, const string basePX):
+	const string mapF, const string basePX, bool covCalc):
 	GAs(0), CCH(NULL),smplLoc(0), baseP(0), smplN(0), curr(-1) {
 	ifstream incl;
 	//set up baseP
@@ -36,7 +36,7 @@ exit(55);
 	//read map(s) and check that
 	stringstream ss2(mapF);
 	while (getline(ss2, segments, ',')) {
-		read_map(segments);
+		read_map(segments, covCalc);
 	}
 	if ( baseP.size() > curr+1) {
 	 #ifdef notRpackage
@@ -149,7 +149,7 @@ void ClStr2Mat::printVec(ofstream& of,vector<smat_fl>& pr,const string&rowN) {
 	}
 	of << "\n";
 }
-void ClStr2Mat::read_map(const string mapF) {
+void ClStr2Mat::read_map(const string mapF,bool calcCoverage) {
 	ifstream in;
 	curr++;//keep track of different maps and inPaths
 	uint preMapSize((int)smplLoc.size());
@@ -244,7 +244,9 @@ exit(56);
 	smplN = smplLoc.size();
 	//read the gene abundances sample-wise in
 	for (uint i = preMapSize; i < smplN; i++) {
-		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i] + path2abundance));
+		string pa2ab = path2counts;
+		if (calcCoverage) { pa2ab = path2abundance; }
+		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i] + pa2ab));
 		#ifdef notRpackage
 		cerr << baseP[curr] + "/" + smplLoc[i] << endl;
 		#endif

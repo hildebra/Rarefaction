@@ -29,6 +29,7 @@ public:
   float modModCompl;
   bool modWrXtraInfo;
   bool modCollapse;
+  bool calcCoverage;
 
   string xtra;
 };
