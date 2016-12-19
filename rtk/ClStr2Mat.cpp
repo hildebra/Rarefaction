@@ -246,7 +246,7 @@ exit(56);
 	for (uint i = preMapSize; i < smplN; i++) {
 		string pa2ab = path2counts;
 		if (calcCoverage) { pa2ab = path2abundance; }
-		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i] + pa2ab));
+		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i], pa2ab));
 		#ifdef notRpackage
 		cerr << baseP[curr] + "/" + smplLoc[i] << endl;
 		#endif
@@ -262,13 +262,24 @@ void ContigCrossHit::addHit(int Smpl, int Ctg) {
 
 ///////////////////////////////////////////////////
 
-GeneAbundance::GeneAbundance(const string abunF) {
+GeneAbundance::GeneAbundance(const string path, const string abunF):
+	isPsAss(false){
 	ifstream in;
-	in.open(abunF.c_str());
+	//first test if this is a pseudoassembly
+	in.open((path + pseudoAssMarker).c_str());
+	if (in) {
+		in.close();
+		isPsAss = true;
+		return;
+	}
+	in.close();
+	//not? then read abundances
+	string newS = path + abunF;
+	in.open(newS.c_str());
 	if (!in) {
 	 #ifdef notRpackage
-	cerr << "Couldn't open gene abundance file " << abunF << endl;
-	exit(56);
+	cerr << "Couldn't open gene abundance file " << newS << endl;
+	exit(36);
 	#endif
 }
 	string line;
@@ -280,6 +291,9 @@ GeneAbundance::GeneAbundance(const string abunF) {
 	in.close();
 }
 smat_fl GeneAbundance::getAbundance(const string x) {
+	if (isPsAss) {
+		return (smat_fl) 1.f;//return one read count
+	}
 	SmplAbunIT fnd = GeneAbu.find(x);
 	if (fnd == GeneAbu.end()) {
 		return (smat_fl) 0;
