@@ -3,6 +3,7 @@
 
 const string path2abundance = "/assemblies/metag/ContigStats/Coverage.pergene";
 const string path2counts = "/assemblies/metag/ContigStats/Coverage.count_pergene";
+const string pseudoAssMarker = "/assemblies/metag/longReads.fasta.filt.sto";
 
 //typedef std::unordered_map<uint, uint>::iterator SmplAbunIT;
 //typedef std::unordered_map<uint, uint> SmplAbun;
@@ -26,9 +27,10 @@ private:
 class GeneAbundance
 {
 public:
-	GeneAbundance(const string);
+	GeneAbundance(const string, const string);
 	inline smat_fl getAbundance(const string);
 private:
+	bool isPsAss;
 	SmplAbun GeneAbu;
 	//vector<int> ContigID;
 	
