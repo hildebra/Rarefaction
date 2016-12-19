@@ -40,8 +40,8 @@ exit(55);
 	}
 	if ( baseP.size() > curr+1) {
 	 #ifdef notRpackage
-	cerr << "more maps than basePs\n";
-	exit(72);
+		cerr << "more maps than basePs\n"; 
+		exit(72);
 	#endif
 	}
 
@@ -170,7 +170,8 @@ exit(56);
 	cout << "Reading map " << mapF << " on path " << baseP[curr] << endl;
 	#endif
 	SmplOccurMult CntAssGrps;
-	string line; int cnt(-1); int assGrpN(-1); int artiCntAssGrps(0);
+	string line; int cnt(-1); int assGrpN(-1); 
+	int artiCntAssGrps(0); int skSmplCol(-1);
 
 	while (getline(in, line)) {
 		cnt ++; int sbcnt(-1);
@@ -191,16 +192,23 @@ exit(56);
 					exit(83);
 					#endif
 				}
-				if (segments== "AssmblGrps") {
-					#ifdef notRpackage
+				if (segments == "AssmblGrps") {
 					assGrpN = sbcnt; cout << "Found Assembly groups in map\n";
-					#endif
+				}
+				if (segments == "ExcludeAssembly") {
+					skSmplCol = sbcnt; cout << "Samples can be excluded from assembly\n";
 				}
 			}
 			continue;
 		}
-		getline(ss, segments, '\t');
-		string smpID = segments;
+		vector<string> curLine(0);
+		while (getline(ss, segments, '\t')) {
+			curLine.push_back(segments);
+		}
+		if (skSmplCol>-1 && curLine[skSmplCol] == "1") { continue; }
+
+
+		string smpID = curLine[0];
 		if (smpls.find(smpID) != smpls.end()) {
 			#ifdef notRpackage
 			cerr << "Double sample ID: " << smpID << endl;
@@ -209,28 +217,26 @@ exit(56);
 		}
 
 
-		getline(ss, segments, '\t');
-		string locality = segments;
+		//getline(ss, segments, '\t');
+		string locality = curLine[1];
 
-		sbcnt = 2;
+		string assGrp ("");
 		if (assGrpN != -1) {
 			//handles assembly groups from here
-			while (sbcnt <= assGrpN) {
-				sbcnt++; getline(ss, segments, '\t');
-			}
+			assGrp  = curLine[assGrpN];
 		} else {//simulate CntAssGrps
-			segments = itos(artiCntAssGrps);
+			assGrp = itos(artiCntAssGrps);
 			artiCntAssGrps++;
 		}
-		if (CntAssGrps.find(segments) != CntAssGrps.end()) {
-			CntAssGrps[segments].push_back( (int)smplLoc.size());
+		if (CntAssGrps.find(assGrp) != CntAssGrps.end()) {
+			CntAssGrps[assGrp].push_back( (int)smplLoc.size());
 		} else {
-			CntAssGrps[segments] = vector<int>(1,(int)smplLoc.size());
+			CntAssGrps[assGrp] = vector<int>(1,(int)smplLoc.size());
 		}
 
-		if (CntAssGrps[segments].size() > 1) {
-			string nsmpID = smpID + "M" + to_string(CntAssGrps[segments].size());
-			smpls[nsmpID] = CntAssGrps[segments];//(int)smplLoc.size();
+		if (CntAssGrps[assGrp].size() > 1) {
+			string nsmpID = smpID + "M" + to_string(CntAssGrps[assGrp].size());
+			smpls[nsmpID] = CntAssGrps[assGrp];//(int)smplLoc.size();
 		} else {
 			smpls[smpID] = vector<int>(1,(int)smplLoc.size());
 
