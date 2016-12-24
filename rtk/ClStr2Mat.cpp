@@ -248,6 +248,8 @@ exit(56);
 	}
 	in.close();
 	smplN = smplLoc.size();
+	int psCnts(0), normCnts(0);
+	cout << "Reading gene abundance information..";
 	//read the gene abundances sample-wise in
 	for (uint i = preMapSize; i < smplN; i++) {
 		string pa2ab = path2counts;
@@ -256,7 +258,10 @@ exit(56);
 		#ifdef notRpackage
 		cerr << baseP[curr] + "/" + smplLoc[i] << endl;
 		#endif
+		if (GAs[i]->isPsCnt()) { psCnts++; 
+		} else { normCnts++; }
 	}
+	cout << "Finished\nAssembled Samples: " << normCnts << ", pseudo-assemblies: " << psCnts << endl;
 }
 
 

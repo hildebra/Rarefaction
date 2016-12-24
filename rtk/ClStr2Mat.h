@@ -29,6 +29,8 @@ class GeneAbundance
 public:
 	GeneAbundance(const string, const string);
 	inline smat_fl getAbundance(const string);
+	bool isPsCnt() {return isPsAss;}
+
 private:
 	bool isPsAss;
 	SmplAbun GeneAbu;
