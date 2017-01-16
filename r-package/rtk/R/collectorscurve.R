@@ -1,51 +1,49 @@
-
-
-
-
-#from rtk package
-getStepsAccum = function(n,bin){
-    steps = seq(1, n, bin)
+getStepsAccum <- function(n,bin){
+    steps <- seq(1, n, bin)
     if (steps[length(steps)]!=n){
-        steps=c(steps,n)
+        steps <- c(steps,n)
     }
-    steps
+    return(steps)
 }
-sample.diversity=function (i, df, bin = 5, cls = NULL,accumOrder=NULL) 
-{
-    #browser()
+
+sample.diversity <- function (i, df, bin = 5, cls = NULL,accumOrder=NULL){
     cat(paste0(i," "));
-    n <- ncol(df)
-    d=c();clsret=c();
-    if (is.null(accumOrder)){
-        sn <- seq(1, n, 1)
-        steps=getStepsAccum(n,bin)
-        d = c(d,sapply(steps, function(j, sn) {
-                            if (length(sn)==1 || length(sn)==j){nx=sn
-                            } else {nx <- sample(sn, j, replace = FALSE, prob = NULL)}
+    
+    # initialise empty variables
+    n       <- ncol(df)
+    d       <- c()
+    clsret  <- c();
+    
+    if(is.null(accumOrder)){
+        sn    <- seq(1, n, 1)
+        steps <- getStepsAccum(n, bin)
+        d     <- c(d,sapply(steps, function(j, sn) {
+                            if( length(sn)==1 || length(sn)==j ){
+                                nx=sn
+                            }else{
+                                nx <- sample(sn, j, replace = FALSE, prob = NULL)
+                            }
                             sum(rowSums(df[, nx,drop=FALSE]) != 0)
-                            #sum(m != 0)
                         }, sn = sn))
-    } else {
+    }else{
         tot=array(FALSE,dim(df)[[1]]);steps=c();totsum=0;
         for (u in 1:length(accumOrder)){
-            sn=which(cls%in%accumOrder[u])
-            steps2=getStepsAccum(length(sn),bin)
-            #steps2 <- seq(1, length(sn), bin)
-            #if (steps2[length(steps2)]!=length(sn)){
-            #    steps2=c(steps2,length(sn))
-            #}
-            d = c(d,sapply(steps2, function(j, sn) {
-                                if (length(sn)==1 || length(sn)==j){nx=sn
-                                } else {nx <- sample(sn, j, replace = FALSE, prob = NULL)}
-                                #sum( tot | apply(df[, nx,drop=FALSE]>0,1,any) )
+            sn      <-which(cls%in%accumOrder[u])
+            steps2  <- getStepsAccum(length(sn),bin)
+
+            d       <- c(d,sapply(steps2, function(j, sn) {
+                                if( length(sn)==1 || length(sn)==j ){
+                                    nx=sn
+                                }else {
+                                    nx <- sample(sn, j, replace = FALSE, prob = NULL)
+                                }
                                 sum( tot | (rowSums(df[, nx,drop=FALSE]) != 0) )
-                                #length(which(m != 0))
-                                #sum(m)
                             }, sn = sn))
-            tot = tot|apply(df[,sn,drop=FALSE]>0,1,any)
-            steps=c(steps,steps2+totsum);
-            totsum=totsum+length(sn)
-            #clsret=c(clsret,array(accumOrder[u],length(step2)));
+                            
+            tot     <- tot|apply(df[,sn,drop=FALSE]>0,1,any)
+            steps   <- c(steps,steps2+totsum);
+            totsum  <- totsum+length(sn)
+
         }
     }
     names(d) <- steps
@@ -84,8 +82,9 @@ cum.sample.matched = function( dx, dy, bin = 5, times=10,accumOrder=NULL){
     steps <- seq(1, n, bin)
     r1 = r2 = matrix(0,0,length(steps)); 
     for (x in seq(1,times,1)){
-        d= array(0,length(steps));    names(d) = steps; d2= d;
-        cnt=1;
+        d           <- array(0,length(steps))
+        names(d)    <- steps; d2= d;
+        cnt = 1;
         for (j in steps){
             n <- sample(sn, j, replace = FALSE, prob = NULL)
             if (j > 1) {
@@ -100,34 +99,39 @@ cum.sample.matched = function( dx, dy, bin = 5, times=10,accumOrder=NULL){
         }
         r1=rbind(r1,d);r2=rbind(r2,d2);
     }
-    dimnames(r1)[[2]] =dimnames(r2)[[2]] = steps  
+    dimnames(r1)[[2]] = dimnames(r2)[[2]] = steps  
     return(list(d=r1,d2=r2))
 }
 
-cum.sample=function (dfx, col = 0, times = 10, bin, cls, accumOrder=NULL, do.plot = TRUE) 
-{
-    #browser()
+cum.sample <- function (dfx, col = 0, times = 10, bin, cls, accumOrder=NULL, do.plot = TRUE) 
+{   
     useCls=FALSE
     if (!is.null(cls)){
-        ucls= unique(cls);    ucls = ucls[!is.na(ucls)]
+        ucls <- unique(cls)
+        ucls <- ucls[!is.na(ucls)]
+        
         if (!is.null(accumOrder)){
-            if (!all(accumOrder%in%ucls)){stop("accumOrder arguments need to be present in cls vector")}
-            ucls = "all"
-            useCls=FALSE#mem saver 
+            if (!all(accumOrder%in%ucls)){
+                stop("accumOrder arguments need to be present in cls vector")
+            }
+            ucls   <- "all"
+            useCls <- FALSE#mem saver 
         } else {
-            useCls = TRUE
+            useCls <- TRUE
         }
+        
     } else {
-        nc <- ncol(dfx)
-        cls=array("all",nc)
-        ucls = "all"
+        nc   <- ncol(dfx)
+        cls  <- array("all",nc)
+        ucls <- "all"
     }
     m=list();# 
     for (u in 1:length(ucls)){
         if (useCls){
             df = dfx[,which(cls==ucls[u])]            
         } else {
-            df =dfx; dfx=NULL; 
+            df  <- dfx
+            dfx <- NULL
         }
         gc();
         m [[ucls[u] ]] =t(sapply(seq(1, times, 1), sample.diversity, df, bin, cls,accumOrder))
@@ -145,66 +149,88 @@ cum.sample=function (dfx, col = 0, times = 10, bin, cls, accumOrder=NULL, do.plo
 #' @param rareD: if given, rarefy input matrix to given depth prior to calculating the collectors curve
 #' @param cls: vector describing the class of each input sample in matrix y. Will split the rarefaction curves for each class or accumulate successively within each class, if accumOrder is given
 #' @param accumOrder: accumulate successively within each class, given by cls in the order given in this vector. All classes in cls must be represented in this vector.
-collectors.curve = function (x, y=NULL, col = 1, times = 10, bin = 5, add=FALSE, ylim=NULL, xlim=NULL, doPlot=TRUE, 
-        rareD=NULL, cls=NULL, pch=20, col2=NULL,accumOrder=NULL, ...) 
+collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 5, add=FALSE, ylim=NULL, xlim=NULL, doPlot=TRUE, rareD=NULL, cls=NULL, pch=20, col2=NULL,accumOrder=NULL, ...) 
 {
-    #browser()
+
     if (!is.null(accumOrder)){
-        if (is.null(cls)){stop("accumOrder argument also requires cls argument with matching items")}
+        if (is.null(cls)){
+            stop("accumOrder argument also requires cls argument with matching items")
+        }
     }
-    if (is.null(col2)&&!is.null(col)){col2=col}
+    # set colors2 equal to colors1 as we seem to have them
+    if (is.null(col2) && !is.null(col)){
+        col2=col
+    }
+    # get the dim names
     if (class(x) != "colCurve" && !is.null(cls) ){
         if (!is.null(names(cls))){
             cls = cls[dimnames(x)[[2]]]
-        } else if (length(cls)==dim(x)[2]) {
-            names(cls) = dimnames(x)[[2]]
+        } else if ( length(cls) == dim(x)[2] ) {
+            names(cls) <- dimnames(x)[[2]]
         }
     }
     
     #return object of function?
     if (class(x) == "colCurve"){
         cat("collectors curve object provided\n")
-        cls=attr(x,"cls");accumOrder=attr(x,"accumOrder"); col=attr(x,"col");pch=attr(x,"pch");col2=attr(x,"col2");
-        bin=attr(x,"bin");times=attr(x,"times");
+        cls         <- attr(x,"cls")
+        accumOrder  <- attr(x,"accumOrder")
+        col         <- attr(x,"col")
+        pch         <- attr(x,"pch")
+        col2        <- attr(x,"col2")
+        bin         <- attr(x,"bin")
+        times       <- attr(x,"times");
         
-    } else if (!is.null(rareD)){#rarefaction required?
-        cat(paste("Rarefying input matrix to",rareD));
+    } else if (!is.null(rareD)){ #rarefaction required?
+        
+        cat(paste("Rarefying input matrix to",rareD))
+        
         if (length(rareD)>1){
-            if (!is.null(y)){stop("2D collectors curve only works at a single rarefaction depth.\n")}
-            x=rtk(x,1,rareD,TRUE)
-        } else {
-            x=rtk(x,1,rareD,TRUE)$raremat[[1]];
             if (!is.null(y)){
-                y=rtk(y,1,rareD,TRUE)$raremat[[1]];
+                stop("2D collectors curve only works at a single rarefaction depth.\n")
+            }
+            x   <- rtk(x,1,rareD,TRUE)
+        } else {
+            x   <- rtk(x,1,rareD,TRUE)$raremat[[1]];
+            if (!is.null(y)){
+                y <- rtk(y,1,rareD,TRUE)$raremat[[1]];
             }
             if (!is.null(cls) && !is.null(dimnames(x))){
-                cls = cls[dimnames(x)[[2]]]
+                cls <- cls[dimnames(x)[[2]]]
             }
         }
-        cat ("  Done\n")
+        cat("Done\n")
     }
     #log = "";
     if (class(x) == "colCurve"){
-        a= x;x=NULL;gc();
+        a   <- x
+        x   <- NULL
+        gc()
     }else if (!is.null(y)){#double core mode
-        yl = cum.sample.matched(x,y,bin,times,accumOrder)
-        a=yl$d; b=yl$d2;
-        #log="xy"
-    } else     if (class(x) == "rtk") {
+        yl  <- cum.sample.matched(x,y,bin,times,accumOrder)
+        a   <- yl$d
+        b   <- yl$d2
+    } else if (class(x) == "rtk") {
         a = cum.sample.rare(x, col, times, bin, cls, accumOrder)
     }else {
         a = cum.sample(x, col, times, bin, cls,  accumOrder)
     }
     
     if (class(x) != "colCurve"){
-        attr(a,"cls") = cls;attr(a,"accumOrder") = accumOrder; attr(a,"col")=col;attr(a,"pch")=pch;attr(a,"col2")=col2;
-        attr(a,"bin")=bin;attr(a,"times")=times;
-        class(a) <- "colCurve"
+        # Define all the attributes of the object colCurve
+        attr(a,"cls")           <- cls
+        attr(a,"accumOrder")    <- accumOrder
+        attr(a,"col")           <- col
+        attr(a,"pch")           <- pch
+        attr(a,"col2")          <- col2
+        attr(a,"bin")           <- bin
+        attr(a,"times")         <- times
+        class(a)                <- "colCurve"
     }
     if (doPlot){ #relies entirely on "a" object
         #unified graph interface
         if (is.null(ylim)){
-            ylim = c(max(1,min(unlist(a), T, F)),max(unlist(a), T, F))
+            ylim <- c(max(1,min(unlist(a), T, F)),max(unlist(a), T, F))
         }
         
         if (!is.null(y)){
@@ -236,21 +262,22 @@ collectors.curve = function (x, y=NULL, col = 1, times = 10, bin = 5, add=FALSE,
                 if (length(col2)>1 && !is.null(names(col2))){col2 = col2 [accumOrder]}
                 if (is.null(col)){col=col2}
                 if (is.null(col2)){col2=col}
-                prev=1;xx=1;#clsn=attr(a,"clsn")
+                prev <-1
+                xx   <- 1
                 for (i in 1:length(accumOrder)){
-                    sumSel = sum(cls%in%accumOrder[i])
-                    steps2=getStepsAccum(sumSel,bin)
-                    sbset=prev:(prev+(length(steps2)-1))
+                    sumSel  <- sum(cls%in%accumOrder[i])
+                    steps2  <- getStepsAccum(sumSel,bin)
+                    sbset   <- prev:(prev+(length(steps2)-1))
                     boxplot(a[[xx]][,sbset], add = TRUE, axes = FALSE, col = col[i], border=col2[i], at = as.numeric(colnames(a[[xx]]))[sbset],pch=pch[i])
-                    prev = max(sbset)+1
+                    prev    <- max(sbset)+1
                 }                    
                 return(invisible(a))
             } else if (!is.null(cls)){
                 if ( length(a)!=1 && length(col)==1){col <- rep_len(col[1], length(a))}
-                if (is.null(col2)){col2=col}
+                if ( is.null(col2)){col2=col}
                 if ( length(a)!=1 && length(col2)==1){col2 <- rep_len(col2[1], length(a))}
                 if ( length(a)!=1 && length(pch)==1){pch <- rep_len(pch[1], length(a))}
-                if (is.null(col)){col=col2}
+                if ( is.null(col)){col=col2}
             }
             for (i in 1:length(a)){
                 boxplot(a[[i]], add = TRUE, axes = FALSE, col = col[i], border=col2[i], at = as.numeric(colnames(a[[i]])),pch=pch[i])
