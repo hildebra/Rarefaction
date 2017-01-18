@@ -2,7 +2,7 @@
 
 
 ClStr2Mat::ClStr2Mat(const string inF, const string outF,
-	const string mapF, const string basePX):
+	const string mapF, const string basePX, bool covCalc):
 	GAs(0), CCH(NULL),smplLoc(0), baseP(0), smplN(0), curr(-1) {
 	ifstream incl;
 	//set up baseP
@@ -36,12 +36,12 @@ exit(55);
 	//read map(s) and check that
 	stringstream ss2(mapF);
 	while (getline(ss2, segments, ',')) {
-		read_map(segments);
+		read_map(segments, covCalc);
 	}
 	if ( baseP.size() > curr+1) {
 	 #ifdef notRpackage
-	cerr << "more maps than basePs\n";
-	exit(72);
+		cerr << "more maps than basePs\n"; 
+		exit(72);
 	#endif
 	}
 
@@ -149,7 +149,7 @@ void ClStr2Mat::printVec(ofstream& of,vector<smat_fl>& pr,const string&rowN) {
 	}
 	of << "\n";
 }
-void ClStr2Mat::read_map(const string mapF) {
+void ClStr2Mat::read_map(const string mapF,bool calcCoverage) {
 	ifstream in;
 	curr++;//keep track of different maps and inPaths
 	uint preMapSize((int)smplLoc.size());
@@ -170,7 +170,8 @@ exit(56);
 	cout << "Reading map " << mapF << " on path " << baseP[curr] << endl;
 	#endif
 	SmplOccurMult CntAssGrps;
-	string line; int cnt(-1); int assGrpN(-1); int artiCntAssGrps(0);
+	string line; int cnt(-1); int assGrpN(-1); 
+	int artiCntAssGrps(0); int skSmplCol(-1);
 
 	while (getline(in, line)) {
 		cnt ++; int sbcnt(-1);
@@ -191,16 +192,23 @@ exit(56);
 					exit(83);
 					#endif
 				}
-				if (segments== "AssmblGrps") {
-					#ifdef notRpackage
+				if (segments == "AssmblGrps") {
 					assGrpN = sbcnt; cout << "Found Assembly groups in map\n";
-					#endif
+				}
+				if (segments == "ExcludeAssembly") {
+					skSmplCol = sbcnt; cout << "Samples can be excluded from assembly\n";
 				}
 			}
 			continue;
 		}
-		getline(ss, segments, '\t');
-		string smpID = segments;
+		vector<string> curLine(0);
+		while (getline(ss, segments, '\t')) {
+			curLine.push_back(segments);
+		}
+		if (skSmplCol>-1 && curLine[skSmplCol] == "1") { continue; }
+
+
+		string smpID = curLine[0];
 		if (smpls.find(smpID) != smpls.end()) {
 			#ifdef notRpackage
 			cerr << "Double sample ID: " << smpID << endl;
@@ -209,28 +217,26 @@ exit(56);
 		}
 
 
-		getline(ss, segments, '\t');
-		string locality = segments;
+		//getline(ss, segments, '\t');
+		string locality = curLine[1];
 
-		sbcnt = 2;
+		string assGrp ("");
 		if (assGrpN != -1) {
 			//handles assembly groups from here
-			while (sbcnt <= assGrpN) {
-				sbcnt++; getline(ss, segments, '\t');
-			}
+			assGrp  = curLine[assGrpN];
 		} else {//simulate CntAssGrps
-			segments = itos(artiCntAssGrps);
+			assGrp = itos(artiCntAssGrps);
 			artiCntAssGrps++;
 		}
-		if (CntAssGrps.find(segments) != CntAssGrps.end()) {
-			CntAssGrps[segments].push_back( (int)smplLoc.size());
+		if (CntAssGrps.find(assGrp) != CntAssGrps.end()) {
+			CntAssGrps[assGrp].push_back( (int)smplLoc.size());
 		} else {
-			CntAssGrps[segments] = vector<int>(1,(int)smplLoc.size());
+			CntAssGrps[assGrp] = vector<int>(1,(int)smplLoc.size());
 		}
 
-		if (CntAssGrps[segments].size() > 1) {
-			string nsmpID = smpID + "M" + to_string(CntAssGrps[segments].size());
-			smpls[nsmpID] = CntAssGrps[segments];//(int)smplLoc.size();
+		if (CntAssGrps[assGrp].size() > 1) {
+			string nsmpID = smpID + "M" + to_string(CntAssGrps[assGrp].size());
+			smpls[nsmpID] = CntAssGrps[assGrp];//(int)smplLoc.size();
 		} else {
 			smpls[smpID] = vector<int>(1,(int)smplLoc.size());
 
@@ -244,7 +250,9 @@ exit(56);
 	smplN = smplLoc.size();
 	//read the gene abundances sample-wise in
 	for (uint i = preMapSize; i < smplN; i++) {
-		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i] + path2abundance));
+		string pa2ab = path2counts;
+		if (calcCoverage) { pa2ab = path2abundance; }
+		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i], pa2ab));
 		#ifdef notRpackage
 		cerr << baseP[curr] + "/" + smplLoc[i] << endl;
 		#endif
@@ -260,13 +268,24 @@ void ContigCrossHit::addHit(int Smpl, int Ctg) {
 
 ///////////////////////////////////////////////////
 
-GeneAbundance::GeneAbundance(const string abunF) {
+GeneAbundance::GeneAbundance(const string path, const string abunF):
+	isPsAss(false){
 	ifstream in;
-	in.open(abunF.c_str());
+	//first test if this is a pseudoassembly
+	in.open((path + pseudoAssMarker).c_str());
+	if (in) {
+		in.close();
+		isPsAss = true;
+		return;
+	}
+	in.close();
+	//not? then read abundances
+	string newS = path + abunF;
+	in.open(newS.c_str());
 	if (!in) {
 	 #ifdef notRpackage
-	cerr << "Couldn't open gene abundance file " << abunF << endl;
-	exit(56);
+	cerr << "Couldn't open gene abundance file " << newS << endl;
+	exit(36);
 	#endif
 }
 	string line;
@@ -278,6 +297,9 @@ GeneAbundance::GeneAbundance(const string abunF) {
 	in.close();
 }
 smat_fl GeneAbundance::getAbundance(const string x) {
+	if (isPsAss) {
+		return (smat_fl) 1.f;//return one read count
+	}
 	SmplAbunIT fnd = GeneAbu.find(x);
 	if (fnd == GeneAbu.end()) {
 		return (smat_fl) 0;
