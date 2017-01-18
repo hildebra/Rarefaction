@@ -8,14 +8,24 @@
 \description{ Collectorscurves visualize the richness gained by picking more samples.}
 
 \usage{
-	collectors.curve(x, col = 0, times = 10, bin = 5, ...)
+	collectors.curve(x, y = NULL, col = 1, times = 10, bin = 5, add = FALSE, ylim = NULL, xlim = NULL, doPlot = TRUE, rareD = NULL, cls = NULL, pch = 20, col2 = NULL, accumOrder = NULL, ...)
 }
 
 \arguments{
-  \item{x}{Input a rarefaction object with one matrix and one depth or dataframe/matrix}
-  \item{col}{color of the boxplots}
+  \item{x}{Input a rarefaction object with one matrix and one depth or dataframe/matrix or the output of collectors.curve itself}
+  \item{y}{secondary input matrix for comparative plots}
+  \item{col}{fill color of the boxplots (set to c(0) for no color)}
   \item{times}{Number of times the sampeling of samples should be perfomed}
   \item{bin}{Number of samples to be added each step. Usefull to adjust for a quick glance.}
+  \item{add}{add the plot to an existing plot?}
+  \item{ylim}{Limits for Y-scale}
+  \item{xlim}{Limits for X-scale}
+  \item{doPlot}{should this function plot the collectors curve, or just return an object that can be plotted later with this function?}
+  \item{rareD}{Depth to which rarefy the dataset using rtk}
+  \item{cls}{vector describing the class of each input sample}
+  \item{pch}{Plotting symbols}
+  \item{col2}{Color for the border of the boxplot, defaults to col}
+  \item{accumOrder}{accumulate successively within each class, given by cls in the order given in this vector. All classes in cls must be represented in this vector.}
   \item{...}{Options passed to plot or boxplot }
 
 }
