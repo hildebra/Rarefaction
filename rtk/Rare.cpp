@@ -688,7 +688,7 @@ int main(int argc, char* argv[])
 		for(uint j = 0; j < slots.size(); j++){
 		    if(slots[j].inUse == false ){
 		        // only copy if there is work to be done
-		        break;
+		        continue;
 		    }
     		slots[j].fut.wait();
 		    // move the information
