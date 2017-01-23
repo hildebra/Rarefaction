@@ -19,11 +19,12 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 					writeFiles, false, wrAtAll);
 	//delete cur;
 	//return div;
-	rareStruct* tmpRS 			= new rareStruct();// 	= {*div, retCnts};
-	tmpRS->div 							= div;
-	tmpRS->cnts 						= cntsMap;
-	tmpRS->cntsName 				= cntsName;
-	tmpRS->skippedNames			= skippedNames;
+	rareStruct* tmpRS       = new rareStruct();// 	= {*div, retCnts};
+	tmpRS->div              = div;
+	tmpRS->cnts             = cntsMap;
+	tmpRS->cntsName         = cntsName;
+	tmpRS->skippedNames     = skippedNames;
+	tmpRS->i                = i;
 	delete cur;
 	return tmpRS;
 }
@@ -50,6 +51,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	tmpRS->cntsName 				= cntsName;
 	tmpRS->skippedNames			= skippedNames;
 	tmpRS->IDs 							= cur->getRowNames();
+	tmpRS->i                = i;
 
 	delete cur;
 
@@ -626,8 +628,93 @@ int main(int argc, char* argv[])
 		//object to keep matrices
 		vector < vector < string > > tmpMatFiles(opts->write);
 		//cerr << "TH";
-		std::future<rareStruct*> *tt = new std::future<rareStruct*>[numThr - 1];
-		uint i = 0; uint done = 0;
+        // vector keeping all the slots
+		vector < job > slots(opts->threads);
+		
+		// now start a async in each slot
+		uint i          = 0; 
+		uint toWhere    = opts->threads - 1;
+		for( uint j = 0; j < slots.size(); j++ ){
+		    slots[j].inUse = false;
+		}
+		while (i < Mo->smplNum()) {
+		    
+
+    	    // check for any finished jobs
+    	    for( uint j = 0; j < slots.size(); j++ ){
+                if( i == Mo->smplNum() ){
+                    // break in case we have more slots than work
+                    break;
+                }
+                
+                // open new slots
+    	        if( slots[j].inUse == false){
+   	            
+    	            slots[j].inUse = true;
+    	            // launch an async task
+    	            DivEsts * div   = new DivEsts();
+    	            slots[j].fut    = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+    	            
+    	            i++;
+    	            
+    	        }else if(slots[j].fut.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready){
+    	            
+    	            // move the information
+    	            rareStruct* tmpRS;
+				    tmpRS               = slots[j].fut.get();
+				    divvs[tmpRS->i]     = tmpRS->div;
+				    string curS         = Mo->getSampleName(tmpRS->i);
+
+				    // add the matrices to the container
+				    if (NoOfMatrices > 0) {
+					    if (opts->writeSwap) {
+						    binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+					    }
+					    else {
+						    memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+					    }
+				    }
+
+				    delete tmpRS;
+    	            // free slot
+    	            slots[j].inUse = false;
+    	        }
+    	    }
+    	 
+		
+		}
+
+		// wait for the threads to finish up.
+		for(uint j = 0; j < slots.size(); j++){
+		    if(slots[j].inUse == false ){
+		        // only copy if there is work to be done
+		        break;
+		    }
+    		slots[j].fut.wait();
+		    // move the information
+            rareStruct* tmpRS;
+		    tmpRS               = slots[j].fut.get();
+		    divvs[tmpRS->i]     = tmpRS->div;
+		    string curS         = Mo->getSampleName(tmpRS->i);
+
+		    // add the matrices to the container
+		    if (NoOfMatrices > 0) {
+			    if (opts->writeSwap) {
+				    binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+			    }
+			    else {
+				    memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+			    }
+		    }
+
+		    delete tmpRS;
+            // free slot
+            slots[j].inUse = false;
+		}
+
+		/*
+		std::future<rareStruct*> *tt = new std::future<rareStruct*>[Mo->smplNum()];
+		i = 0; uint done = 0;
 		while (i < Mo->smplNum()) {
 			int thirds = (int)floor((Mo->smplNum() - 3) / 3);
 			if (i < 3 || i % thirds == 0) {
@@ -639,20 +726,26 @@ int main(int argc, char* argv[])
 			else if (i == 3) {
 				cout << "..." << std::endl;
 			}
-			uint toWhere = done + numThr - 1; if ((uint)((uint)Mo->smplNum() - 2) < toWhere) { toWhere = Mo->smplNum() - 2; }
+			uint toWhere = Mo->smplNum() ; //done + numThr - 1; 
+			if ((uint)((uint)Mo->smplNum() - 2) < toWhere) { 
+			    toWhere = Mo->smplNum() - 2; 
+			}
 			for (; i < toWhere; i++) {
+			    cout << i << " : " << toWhere <<std::endl;
 				DivEsts * div = new DivEsts();
 				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
 			}
+            cout << "Done launching" <<std::endl;
 			//use main thread to calc one sample as well
 			DivEsts * div = new DivEsts();
 			rareStruct* tmpRS;
 			tmpRS = calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
 
-
+             cout << "Done calcing" <<std::endl;
 			i++;
 			i = done;
 			for (; i < toWhere; i++) {
+			    cout << i << " : " << toWhere <<std::endl;
 				rareStruct* tmpRS;
 				tmpRS = tt[i - done].get();
 				divvs[i] = tmpRS->div;
@@ -670,9 +763,10 @@ int main(int argc, char* argv[])
 				}
 
 				delete tmpRS;
-			}
+			}*/
+			/*
 			// main thread divv push back
-			divvs[i] = tmpRS->div;
+			divvs[i]    = tmpRS->div;
 			string curS = Mo->getSampleName(i);
 			//divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
 
@@ -688,7 +782,7 @@ int main(int argc, char* argv[])
 			delete tmpRS;
 			i++;
 			done = i;
-		}
+		}*/
 		printDivMat(outF, divvs, true);
 		for (size_t i = 0; i < divvs.size(); i++) {
 			delete divvs[i];
