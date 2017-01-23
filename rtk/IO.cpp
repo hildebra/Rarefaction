@@ -483,7 +483,8 @@ cerr<<"fini";
 
 void smplVec::shuffle_singl() {
 	//auto engine = std::default_random_engine{};
-	auto engine = std::mt19937_64{};
+	std::random_device rd;
+	auto engine = std::mt19937_64{rd()};
 	std::shuffle(std::begin(arr), std::end(arr), engine);	
 }
 

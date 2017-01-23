@@ -633,16 +633,19 @@ int main(int argc, char* argv[])
 		
 		// now start a async in each slot
 		uint i          = 0; 
-		uint toWhere    = opts->threads - 1;
+		//uint toWhere    = opts->threads -1;
 		for( uint j = 0; j < slots.size(); j++ ){
 		    slots[j].inUse = false;
 		}
-		while (i < Mo->smplNum()) {
+		size_t smpls = Mo->smplNum();
+		bool breakpoint(true);
+		while (breakpoint) {
 		    
 
     	    // check for any finished jobs
     	    for( uint j = 0; j < slots.size(); j++ ){
-                if( i == Mo->smplNum() ){
+                if( i >= smpls){
+					breakpoint = false;
                     // break in case we have more slots than work
                     break;
                 }
@@ -657,7 +660,7 @@ int main(int argc, char* argv[])
     	            
     	            i++;
     	            
-    	        }else if(slots[j].fut.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready){
+    	        }else if(slots[j].fut.wait_for(std::chrono::milliseconds(20)) == std::future_status::ready){
     	            
     	            // move the information
     	            rareStruct* tmpRS;
