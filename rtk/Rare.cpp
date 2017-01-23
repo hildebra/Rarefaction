@@ -712,77 +712,7 @@ int main(int argc, char* argv[])
             slots[j].inUse = false;
 		}
 
-		/*
-		std::future<rareStruct*> *tt = new std::future<rareStruct*>[Mo->smplNum()];
-		i = 0; uint done = 0;
-		while (i < Mo->smplNum()) {
-			int thirds = (int)floor((Mo->smplNum() - 3) / 3);
-			if (i < 3 || i % thirds == 0) {
-				cout << "At Sample " << i + 1 << " of " << Mo->smplNum() << " Samples" << std::endl;
-				if (i > 3 && i % thirds == 0) {
-					cout << "..." << std::endl;
-				}
-			}
-			else if (i == 3) {
-				cout << "..." << std::endl;
-			}
-			uint toWhere = Mo->smplNum() ; //done + numThr - 1; 
-			if ((uint)((uint)Mo->smplNum() - 2) < toWhere) { 
-			    toWhere = Mo->smplNum() - 2; 
-			}
-			for (; i < toWhere; i++) {
-			    cout << i << " : " << toWhere <<std::endl;
-				DivEsts * div = new DivEsts();
-				tt[i - done] = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
-			}
-            cout << "Done launching" <<std::endl;
-			//use main thread to calc one sample as well
-			DivEsts * div = new DivEsts();
-			rareStruct* tmpRS;
-			tmpRS = calcDivRar(i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
-
-             cout << "Done calcing" <<std::endl;
-			i++;
-			i = done;
-			for (; i < toWhere; i++) {
-			    cout << i << " : " << toWhere <<std::endl;
-				rareStruct* tmpRS;
-				tmpRS = tt[i - done].get();
-				divvs[i] = tmpRS->div;
-				string curS = Mo->getSampleName(i);
-				//divvs[i-done]->print2file(outF + curS + "_alpha_div.tsv");
-
-				// add the matrices to the container
-				if (NoOfMatrices > 0) {
-					if (opts->writeSwap) {
-						binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
-					}
-					else {
-						memoryStoreSample(tmpRS, MaRare, cntsNames, false);
-					}
-				}
-
-				delete tmpRS;
-			}*/
-			/*
-			// main thread divv push back
-			divvs[i]    = tmpRS->div;
-			string curS = Mo->getSampleName(i);
-			//divvs[i]->print2file(outF + curS + "_alpha_div.tsv");
-
-			// add the matrices to the container
-			if (NoOfMatrices > 0) {
-				if (opts->writeSwap) {
-					binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
-				}
-				else {
-					memoryStoreSample(tmpRS, MaRare, cntsNames, false);
-				}
-			}
-			delete tmpRS;
-			i++;
-			done = i;
-		}*/
+		
 		printDivMat(outF, divvs, true);
 		for (size_t i = 0; i < divvs.size(); i++) {
 			delete divvs[i];
