@@ -8,7 +8,7 @@
 #' @param rareD: if given, rarefy input matrix to given depth prior to calculating the collectors curve
 #' @param cls: vector describing the class of each input sample in matrix y. Will split the rarefaction curves for each class or accumulate successively within each class, if accumOrder is given
 #' @param accumOrder: accumulate successively within each class, given by cls in the order given in this vector. All classes in cls must be represented in this vector.
-collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 5, add=FALSE, ylim=NULL, xlim=NULL, doPlot=TRUE, rareD=NULL, cls=NULL, pch=20, col2=NULL,accumOrder=NULL, ...){
+collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 3, add=FALSE, ylim=NULL, xlim=NULL, doPlot=TRUE, rareD=NULL, cls=NULL, pch=20, col2=NULL,accumOrder=NULL, ...){
     
     # check input for the case of accumulation Order curve
     if (!is.null(accumOrder)){
@@ -126,7 +126,8 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 5, add=FALSE, 
                     if(length(col)>1 && !is.null(names(col))){
                         if (all(names(col)%in%ucls)){col=col[ucls]}
                         legend("topleft",legend=names(col),fill=col)
-                    } else if ( length(col2)>1 && !is.null(names(col2))){
+                    } 
+					if ( length(col2)>1 && !is.null(names(col2))){
                         if (all(names(col2)%in%ucls)){col2=col2[ucls]}
                         legend("topleft",legend=names(col2),fill=col2)
                     }
@@ -145,7 +146,7 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 5, add=FALSE, 
                     steps2  <- getStepsAccum(sumSel,bin)
                     sbset   <- prev:(prev+(length(steps2)-1))
                    
-                    boxplot(a[[xx]][,sbset], add = TRUE, axes = FALSE, col = col[i], border=col2[i], at = as.numeric(colnames(a[[xx]]))[sbset],pch=pch[i], boxwex= bin)
+                    boxplot(a[[xx]][,sbset], add = TRUE, axes = FALSE, col = col[i], border=col2[i], at = jitter(as.numeric(colnames(a[[xx]]))[sbset],bin*0.5),pch=pch[i], boxwex= bin)
                     prev    <- max(sbset)+1
                 }                    
                 return(invisible(a))
@@ -158,7 +159,7 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 5, add=FALSE, 
             }
             for (i in 1:length(a)){
                 str(as.numeric(colnames(a[[i]])))
-                boxplot(a[[i]], add = TRUE, axes = FALSE, col = col[i], border=col2[i], at = as.numeric(colnames(a[[i]])),pch=pch[i],boxwex= bin)
+                boxplot(a[[i]], add = TRUE, axes = FALSE, col = col[i], border=col2[i], at = jitter(as.numeric(colnames(a[[i]])),bin*0.5),pch=pch[i],boxwex= bin)
             }                    
         }
     }
