@@ -200,7 +200,7 @@ rarefaction.curve <- function(obj, div, groups, col , lty, pch, fit,  legend, le
   }
 
   if(legend){
-    legend(legend.pos, inset=.02,names(ydata) , fill=legendcolors, horiz=FALSE, cex=0.8)
+    legend(legend.pos, inset=.02,names(ydata) , col=legendcolors, horiz=FALSE, cex=0.8, pch = pch)
   }
 
   return(NULL)
