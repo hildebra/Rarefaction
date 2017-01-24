@@ -3,12 +3,19 @@
 #include "options.h"
 
 struct rareStruct{
+	int i;
 	DivEsts* div;
 	string cntsName;
 	//std::vector<vector<uint>> cnts;
 	vector<rare_map> cnts;
 	string skippedNames;
 	vector<string> IDs;
+	
+};
+
+struct job {
+  std::future <rareStruct*> fut;
+  bool inUse = false;
 };
 
 void binaryStoreSample(vector< vector< string > > & tmpMatFiles, rareStruct* tmpRS, 
