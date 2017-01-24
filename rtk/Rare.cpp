@@ -287,6 +287,29 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                     break;
                 }
                 
+                if(slots[j].inUse == true && slots[j].fut.wait_for(std::chrono::milliseconds(20)) == std::future_status::ready){
+    	            
+    	            // move the information
+    	            rareStruct* tmpRS;
+				    tmpRS               = slots[j].fut.get();
+				    divvs[tmpRS->i]     = tmpRS->div;
+		            string curS 	    = SampleNames[tmpRS->i];
+        		    cout << curS << std::endl;
+				    // add the matrices to the container
+				    if (NoOfMatrices > 0) {
+					    if (opts->writeSwap) {
+						    binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
+					    }
+					    else {
+						    memoryStoreSample(tmpRS, MaRare, cntsNames, true);
+					    }
+				    }
+
+				    delete tmpRS;
+    	            // free slot
+    	            slots[j].inUse = false;
+    	        }
+                
                 // open new slots
     	        if( slots[j].inUse == false){
    	            
@@ -313,28 +336,8 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     	            
     	            i++;
     	            
-    	        }else if(slots[j].fut.wait_for(std::chrono::milliseconds(20)) == std::future_status::ready){
-    	            
-    	            // move the information
-    	            rareStruct* tmpRS;
-				    tmpRS               = slots[j].fut.get();
-				    divvs[tmpRS->i]     = tmpRS->div;
-		            string curS 	    = SampleNames[tmpRS->i];
-        		    cout << curS << std::endl;
-				    // add the matrices to the container
-				    if (NoOfMatrices > 0) {
-					    if (opts->writeSwap) {
-						    binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
-					    }
-					    else {
-						    memoryStoreSample(tmpRS, MaRare, cntsNames, true);
-					    }
-				    }
-
-				    delete tmpRS;
-    	            // free slot
-    	            slots[j].inUse = false;
     	        }
+    	        
     	    }
     	 
 		
@@ -671,6 +674,30 @@ int main(int argc, char* argv[])
                     break;
                 }
                 
+                
+                if(slots[j].inUse == true && slots[j].fut.wait_for(std::chrono::milliseconds(20)) == std::future_status::ready){
+    	            
+    	            // move the information
+    	            rareStruct* tmpRS;
+				    tmpRS               = slots[j].fut.get();
+				    divvs[tmpRS->i]     = tmpRS->div;
+				    string curS         = Mo->getSampleName(tmpRS->i);
+
+				    // add the matrices to the container
+				    if (NoOfMatrices > 0) {
+					    if (opts->writeSwap) {
+						    binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+					    }
+					    else {
+						    memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+					    }
+				    }
+
+				    delete tmpRS;
+    	            // free slot
+    	            slots[j].inUse = false;
+    	        }
+                
                 // open new slots
     	        if( slots[j].inUse == false){
    	            
@@ -695,28 +722,8 @@ int main(int argc, char* argv[])
                 	            
     	            i++;
     	            
-    	        }else if(slots[j].fut.wait_for(std::chrono::milliseconds(20)) == std::future_status::ready){
-    	            
-    	            // move the information
-    	            rareStruct* tmpRS;
-				    tmpRS               = slots[j].fut.get();
-				    divvs[tmpRS->i]     = tmpRS->div;
-				    string curS         = Mo->getSampleName(tmpRS->i);
-
-				    // add the matrices to the container
-				    if (NoOfMatrices > 0) {
-					    if (opts->writeSwap) {
-						    binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
-					    }
-					    else {
-						    memoryStoreSample(tmpRS, MaRare, cntsNames, false);
-					    }
-				    }
-
-				    delete tmpRS;
-    	            // free slot
-    	            slots[j].inUse = false;
     	        }
+    	        
     	    }
     	 
 		
