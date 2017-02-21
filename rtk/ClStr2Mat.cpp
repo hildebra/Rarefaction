@@ -193,10 +193,16 @@ exit(56);
 					#endif
 				}
 				if (segments == "AssmblGrps") {
-					assGrpN = sbcnt; cout << "Found Assembly groups in map\n";
+					assGrpN = sbcnt; 
+					 #ifdef notRpackage
+					cout << "Found Assembly groups in map\n";
+					#endif
 				}
 				if (segments == "ExcludeAssembly") {
-					skSmplCol = sbcnt; cout << "Samples can be excluded from assembly\n";
+					skSmplCol = sbcnt; 
+					 #ifdef notRpackage
+					cout << "Samples can be excluded from assembly\n";
+					#endif
 				}
 			}
 			continue;
@@ -235,7 +241,7 @@ exit(56);
 		}
 
 		if (CntAssGrps[assGrp].size() > 1) {
-			string nsmpID = smpID + "M" + to_string(CntAssGrps[assGrp].size());
+			string nsmpID = smpID + "M" + std::to_string(CntAssGrps[assGrp].size());
 			smpls[nsmpID] = CntAssGrps[assGrp];//(int)smplLoc.size();
 		} else {
 			smpls[smpID] = vector<int>(1,(int)smplLoc.size());

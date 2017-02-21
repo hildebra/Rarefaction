@@ -371,9 +371,9 @@ Modules::Modules(const string& inF, vector<string> cns) :
 	for (size_t i = 0; i < mods.size(); i++) {
 		moduleDescriptions[i] = mods[i].description;
 	}
-
+    #ifdef notRpackage
 	cout << "Read " << mods.size() << " modules\n";
-
+    #endif
 	//ini base class
 	//Matrix(this->modNms(), colIDs);
 	this->ini_mat();
@@ -462,7 +462,9 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 		out << endl;
 	}
 	out.close();
+	#ifdef notRpackage
 	cout << "Wrote " << writeCnt << " modules in final matrix\n";
+	#endif
 }
 
 vector<string> Modules::modNms_numbered() {

@@ -8,7 +8,7 @@
 \description{ Collectorscurves visualize the richness gained by picking more samples.}
 
 \usage{
-	collectors.curve(x, y = NULL, col = 1, times = 10, bin = 5, add = FALSE, ylim = NULL, xlim = NULL, doPlot = TRUE, rareD = NULL, cls = NULL, pch = 20, col2 = NULL, accumOrder = NULL, ...)
+	collectors.curve(x, y = NULL, col = 1, times = 10, bin = 3, add = FALSE, ylim = NULL, xlim = NULL, doPlot = TRUE, rareD = NULL, cls = NULL, pch = 20, col2 = NULL, accumOrder = NULL, ...)
 }
 
 \arguments{
