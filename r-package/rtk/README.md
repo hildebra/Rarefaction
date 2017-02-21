@@ -14,6 +14,14 @@ R CMD build rtk
 R CMD check rtk*.tar.gz
 R CMD install rtk*.tar.gz
 ```
+Or directly via
+```
+git clone https://github.com/hildebra/Rarefaction/
+cd Rarefaction
+cd r-package
+R CMD INSTALL rtk
+
+```
 
 ## Running the package
 ```R
