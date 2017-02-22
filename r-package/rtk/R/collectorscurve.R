@@ -79,8 +79,6 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 3, add=FALSE, 
         yl  <- cum.sample.matched(x,y,bin,times,accumOrder)
         a   <- yl$d
         b   <- yl$d2
-        str(a)
-        str(b)
     } else if (class(x) == "rtk") {
         a = cum.sample.rare(x, col, times, bin, cls, accumOrder)
         # in case of two depth, we get a list of matrices
@@ -158,7 +156,7 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 3, add=FALSE, 
                 if ( is.null(col)){col=col2}
             }
             for (i in 1:length(a)){
-                str(as.numeric(colnames(a[[i]])))
+                #str(as.numeric(colnames(a[[i]])))
                 boxplot(a[[i]], add = TRUE, axes = FALSE, col = col[i], border=col2[i], at = jitter(as.numeric(colnames(a[[i]])),bin*0.5),pch=pch[i],boxwex= bin)
             }                    
         }

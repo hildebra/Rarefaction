@@ -57,7 +57,7 @@ samplesize      <- min(colSums(data))
 # rarefy the dataset, so each column contains the same number of samples
 d1  <- rtk(input = data, depth = samplesize)
 # rarefy to different depths between 1 and samplesize
-d2  <- rtk(input = data, depth = round(seq(1, samplesize, length.out = 200)))
+d2  <- rtk(input = data, depth = round(seq(1, samplesize, length.out = 10)))
 
 # just the richness of all three samples as boxplot
 plot(d1, div = "richness")

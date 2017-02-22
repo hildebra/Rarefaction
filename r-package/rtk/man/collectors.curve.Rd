@@ -8,7 +8,9 @@
 \description{ Collectorscurves visualize the richness gained by picking more samples.}
 
 \usage{
-	collectors.curve(x, y = NULL, col = 1, times = 10, bin = 3, add = FALSE, ylim = NULL, xlim = NULL, doPlot = TRUE, rareD = NULL, cls = NULL, pch = 20, col2 = NULL, accumOrder = NULL, ...)
+	collectors.curve(x, y = NULL, col = 1, times = 10, bin = 3, add = FALSE, 
+	                 ylim = NULL, xlim = NULL, doPlot = TRUE, rareD = NULL, 
+	                 cls = NULL, pch = 20, col2 = NULL, accumOrder = NULL, ...)
 }
 
 \arguments{
@@ -58,6 +60,8 @@ cls          <- rep_len(c("a","b","c","d"), ncol(data))  # study origin of each 
 accumOrder   <- c("b","a","d","c")      # define the order, for the plot
 colors       <- c(1,2,3,4)
 names(colors) <- accumOrder # names used for legend
-collectors.curve(data, xlab = "No. of samples", ylab = "richness", col = colors, bin = 1,cls = cls, accumOrder = accumOrder)
+collectors.curve(data, xlab = "No. of samples",
+                 ylab = "richness", col = colors, bin = 1,cls = cls, 
+                 accumOrder = accumOrder)
 
 }
