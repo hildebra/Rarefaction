@@ -152,76 +152,83 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 }
 
 
-void smplVec::rarefy(long dep, string ofile, int rep,
+void smplVec::rarefy(vector<long> depts, string ofile, int rep,
 					DivEsts* divs, std::vector<rare_map> & RareSample,
 					string& retCntsSampleName, string& skippedSample,
 					vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
 					int writes,bool write, bool fillret){
-	if (dep>totSum){
-		skippedSample = divs->SampleName;
-		if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
-		return;
-	}
-	long curIdx=(long)totSum+1;
+    bool doShuffle = true;
+    long curIdx = 0;
+    long dep;
+	for(uint i = 0; i < depts.size(); i++){
+	    dep = depts[i];
+	
+	    if (dep>totSum){
+		    skippedSample = divs->SampleName;
+		    if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
+		    return;
+	    }
+	    
+	    //long curIdx=(long)totSum+1;
+	    for (int curRep=0;curRep<rep;curRep++){
+		    if(curIdx+dep >= (long) totSum or doShuffle == true){
+			    shuffle_singl();	
+			    curIdx = 0;
+			    doShuffle = false;
+		    }
 
 
-	for (int curRep=0;curRep<rep;curRep++){
-		if(curIdx+dep >= (long) totSum){
-			shuffle_singl();	
-			curIdx=0;
+		    //count up
+		    vector<uint> cnts(numFeatures, 0);
+		    for (long i=(0+curIdx);i<(dep+curIdx);i++){
+			    cnts[arr[i]]++;
+		    }
+
+
+		    curIdx += dep;
+		    string t_out = ofile;
+		    if (rep!=1){
+			    std::ostringstream oss;
+			    oss<<curRep;
+			    t_out += "_" +oss.str();
+		    }
+
+		    if (curRep < writes && fillret) {
+			    rare_map cntsMap;
+			    // fill map:
+			    for(uint i = 0; i < cnts.size(); i++){
+				    if(cnts[i] != 0){
+					    cntsMap.insert( std::make_pair(i, cnts[i]) );
+				    }
+			    }
+			    RareSample.push_back(cntsMap);
+
+			    if(curRep == 0){
+				    retCntsSampleName = divs->SampleName; // safe the sample name as well
+			    }
+		    }
+		    richness = 0;
+		    divs->richness.push_back(this->getRichness(cnts));
+		    vector<double> three = this->calc_div(cnts, 4);
+		    divs->shannon.push_back(three[0]);
+		    divs->simpson.push_back(three[1]);
+		    divs->invsimpson.push_back(three[2]);
+		    divs->chao1.push_back(this->calc_chao1(cnts,1));
+		    divs->eve.push_back(this->calc_eveness(cnts));
+		    richness = 0;
+
+		    // save abundance for chao2 calculations later
+		    rarefyMutex.lock();
+		    for(uint i = 0; i < IDs.size(); i++){
+			    //sparse convertions in swap mode
+			    int id = std::stoi(IDs[i]);
+			    if(cnts[i] != 0){
+				    abundInRow->at(curRep)[id]++;	
+				    occuencesInRow->at(curRep)[id] += cnts[i];
+			    }
+		    }
+		    rarefyMutex.unlock();
 		}
-
-
-		//count up
-		vector<uint> cnts(numFeatures, 0);
-		for (long i=(0+curIdx);i<(dep+curIdx);i++){
-			cnts[arr[i]]++;
-		}
-
-
-		curIdx += dep;
-		string t_out = ofile;
-		if (rep!=1){
-			std::ostringstream oss;
-			oss<<curRep;
-			t_out += "_" +oss.str();
-		}
-
-		if (curRep < writes && fillret) {
-			rare_map cntsMap;
-			// fill map:
-			for(uint i = 0; i < cnts.size(); i++){
-				if(cnts[i] != 0){
-					cntsMap.insert( std::make_pair(i, cnts[i]) );
-				}
-			}
-			RareSample.push_back(cntsMap);
-
-			if(curRep == 0){
-				retCntsSampleName = divs->SampleName; // safe the sample name as well
-			}
-		}
-		richness = 0;
-		divs->richness.push_back(this->getRichness(cnts));
-		vector<double> three = this->calc_div(cnts, 4);
-		divs->shannon.push_back(three[0]);
-		divs->simpson.push_back(three[1]);
-		divs->invsimpson.push_back(three[2]);
-		divs->chao1.push_back(this->calc_chao1(cnts,1));
-		divs->eve.push_back(this->calc_eveness(cnts));
-		richness = 0;
-
-		// save abundance for chao2 calculations later
-		rarefyMutex.lock();
-		for(uint i = 0; i < IDs.size(); i++){
-			//sparse convertions in swap mode
-			int id = std::stoi(IDs[i]);
-			if(cnts[i] != 0){
-				abundInRow->at(curRep)[id]++;	
-				occuencesInRow->at(curRep)[id] += cnts[i];
-			}
-		}
-		rarefyMutex.unlock();
 	}
 }
 
@@ -593,7 +600,7 @@ cerr << "Couldn't open diversity estimate file " << file << endl; std::exit(99);
 	}
 	out.close();
 }
-void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV ){
+void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, options* opts){
 
 	string outFmedian = outF + "median_alpha_diversity.tsv";
 	ofstream out(outFmedian.c_str());
@@ -638,6 +645,17 @@ cerr << "Empty vector at index " << i << "in div mat building.\n";
 		for(uint i = 0; i < divNames.size(); i++){
 			string outFdiv = outF + "_alpha_" + divNames[i] + ".tsv";
 			outFs[i].open(outFdiv.c_str(), ios_base::out);
+			
+			// write depth in first line of each file
+			// usefull for when more than one depth was
+			// requested
+			outFs[i] << "depth" ;
+			for(int ii = 0; ii < opts->depth.size(); ii++){
+			    for(int ij = 0; ij < opts->repeats ; ij++){
+                    outFs[i] << "\t" << opts->depth[ii];
+			    }
+			}
+			outFs[i] << std::endl;
 		}
 
 		// write the divvs to disk

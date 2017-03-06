@@ -3,7 +3,7 @@
 const char* rar_ver="0.92";
 
 
-rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
+rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
 	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
 	string outF, int repeats, int writeFiles){
 	
@@ -16,7 +16,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 	string skippedNames;
 	bool wrAtAll(writeFiles > 0);
 	
-	cur->rarefy(rareDep, outF, repeats,
+	cur->rarefy(opts->depth, outF, repeats,
 					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
 					writeFiles, false, wrAtAll);
 					
@@ -33,7 +33,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, long rareDep,
 }
 
 
-rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long rareDep,
+rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options* opts,
 	vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow, string outF,
 	int repeats, int writeFiles){
 	
@@ -44,7 +44,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, long ra
 	string cntsName;
 	string skippedNames;
 	bool wrAtAll(writeFiles > 0);
-	cur->rarefy(rareDep, outF, repeats,
+	cur->rarefy(opts->depth, outF, repeats,
 					div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
 					writeFiles, false, wrAtAll);
 
@@ -120,9 +120,27 @@ void helpMsg(){
 
 
 
+vector<long> parseDepths(string a){
+    std::vector<long> vect;
+    std::stringstream ss(a);
+
+    int i;
+    
+    while (ss >> i)
+    {
+        vect.push_back(i);
+
+        if (ss.peek() == ',')
+            ss.ignore();
+    }
+
+        
+    return vect;
+}
+
 options::options(int argc, char** argv) :input(""), output(""), mode(""),
 referenceDir(""), referenceFile(""),
-depth(0.95), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
+depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
 modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
 modCollapse(false), calcCoverage(false),
 xtra("") {
@@ -141,9 +159,11 @@ xtra("") {
 		else if (!strcmp(argv[i], "-o"))
 			output = argv[++i];
 		///else if (!strcmp(argv[i], "-m"))
-		else if (!strcmp(argv[i], "-d"))
-			depth =  atof(argv[++i]);
-		else if (!strcmp(argv[i], "-r"))
+		else if (!strcmp(argv[i], "-d")){
+		    // split by any given komma
+			depth = parseDepths(argv[++i]);
+			depthMin = *std::min_element(depth.begin(), depth.end());
+		}else if (!strcmp(argv[i], "-r"))
 			repeats = atoi(argv[++i]);
 		else if (!strcmp(argv[i], "-w"))
 			write = atoi(argv[++i]);
@@ -155,7 +175,7 @@ xtra("") {
 			verbose = true;
 		else if (!strcmp(argv[i], "-h"))
 			helpMsg();
-//geneMat specific args
+        //geneMat specific args
 		else if (!strcmp(argv[i], "-map"))
 			map = argv[++i];
 		else if (!strcmp(argv[i], "-refD"))
@@ -213,11 +233,11 @@ void options::print_rare_details(){
 	cout << "input file:     " << input  << std::endl;
 	cout << "output file:    " << output  << std::endl;
 	cout << "mode:           " << mode  << std::endl;
-	if(depth != 0){
-		cout << "depth:          " << depth  << std::endl;
-	}else{
-		cout << "depth:          0.95 x min. column sum"   << std::endl;
-	}
+//	if(depth != 0){
+		//cout << "depth:          " << depth  << std::endl;
+	//}else{
+	//	cout << "depth:          0.95 x min. column sum"   << std::endl;
+	//}
 	cout << "repeats:        " << repeats  << std::endl;
 	cout << "writes:         " << write  << std::endl;
 	cout << "threads:        " << threads  << std::endl;
@@ -255,17 +275,18 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
 	vector<vector<uint>> occuencesInRow(repeats, vector<uint>(Mo->rowNum(),0));
 	vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
 
-	double rareDep2 	= atof(arg4.c_str());
-	if(rareDep2 < 1.){
-		// rarefy to smallest colSum
-		rareDep2 = (int)round(rareDep2 * Mo->getMinColSum());
-		if(rareDep2 == 0.0){
-			cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-			exit(1);
-		}
-	}
+	for(int i = 0; i < opts->depth.size(); i++){
+           if (opts->depth[i] < 1.) {
+			// rarefy to smallest colSum
+			opts->depth[i] = (uint)round(opts->depth[i] * Mo->getMinColSum());
+			    if (opts->depth[i] == 0.0) {
+				    cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+				    exit(1);
+			    }
+		    } 
+    }
 	delete Mo;
-	uint rareDep = uint(rareDep2);
+//	uint rareDep = uint(rareDep2);
 
 	int NoOfMatrices = writeFiles;
 	vector< vector< rare_map > > MaRare (NoOfMatrices);
@@ -317,7 +338,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     	            // launch an async task
     	            DivEsts * div   = new DivEsts();
     	            div->SampleName = SampleNames[i];
-    	            slots[j].fut    = async(std::launch::async, calcDivRarVec, i, fileNames, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+    	            slots[j].fut    = async(std::launch::async, calcDivRarVec, i, fileNames, div, opts, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
                         	      
     	            // send user some feedback
     	            int thirds = 1;
@@ -374,7 +395,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
 		
 		
 	// print the div estimates out into a file
-	printDivMat(outF , divvs, true);
+	printDivMat(outF , divvs, true, opts);
 	for (size_t i = 0; i < divvs.size(); i++){
 		delete divvs[i];
 	}
@@ -383,9 +404,9 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
 	if(NoOfMatrices > 0){
 		//vector< string > rowNames = Mo->getRowNames();
 		if(storeBinary == true){
-			printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
+			//printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
 		}else{
-			printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
+			//printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
 		}
 	}
 
@@ -500,16 +521,17 @@ int main(int argc, char* argv[])
 	clock_t tStart = clock();
 
 	options* opts = new options(argc, argv);
+
 	string inF = opts->input;
 	string outF = opts->output;
 	string mode = opts->mode;
 	uint numThr = opts->threads;
-	string arg4 = std::to_string(opts->depth);
+    string arg4 = "";//std::to_string(opts->depth[0]);
 	string map = opts->map;
 	string refD = opts->referenceDir;
 	//bool verbose = opts->verbose;
 
-
+	
 
 	//all modes that classify as rarefactions:
 	if (mode == "rarefaction" || mode == "swap" || mode == "memory") {
@@ -628,16 +650,17 @@ int main(int argc, char* argv[])
 		vector< string > rowNames = Mo->getRowNames();
 		cout << "Done loading matrix" << std::endl;
 
-		double rareDep2 = opts->depth;
-		if (rareDep2 < 1.) {
+        // transform all percentage sizes into correct values
+        for(int i = 0; i < opts->depth.size(); i++){
+           if (opts->depth[i] < 1.) {
 			// rarefy to smallest colSum
-			rareDep2 = (uint)round(rareDep2 * Mo->getMinColSum());
-			if (rareDep2 == 0.0) {
-				cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
-				exit(1);
-			}
-		}
-		uint rareDep = uint(rareDep2);
+			opts->depth[i] = (uint)round(opts->depth[i] * Mo->getMinColSum());
+			    if (opts->depth[i] == 0.0) {
+				    cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
+				    exit(1);
+			    }
+		    } 
+        }
 
 		// hold rarefied matrices
 		// stores : repeats - sampels eg rows - vectors of columns
@@ -704,7 +727,7 @@ int main(int argc, char* argv[])
     	            slots[j].inUse = true;
     	            // launch an async task
     	            DivEsts * div   = new DivEsts();
-    	            slots[j].fut    = async(std::launch::async, calcDivRar, i, Mo, div, rareDep, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+    	            slots[j].fut    = async(std::launch::async, calcDivRar, i, Mo, div, opts, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
     	            
     	            // send user some feedback
     	            int thirds = 1;
@@ -758,7 +781,7 @@ int main(int argc, char* argv[])
 		}
 
 		// output matrix
-		printDivMat(outF, divvs, true);
+		printDivMat(outF, divvs, true, opts);
 		for (size_t i = 0; i < divvs.size(); i++) {
 			delete divvs[i];
 		}
@@ -767,10 +790,10 @@ int main(int argc, char* argv[])
 		if (NoOfMatrices > 0) {
 			vector< string > rowNames = Mo->getRowNames();
 			if (opts->writeSwap) {
-				printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
+				//printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
 			}
 			else {
-				printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
+				//printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
 			}
 		}
 

@@ -21,6 +21,8 @@
 #include <future>
 #include <mutex>
 
+#include "options.h"
+
 //#include <tchar.h>
 //#include <string.h>
 
@@ -84,8 +86,9 @@ public:
 	vector<long> richness;
 	vector<double> shannon,simpson,invsimpson,chao1,eve;
 	string SampleName;
+	int depth;
 };
-void printDivMat(const string outF, vector<DivEsts*>&, bool);
+void printDivMat(const string outF, vector<DivEsts*>&, bool, options*);
 void printRareMat(const string outF,const vector< rare_map>& rMat, vector< string >& sampleNames, vector < string >& rowId);
 string printSimpleMap(const rare_map &vec, string outF, string id, vector<string> rowNames);
 void reassembleTmpMat(vector<string> inF, vector< string > rowNames,vector< string > colNames, string outF);
@@ -97,7 +100,7 @@ public:
 	~smplVec(){
 		//delete[] arr;
 	}
-	void rarefy(long,string o,int rep,DivEsts*, vector<rare_map>& RareSample,
+	void rarefy(vector<long> ,string o,int rep,DivEsts*, vector<rare_map>& RareSample,
 		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* ,vector<vector<uint>>* , int=0,bool=false, bool=false);
 	long getRichness(rare_map& cnts);
 	long getRichness(const vector<unsigned int>&);
