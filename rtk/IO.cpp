@@ -155,7 +155,7 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 void smplVec::rarefy(vector<long> depts, string ofile, int rep,
 					DivEsts* divs, std::vector<rare_map> & RareSample,
 					string& retCntsSampleName, string& skippedSample,
-					vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
+					vector<vector<vector<uint>>>* abundInRow, vector<vector<vector<uint>>>* occuencesInRow,
 					int writes,bool write, bool fillret){
     bool doShuffle = true;
     long curIdx = 0;
@@ -219,12 +219,12 @@ void smplVec::rarefy(vector<long> depts, string ofile, int rep,
 
 		    // save abundance for chao2 calculations later
 		    rarefyMutex.lock();
-		    for(uint i = 0; i < IDs.size(); i++){
+		    for(uint im = 0; im < IDs.size(); im++){
 			    //sparse convertions in swap mode
-			    int id = std::stoi(IDs[i]);
-			    if(cnts[i] != 0){
-				    abundInRow->at(curRep)[id]++;	
-				    occuencesInRow->at(curRep)[id] += cnts[i];
+			    int id = std::stoi(IDs[im]);
+			    if(cnts[im] != 0){
+				    abundInRow->at(i)[curRep][id]++;	
+				    occuencesInRow->at(i)[curRep][id] += cnts[im];
 			    }
 		    }
 		    rarefyMutex.unlock();
@@ -895,19 +895,20 @@ std::istream& safeGetline(std::istream& is, std::string& t)
 
 
 
-void computeChao2(std::vector<mat_fl>& chao2, vector<vector<uint>>& abundInRow){
-	for(uint i = 0; i < abundInRow.size(); i++){
+void computeChao2(std::vector<vector<mat_fl>>& chao2, vector<vector<vector<uint>>>& abundInRow){
+    for(uint i = 0; i < abundInRow.size(); i++){
+        for(uint ii = 0; ii < abundInRow[i].size(); ii++){
 		// count No of species
 		float NoOfSpec = 0;
 		float singletons = 0;
 		float doubletons = 0;
-		for(uint j = 0; j < abundInRow[i].size(); j++){
-			if(abundInRow[i][j] != 0){
+		for(uint j = 0; j < abundInRow[i][ii].size(); j++){
+			if(abundInRow[i][ii][j] != 0){
 				NoOfSpec++;
 			}
-			if(abundInRow[i][j] == 1){
+			if(abundInRow[i][ii][j] == 1){
 				singletons++;
-			}else	if(abundInRow[i][j] == 2){
+			}else	if(abundInRow[i][ii][j] == 2){
 				doubletons++;
 			}
 		}
@@ -916,8 +917,9 @@ void computeChao2(std::vector<mat_fl>& chao2, vector<vector<uint>>& abundInRow){
 		if(doubletons != 0){
 			tmpChao2 = float(NoOfSpec + ((singletons*singletons)/(2*doubletons)));
 		}
-		chao2.push_back(tmpChao2);
-	}
+		chao2[i].push_back(tmpChao2);
+	    }   
+    }
 }
 
 void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow){
@@ -965,12 +967,23 @@ void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow){
 }
 
 
-void writeGlobalDiv(vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<mat_fl>& chao2, string outF){
+void writeGlobalDiv(options* opts, vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<vector<mat_fl>>& chao2, string outF){
 	ofstream out(outF.c_str());
-	out << "Chao2";
-	for(uint j = 0; j < chao2.size(); j++){
-		out << '\t' << chao2[j];
-	}
+	out << "depth";
+
+    for(uint j = 0; j < opts->depth.size(); j++){
+        for(uint i = 0; i < opts->repeats; i++){
+            out << "\t" << opts->depth[j];
+        }
+    }    
+    out << '\n';
+    
+    out << "Chao2";                      
+    for(uint i = 0; i < chao2.size(); i++){
+        for(uint j = 0; j < chao2[i].size(); j++){
+		    out << '\t' << chao2[i][j];
+	    }                            
+    }
 	out << '\n';
 
 	out << "ICE";

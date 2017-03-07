@@ -4,7 +4,7 @@ const char* rar_ver="0.92";
 
 
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
-        vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow,
+        vector<vector<vector<uint>>>* abundInRow, vector<vector<vector<uint>>>* occuencesInRow,
         string outF, int repeats, int writeFiles){
 
     smplVec* cur        = Mo->getSampleVec(i);
@@ -34,7 +34,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
 
 
 rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options* opts,
-        vector<vector<uint>>* abundInRow, vector<vector<uint>>* occuencesInRow, string outF,
+        vector<vector<vector<uint>>>* abundInRow, vector<vector <vector<uint>>>* occuencesInRow, string outF,
         int repeats, int writeFiles){
 
     smplVec* cur = new smplVec(fileNames[i],4);
@@ -272,8 +272,8 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
 
     // abundance vectors to hold the number of occurences of genes per row
     // this will be used for ICE, ACE and or Chao2 estimation
-    vector<vector<uint>> occuencesInRow(repeats, vector<uint>(Mo->rowNum(),0));
-    vector<vector<uint>> abundInRow(repeats, vector<uint>(Mo->rowNum(),0));
+    vector<vector<vector<uint>>> occuencesInRow(opts->depth.size(), vector<vector<uint>>(opts->repeats, vector<uint>(Mo->rowNum(),0)));
+    vector<vector<vector<uint>>> abundInRow(opts->depth.size(), vector<vector<uint>>(opts->repeats, vector<uint>(Mo->rowNum(),0)));
 
     for(int i = 0; i < opts->depth.size(); i++){
         if (opts->depth[i] < 1.) {
@@ -415,10 +415,10 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     vector<mat_fl> chao2;
     vector<mat_fl> ICE;
     vector<mat_fl> ACE;
-    computeChao2(chao2, abundInRow);
-    computeCE(ICE, abundInRow);
-    computeCE(ACE, occuencesInRow);
-    writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
+   // computeChao2(chao2, abundInRow);
+    //computeCE(ICE, abundInRow);
+    //computeCE(ACE, occuencesInRow);
+    //writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
 
     cout << "Finished\n";
 }
@@ -671,8 +671,8 @@ else if (mode == "memory") {
 
     // abundance vectors to hold the number of occurences of genes per row
     // this will be used for Chao2 estimation
-    vector<vector<uint>> abundInRow(opts->repeats, vector<uint>(Mo->rowNum(), 0));
-    vector<vector<uint>> occuencesInRow(opts->repeats, vector<uint>(Mo->rowNum(), 0));
+    vector<vector<vector<uint>>> occuencesInRow(opts->depth.size(), vector<vector<uint>>(opts->repeats, vector<uint>(Mo->rowNum(),0)));
+    vector<vector<vector<uint>>> abundInRow(opts->depth.size(), vector<vector<uint>>(opts->repeats, vector<uint>(Mo->rowNum(),0)));
 
     //object to keep matrices
     vector < vector < string > > tmpMatFiles(opts->write);
@@ -799,15 +799,14 @@ else if (mode == "memory") {
 
     delete Mo;
 
-
     // compute chao2, ACE, ICE and write to file
-    vector<mat_fl> chao2;
+    vector<vector<mat_fl>> chao2(opts->depth.size());
     vector<mat_fl> ICE;
     vector<mat_fl> ACE;
     computeChao2(chao2, abundInRow);
-    computeCE(ICE, abundInRow);
-    computeCE(ACE, occuencesInRow);
-    writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
+   // computeCE(ICE, abundInRow);
+   // computeCE(ACE, occuencesInRow);
+   writeGlobalDiv(opts, ICE, ACE, chao2, outF + "_gDiv.tsv");
 
     printf("CPU time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
     //cout << "Finished\n";

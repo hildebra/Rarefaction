@@ -101,7 +101,7 @@ public:
 		//delete[] arr;
 	}
 	void rarefy(vector<long> ,string o,int rep,DivEsts*, vector<rare_map>& RareSample,
-		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* ,vector<vector<uint>>* , int=0,bool=false, bool=false);
+		string& retCntsSampleName, string& skippedSample, vector<vector<vector<uint>>>* ,vector<vector<vector<uint>>>* , int=0,bool=false, bool=false);
 	long getRichness(rare_map& cnts);
 	long getRichness(const vector<unsigned int>&);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
@@ -136,7 +136,10 @@ private:
 	//vector<float> vec;
 };
 
-void computeChao2(std::vector<mat_fl>& chao2, vector<vector<uint>>& abundInRow);
+void computeChao2(std::vector<vector<mat_fl>>& chao2, vector<vector<vector<uint>>>& abundInRow);
 // compute ace or ice, depending on input data
 void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow);
-void writeGlobalDiv(vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<mat_fl>& chao2, string outF);
+
+
+void writeGlobalDiv(options* opts, vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<vector<mat_fl>>& chao2, string outF);
+//void writeGlobalDiv(vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<mat_fl>& chao2, string outF);
