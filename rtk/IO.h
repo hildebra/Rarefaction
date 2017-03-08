@@ -138,8 +138,8 @@ private:
 
 void computeChao2(std::vector<vector<mat_fl>>& chao2, vector<vector<vector<uint>>>& abundInRow);
 // compute ace or ice, depending on input data
-void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow);
+void computeCE(vector<vector<mat_fl>>& CE, vector<vector<vector<uint>>>& abundInRow);
 
 
-void writeGlobalDiv(options* opts, vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<vector<mat_fl>>& chao2, string outF);
+void writeGlobalDiv(options* opts, vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& ACE, vector<vector<mat_fl>>& chao2, string outF);
 //void writeGlobalDiv(vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<mat_fl>& chao2, string outF);

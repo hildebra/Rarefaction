@@ -415,7 +415,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     vector<mat_fl> chao2;
     vector<mat_fl> ICE;
     vector<mat_fl> ACE;
-   // computeChao2(chao2, abundInRow);
+    // computeChao2(chao2, abundInRow);
     //computeCE(ICE, abundInRow);
     //computeCE(ACE, occuencesInRow);
     //writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
@@ -801,12 +801,12 @@ else if (mode == "memory") {
 
     // compute chao2, ACE, ICE and write to file
     vector<vector<mat_fl>> chao2(opts->depth.size());
-    vector<mat_fl> ICE;
-    vector<mat_fl> ACE;
+    vector<vector<mat_fl>> ICE(opts->depth.size());
+    vector<vector<mat_fl>> ACE(opts->depth.size());
     computeChao2(chao2, abundInRow);
-   // computeCE(ICE, abundInRow);
-   // computeCE(ACE, occuencesInRow);
-   writeGlobalDiv(opts, ICE, ACE, chao2, outF + "_gDiv.tsv");
+    computeCE(ICE, abundInRow);
+    computeCE(ACE, occuencesInRow);
+    writeGlobalDiv(opts, ICE, ACE, chao2, outF + "_gDiv.tsv");
 
     printf("CPU time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
     //cout << "Finished\n";

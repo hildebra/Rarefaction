@@ -922,18 +922,19 @@ void computeChao2(std::vector<vector<mat_fl>>& chao2, vector<vector<vector<uint>
     }
 }
 
-void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow){
+void computeCE(vector<vector<mat_fl>>& CE, vector<vector<vector<uint>>>& abundInRow){
 	// inspired by the ICE implementation in the R package fossil
 	// by Matthew Vavrek
 	// https://matthewvavrek.com/programs-and-code/fossil/
 	// ACE and IE use this functio, one with ror abundance the other with row presence data
 	int val;
 	for(uint i = 0; i < abundInRow.size(); i++){
+        for(uint ii = 0; ii < abundInRow[i].size(); ii++){
 		std::vector< int > abundOneToTen(10,0);
 		float nr = 0.0, sa = 0.0, sr = 0.0, f1 = 0.0, ca= 0.0,sumf= 0.0, g2a = 0.0;
 
 		for(uint j = 0; j < abundInRow[i].size(); j++){
-			val = abundInRow[i][j];
+			val = abundInRow[i][ii][j];
 			if(val < 11 && val != 0){
 				nr += val;
 				sr++;
@@ -959,15 +960,15 @@ void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow){
 
 		if(ca != 0){
 			mat_fl tmp = sa + sr/ca + (f1/ca) * g2a;
-			CE.push_back(tmp);
+			CE[i].push_back(tmp);
 		}else{
-			CE.push_back(0);// or compute chao2 here, why would i do that?
+			CE[i].push_back(0);// or compute chao2 here, why would i do that?
 		}
-	}
+	}   }
 }
 
 
-void writeGlobalDiv(options* opts, vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<vector<mat_fl>>& chao2, string outF){
+void writeGlobalDiv(options* opts, vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& ACE, vector<vector<mat_fl>>& chao2, string outF){
 	ofstream out(outF.c_str());
 	out << "depth";
 
@@ -987,15 +988,17 @@ void writeGlobalDiv(options* opts, vector<mat_fl>& ICE, vector<mat_fl>& ACE, vec
 	out << '\n';
 
 	out << "ICE";
+    for(uint i = 0; i < ICE.size(); i++){
 	for(uint j = 0; j < ICE.size(); j++){
-		out << '\t' << ICE[j];
-	}
+		out << '\t' << ICE[i][j];
+	}   }
 	out << '\n';
 
 	out << "ACE";
+    for(uint i = 0; i < ACE.size(); i++){
 	for(uint j = 0; j < ACE.size(); j++){
-		out << '\t' << ACE[j];
-	}
+		out << '\t' << ACE[i][j];
+	}    }
 	out << '\n';
 	out.close();
 }
