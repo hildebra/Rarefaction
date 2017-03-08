@@ -1,6 +1,6 @@
 #include "Rare.h"
 
-const char* rar_ver="0.92";
+const char* rar_ver="0.93";
 
 
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
