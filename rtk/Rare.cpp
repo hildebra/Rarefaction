@@ -292,7 +292,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     //vector< vector< rare_map > > MaRare (NoOfMatrices);
     vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (NoOfMatrices));
     std::vector<string> cntsNames;
-    vector<vector<vector< string >>> tmpMatFiles (NoOfMatrices );
+    vector < vector < vector < string >> > tmpMatFiles(opts->depth.size(), vector<vector <string>>(opts->write));
     vector<DivEsts*> divvs(fileNames.size(),NULL);
     vector < job > slots(opts->threads);
     size_t smpls = Mo->smplNum();
@@ -412,14 +412,13 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     }
 
     // compute chao2, ACE, ICE and write to file
-    // compute chao2, ACE, ICE and write to file
-    vector<mat_fl> chao2;
-    vector<mat_fl> ICE;
-    vector<mat_fl> ACE;
-    // computeChao2(chao2, abundInRow);
-    //computeCE(ICE, abundInRow);
-    //computeCE(ACE, occuencesInRow);
-    //writeGlobalDiv(ICE, ACE, chao2, outF + "_gDiv.tsv");
+    vector<vector<mat_fl>> chao2(opts->depth.size());
+    vector<vector<mat_fl>> ICE(opts->depth.size());
+    vector<vector<mat_fl>> ACE(opts->depth.size());
+    computeChao2(chao2, abundInRow);
+    computeCE(ICE, abundInRow);
+    computeCE(ACE, occuencesInRow);
+    writeGlobalDiv(opts, ICE, ACE, chao2, outF + "_gDiv.tsv");
 
     cout << "Finished\n";
 }
@@ -683,7 +682,7 @@ else if (mode == "memory") {
     vector<vector<vector<uint>>> abundInRow(opts->depth.size(), vector<vector<uint>>(opts->repeats, vector<uint>(Mo->rowNum(),0)));
 
     //object to keep matrices
-    vector < vector < vector < string >> > tmpMatFiles(opts->write);
+    vector < vector < vector < string >> > tmpMatFiles(opts->depth.size(), vector<vector <string>>(opts->write));
     //cerr << "TH";
     // vector keeping all the slots
     vector < job > slots(opts->threads);
@@ -717,7 +716,7 @@ else if (mode == "memory") {
                 // add the matrices to the container
                 if (NoOfMatrices > 0) {
                     if (opts->writeSwap) {
-                        binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+                       binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
                     }
                     else {
                         //memoryStoreSample(tmpRS, MaRare, cntsNames, false);
@@ -776,10 +775,10 @@ else if (mode == "memory") {
         // add the matrices to the container
         if (NoOfMatrices > 0) {
             if (opts->writeSwap) {
-                binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+               binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
             }
             else {
-                //memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+                memoryStoreSample(tmpRS, MaRare, cntsNames, false);
             }
         }
 
@@ -798,7 +797,7 @@ else if (mode == "memory") {
     if (NoOfMatrices > 0) {
         vector< string > rowNames = Mo->getRowNames();
         if (opts->writeSwap) {
-            //printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
+            printRarefactionMatrix(opts, tmpMatFiles, outF, cntsNames, rowNames);
         }
         else {
             //printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);

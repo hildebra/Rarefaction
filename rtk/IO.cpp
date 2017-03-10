@@ -202,7 +202,6 @@ void smplVec::rarefy(vector<long> depts, string ofile, int rep,
 				    }
 			    }
 			    RareSample[i].push_back(cntsMap);
-
 			    if(curRep == 0){
 				    retCntsSampleName = divs->SampleName; // safe the sample name as well
 			    }
