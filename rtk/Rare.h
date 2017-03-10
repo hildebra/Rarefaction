@@ -7,7 +7,7 @@ struct rareStruct{
 	DivEsts* div;
 	string cntsName;
 	//std::vector<vector<uint>> cnts;
-	vector<rare_map> cnts;
+	vector<vector<rare_map>> cnts;
 	string skippedNames;
 	vector<string> IDs;
 	
@@ -18,7 +18,7 @@ struct job {
   bool inUse = false;
 };
 
-void binaryStoreSample(vector< vector< string > > & tmpMatFiles, rareStruct* tmpRS, 
+void binaryStoreSample(vector<vector< vector< string >> > & tmpMatFiles, rareStruct* tmpRS, 
 	vector<string>& rowNames, string outF, vector<string>& cntsNames, bool reshapeMap = false);
 void memoryStoreSample(rareStruct* tmpRS, vector< vector< rare_map > >& MaRare, 
 	vector<string>& cntsNames,  bool reshapeMap = false);
