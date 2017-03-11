@@ -528,191 +528,157 @@ int smplVec::binarySearch( vector<float> vec, const float toFind)
         return -1; // Not found
 }
 
-/*
-// my own implementation of Chao2
-// http://viceroy.eeb.uconn.edu/EstimateSPages/EstSUsersGuide/EstimateSUsersGuide.htm#AppendixB
-#for incidence data
-.chao2 = function(M,bias.corr=T,conf.int=F){
-#browser()
-m = dim(M)[2]
-M[M>1]=1; #convert to incidence data
-pool = apply(M,1,sum)
-s_obs = apply(M>0,2,sum)
-singlIdx = pool==1
-doublIdx = pool==2
-Q1 = apply(M[singlIdx,],2,sum)
-Q2 = apply(M[doublIdx,],2,sum)
-if (!bias.corr){
-est = s_obs + (Q1^2)/(2*Q2)
-} else {
-est = s_obs + ((m-1)/m) *(Q1*(Q1-1))/(2*(Q2+1));
-}
-if (conf.int){
-stop("TODO")
-M="?"
-P = exp(-M/Sobs)
-P1 =Sobs/(1-P)
-P2 = 1.96*sqrt((Sobs*P)/(1-P))
-low =  P1 - P2
-idx = low<Sobs
-low[idx] = Sobs[idx]
-hi = P1 + P2
-}
-
-return (est)
-}
-/*/
 
 
 
-  void DivEsts::print2file(const string file){
-  if (richness.size()<1){return;}
-  ofstream out(file.c_str());
-  if (!out){
+void DivEsts::print2file(const string file){
+    if (richness.size()<1){return;}
+    ofstream out(file.c_str());
+    if (!out){
 #ifdef notRpackage
-cerr << "Couldn't open diversity estimate file " << file << endl; std::exit(99);
+        cerr << "Couldn't open diversity estimate file " << file << endl; std::exit(99);
 #endif
-}
-out<<"Richness\t"<<richness[0];
-for (size_t i=1; i<richness.size();i++){
-out << "\t"<<richness[i];
-}
-out<<"\nShannon\t"<<shannon[0];
-for (size_t i=1; i<shannon.size();i++){
-out << "\t"<<shannon[i];
-}
-out<<"\nSimpson\t"<<simpson[0];
-for (size_t i=1; i<simpson.size();i++){
-out << "\t"<<simpson[i];
-}
-out<<"\nInv. Simpson\t"<<invsimpson[0];
-for (size_t i=1; i<invsimpson.size();i++){
-out << "\t"<<invsimpson[i];
-}
-out<<"\nChao1\t"<<chao1[0];
-for (size_t i=1; i<chao1.size();i++){
-out << "\t"<<chao1[i];
-}
-out<<"\nEveness\t"<<eve[0];
-for (size_t i=1; i<eve.size();i++){
-out << "\t"<<eve[i];
-}
-out.close();
+    }
+    out<<"Richness\t"<<richness[0];
+    for (size_t i=1; i<richness.size();i++){
+        out << "\t"<<richness[i];
+    }
+    out<<"\nShannon\t"<<shannon[0];
+    for (size_t i=1; i<shannon.size();i++){
+        out << "\t"<<shannon[i];
+    }
+    out<<"\nSimpson\t"<<simpson[0];
+    for (size_t i=1; i<simpson.size();i++){
+        out << "\t"<<simpson[i];
+    }
+    out<<"\nInv. Simpson\t"<<invsimpson[0];
+    for (size_t i=1; i<invsimpson.size();i++){
+        out << "\t"<<invsimpson[i];
+    }
+    out<<"\nChao1\t"<<chao1[0];
+    for (size_t i=1; i<chao1.size();i++){
+        out << "\t"<<chao1[i];
+    }
+    out<<"\nEveness\t"<<eve[0];
+    for (size_t i=1; i<eve.size();i++){
+        out << "\t"<<eve[i];
+    }
+    out.close();
 }
 void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, options* opts){
 
-string outFmedian = outF + "median_alpha_diversity.tsv";
-ofstream out(outFmedian.c_str());
-if (!out){
+    string outFmedian = outF + "median_alpha_diversity.tsv";
+    ofstream out(outFmedian.c_str());
+    if (!out){
 #ifdef notRpackage
-cerr << "Couldn't open diversity estimate matrix " << outF << endl; std::exit(99);
+        cerr << "Couldn't open diversity estimate matrix " << outF << endl; std::exit(99);
 #endif
-}
-out << "Smpl\tRichness\tShannon\tSimpson\tInv. Simpson\tChao1\tEveness\n";
-for (size_t i = 0; i < inD.size(); i++){
-if (inD[i] == NULL){
+    }
+    out << "Smpl\tRichness\tShannon\tSimpson\tInv. Simpson\tChao1\tEveness\n";
+    for (size_t i = 0; i < inD.size(); i++){
+        if (inD[i] == NULL){
 #ifdef notRpackage
-cerr << "Empty vector at index " << i << "in div mat building.\n";
+            cerr << "Empty vector at index " << i << "in div mat building.\n";
 #endif
-out << "-1\t-1\t-1\t-1\t-1\t-1\n";
-continue;
-}
-out << inD[i]->SampleName << "\t";
-out << getMedian(inD[i]->richness) << "\t";
-out << getMedian(inD[i]->shannon) << "\t";
-out << getMedian(inD[i]->simpson) << "\t";
-out << getMedian(inD[i]->invsimpson) << "\t";
-out << getMedian(inD[i]->chao1) << "\t";
-out << getMedian(inD[i]->eve) << "\n";
-}
-out.close();
+            out << "-1\t-1\t-1\t-1\t-1\t-1\n";
+            continue;
+        }
+        out << inD[i]->SampleName << "\t";
+        out << getMedian(inD[i]->richness) << "\t";
+        out << getMedian(inD[i]->shannon) << "\t";
+        out << getMedian(inD[i]->simpson) << "\t";
+        out << getMedian(inD[i]->invsimpson) << "\t";
+        out << getMedian(inD[i]->chao1) << "\t";
+        out << getMedian(inD[i]->eve) << "\n";
+    }
+    out.close();
 
-// print now each div estimate as well:
-if(printDIV){
-// open all files as streams
-vector<string> divNames;
-divNames.push_back("richness");
-divNames.push_back("shannon");
-divNames.push_back("simpson");
-divNames.push_back("invsimpson");
-divNames.push_back("chao1");
-divNames.push_back("eve");
+    // print now each div estimate as well:
+    if(printDIV){
+        // open all files as streams
+        vector<string> divNames;
+        divNames.push_back("richness");
+        divNames.push_back("shannon");
+        divNames.push_back("simpson");
+        divNames.push_back("invsimpson");
+        divNames.push_back("chao1");
+        divNames.push_back("eve");
 
-vector<ofstream> outFs(divNames.size());
+        vector<ofstream> outFs(divNames.size());
 
-// open files
-for(uint i = 0; i < divNames.size(); i++){
-    string outFdiv = outF + "_alpha_" + divNames[i] + ".tsv";
-    outFs[i].open(outFdiv.c_str(), ios_base::out);
+        // open files
+        for(uint i = 0; i < divNames.size(); i++){
+            string outFdiv = outF + "_alpha_" + divNames[i] + ".tsv";
+            outFs[i].open(outFdiv.c_str(), ios_base::out);
 
-    // write depth in first line of each file
-    // usefull for when more than one depth was
-    // requested
-    outFs[i] << "depth" ;
-    for(uint ii = 0; ii < opts->depth.size(); ii++){
-        for(uint ij = 0; ij < opts->repeats ; ij++){
-            outFs[i] << "\t" << opts->depth[ii];
+            // write depth in first line of each file
+            // usefull for when more than one depth was
+            // requested
+            outFs[i] << "depth" ;
+            for(uint ii = 0; ii < opts->depth.size(); ii++){
+                for(uint ij = 0; ij < opts->repeats ; ij++){
+                    outFs[i] << "\t" << opts->depth[ii];
+                }
+            }
+            outFs[i] << std::endl;
+        }
+
+        // write the divvs to disk
+        for (size_t i = 0; i < inD.size(); i++){
+            // richness
+            uint k = 0;
+            outFs[k] << inD[i]->SampleName ;
+            for( uint j = 0; j < inD[i]->richness.size(); j++){
+                outFs[k] << "\t" << inD[i]->richness[j] ;
+            }
+            outFs[k] << '\n';
+
+            // shannon
+            k = 1;
+            outFs[k] << inD[i]->SampleName ;
+            for( uint j = 0; j < inD[i]->shannon.size(); j++){
+                outFs[k] << "\t" << inD[i]->shannon[j] ;
+            }
+            outFs[k] << '\n';
+
+            // simpson
+            k = 2;
+            outFs[k] << inD[i]->SampleName ;
+            for( uint j = 0; j < inD[i]->simpson.size(); j++){
+                outFs[k] << "\t" << inD[i]->simpson[j] ;
+            }
+            outFs[k] << '\n';
+
+            // invsimpson
+            k = 3;
+            outFs[k] << inD[i]->SampleName ;
+            for( uint j = 0; j < inD[i]->invsimpson.size(); j++){
+                outFs[k] << "\t" << inD[i]->invsimpson[j] ;
+            }
+            outFs[k] << '\n';
+
+            // chao1
+            k = 4;
+            outFs[k] << inD[i]->SampleName ;
+            for( uint j = 0; j < inD[i]->chao1.size(); j++){
+                outFs[k] << "\t" << inD[i]->chao1[j] ;
+            }
+            outFs[k] << '\n';
+
+            // eve
+            k = 5;
+            outFs[k] << inD[i]->SampleName ;
+            for( uint j = 0; j < inD[i]->chao1.size(); j++){
+                outFs[k] << "\t" << inD[i]->eve[j] ;
+            }
+            outFs[k] << '\n';
+        }
+
+        // close streams
+        for(uint i = 0; i < divNames.size(); i++){
+            outFs[i].close();
         }
     }
-    outFs[i] << std::endl;
-}
-
-// write the divvs to disk
-for (size_t i = 0; i < inD.size(); i++){
-    // richness
-    uint k = 0;
-    outFs[k] << inD[i]->SampleName ;
-    for( uint j = 0; j < inD[i]->richness.size(); j++){
-        outFs[k] << "\t" << inD[i]->richness[j] ;
-    }
-    outFs[k] << '\n';
-
-    // shannon
-    k = 1;
-    outFs[k] << inD[i]->SampleName ;
-    for( uint j = 0; j < inD[i]->shannon.size(); j++){
-        outFs[k] << "\t" << inD[i]->shannon[j] ;
-    }
-    outFs[k] << '\n';
-
-    // simpson
-    k = 2;
-    outFs[k] << inD[i]->SampleName ;
-    for( uint j = 0; j < inD[i]->simpson.size(); j++){
-        outFs[k] << "\t" << inD[i]->simpson[j] ;
-    }
-    outFs[k] << '\n';
-
-    // invsimpson
-    k = 3;
-    outFs[k] << inD[i]->SampleName ;
-    for( uint j = 0; j < inD[i]->invsimpson.size(); j++){
-        outFs[k] << "\t" << inD[i]->invsimpson[j] ;
-    }
-    outFs[k] << '\n';
-
-    // chao1
-    k = 4;
-    outFs[k] << inD[i]->SampleName ;
-    for( uint j = 0; j < inD[i]->chao1.size(); j++){
-        outFs[k] << "\t" << inD[i]->chao1[j] ;
-    }
-    outFs[k] << '\n';
-
-    // eve
-    k = 5;
-    outFs[k] << inD[i]->SampleName ;
-    for( uint j = 0; j < inD[i]->chao1.size(); j++){
-        outFs[k] << "\t" << inD[i]->eve[j] ;
-    }
-    outFs[k] << '\n';
-}
-
-// close streams
-for(uint i = 0; i < divNames.size(); i++){
-    outFs[i].close();
-}
-}
 
 }
 void printRareMat(const string outF, const vector< rare_map>& rMat, vector< string >& sampleNames, vector < string >& rowId){
