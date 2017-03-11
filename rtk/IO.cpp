@@ -649,8 +649,8 @@ cerr << "Empty vector at index " << i << "in div mat building.\n";
 			// usefull for when more than one depth was
 			// requested
 			outFs[i] << "depth" ;
-			for(int ii = 0; ii < opts->depth.size(); ii++){
-			    for(int ij = 0; ij < opts->repeats ; ij++){
+			for(uint ii = 0; ii < opts->depth.size(); ii++){
+			    for(uint ij = 0; ij < opts->repeats ; ij++){
                     outFs[i] << "\t" << opts->depth[ii];
 			    }
 			}

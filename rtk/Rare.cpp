@@ -499,7 +499,7 @@ void printRarefactionMatrix(options* opts, vector<vector<vector< string >>>& tmp
     // reassemble tmp fev files:
     for(uint i = 0; i < tmpMatFiles.size(); i++){
         for(uint ii = 0; ii < tmpMatFiles[i].size(); ii++){
-        string matOut = outF + "rarefied_to_" + std::to_string(opts->depth[i]) + "_n_" +  std::to_string(i) + ".tsv";
+        string matOut = outF + "rarefied_to_" + std::to_string(opts->depth[i]) + "_n_" +  std::to_string(ii) + ".tsv";
         reassembleTmpMat(tmpMatFiles[i][ii], rowNames, cntsNames, matOut);
         // delete tmp rarefaction files now
         for(uint j = 0; j < tmpMatFiles[i][ii].size(); j++){
@@ -510,10 +510,11 @@ void printRarefactionMatrix(options* opts, vector<vector<vector< string >>>& tmp
     }
     }
 }    
-void printRarefactionMatrix(options* opts, const vector<vector< rare_map>>& MaRare, string outF, int rareDep, vector<string>& cntsNames, vector<string>& rowNames){
+void printRarefactionMatrix(options* opts, const vector<vector<vector< rare_map>>>& MaRare, string outF, vector<string>& cntsNames, vector<string>& rowNames){
     for(uint i = 0; i < MaRare.size(); i++){
-        printRareMat(outF + "rarefied_to_" + std::to_string(rareDep) + "_n_" +  std::to_string(i) + ".tsv", MaRare[i], cntsNames, rowNames);
-    }
+        for(uint ii = 0; ii < MaRare[i].size(); ii++){
+            printRareMat(outF + "rarefied_to_" + std::to_string(opts->depth[i]) + "_n_" +  std::to_string(ii) + ".tsv", MaRare[i][ii], cntsNames, rowNames);
+    }                                                                                                  }
 }
 
 
@@ -800,7 +801,7 @@ else if (mode == "memory") {
             printRarefactionMatrix(opts, tmpMatFiles, outF, cntsNames, rowNames);
         }
         else {
-            //printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
+            printRarefactionMatrix(opts, MaRare, outF,  cntsNames, rowNames);
         }
     }
 

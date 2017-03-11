@@ -25,5 +25,5 @@ void memoryStoreSample(rareStruct* tmpRS, vector< vector< rare_map > >& MaRare,
 
 void printRarefactionMatrix(vector< vector< string > > & tmpMatFiles, string outF, 
 	int rareDep, vector<string>& cntsNames, vector<string>& rowNames);
-void printRarefactionMatrix(const vector < vector< rare_map >>& MaRare, string outF,
-	int rareDep, vector<string>& cntsNames, vector<string>& rowNames);
+void printRarefactionMatrix(const vector<vector < vector< rare_map >>>& MaRare, string outF,
+	 vector<string>& cntsNames, vector<string>& rowNames);
