@@ -23,7 +23,5 @@ void binaryStoreSample(vector<vector< vector< string >> > & tmpMatFiles, rareStr
 void memoryStoreSample(rareStruct* tmpRS, vector< vector< rare_map > >& MaRare, 
 	vector<string>& cntsNames,  bool reshapeMap = false);
 
-void printRarefactionMatrix(vector< vector< string > > & tmpMatFiles, string outF, 
-	int rareDep, vector<string>& cntsNames, vector<string>& rowNames);
-void printRarefactionMatrix(const vector<vector < vector< rare_map >>>& MaRare, string outF,
-	 vector<string>& cntsNames, vector<string>& rowNames);
+void printRarefactionMatrix(options* , vector<vector<vector< string >>>& , string,  vector<string>& , vector<string>&);
+void printRarefactionMatrix(options*, const vector<vector<vector< rare_map>>>& , string , vector<string>& , vector<string>& );

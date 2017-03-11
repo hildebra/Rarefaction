@@ -400,15 +400,17 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     for (size_t i = 0; i < divvs.size(); i++){
         delete divvs[i];
     }
-
+    exit(0);
     // write rarefaction matrices to disk
     if(NoOfMatrices > 0){
         //vector< string > rowNames = Mo->getRowNames();
-        if(storeBinary == true){
-            //printRarefactionMatrix(tmpMatFiles, outF, rareDep, cntsNames, rowNames);
-        }else{
-            //printRarefactionMatrix(MaRare, outF, rareDep, cntsNames, rowNames);
+        if (opts->writeSwap) {
+            printRarefactionMatrix(opts, tmpMatFiles, outF, cntsNames, rowNames);
         }
+        else {
+            printRarefactionMatrix(opts, MaRare, outF,  cntsNames, rowNames);
+        }
+
     }
 
     // compute chao2, ACE, ICE and write to file
