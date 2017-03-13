@@ -10,6 +10,16 @@ using namespace Rcpp;
 
 
 
+options::options(string input, string tmpDir, int repeats, vector<long> depth, int NoOfMatrices, bool verbose, unsigned int threads){
+    depth  = depth;
+    input = input;
+    output = tmpDir;
+    repeats = repeats;
+    write = NoOfMatrices;
+    verbose = verbose;
+    threads = threads;
+}
+
 // get the options passed from R
 //
 // parameters
@@ -75,20 +85,22 @@ IntegerMatrix matrix2Mat(std::vector<rare_map>& dfMat,
 List rcpp_rarefaction(Rcpp::String input,
 						NumericMatrix rMatrix, StringVector inColNames,
 						StringVector inRowNames,
-						int repeats, long depth, int NoOfMatrices,
+						int repeats, vector<long> depth, int NoOfMatrices,
 						bool verbose = false, unsigned int threads = 1,
 						 int margin=2, Rcpp::String tmpDir = "", bool lowmem = false)
 						{
 
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
-
+    // make options:
+    options* opts = new options(input, tmpDir, repeats, depth, NoOfMatrices, verbose, threads);
+    
 	// initialize variables
 	std::vector< std::vector < double > > rmat;
 	vector < string > incolnames;
 	vector < string > inrownames;
   string outF = "";
-  string mode = "rare_inmat";
+  string mode = "memory";
 
 	if(input == ""){
 		// use R matrix as input
@@ -105,10 +117,12 @@ List rcpp_rarefaction(Rcpp::String input,
 
   // switch to low mem if wanted
   if(lowmem == true){
-    mode = "rare_lowMem";
+    mode = "swap";
     outF = tmpDir;
+    opts->writeSwap = true;
   }else{
-    mode = "rare_inmat";
+    mode = "memory";
+    opts->writeSwap = false;
   }
 
 	// transpose matrix, yes or no
@@ -121,23 +135,25 @@ List rcpp_rarefaction(Rcpp::String input,
     // create variables to be filled
     vector<DivEsts*>  divvs(0,NULL);
 	// return vector for counts
-	std::vector<vector<rare_map>> retCnts(NoOfMatrices); // initialize a vector of matrices with the number of repeats
+	 vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write)); // initialize a vector of matrices with the number of repeats
 	std::vector<string> retCntsSampleNames;
 	std::vector<string> rowNames;
 	std::vector<string> skippedSamples;
-  std::vector<double> ACE;
-  vector<mat_fl> ICE;
-  std::vector<double> chao2;
+	
+	// store chao etc.
+    vector<vector<mat_fl>> chao2(opts->depth.size());
+    vector<vector<mat_fl>> ICE(opts->depth.size());
+    vector<vector<mat_fl>> ACE(opts->depth.size());
 
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
 
 	// call the rarefaction main function
-	rarefyMain(input, outF, mode,  repeats, depth,  threads, verbose,
+	rarefyMain( opts, mode,
 				 rmat, incolnames, inrownames ,
-				 divvs, retCnts, retCntsSampleNames,
+				 divvs, MaRare, retCntsSampleNames,
 				 skippedSamples, ACE, ICE, chao2,
-				rowNames, NoOfMatrices, transpose);
+				rowNames, transpose);
 
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
@@ -170,10 +186,10 @@ List rcpp_rarefaction(Rcpp::String input,
 	  if(verbose == true){
 		  Rcout << "Will now prepare rarefied matrices for R\n";
 	  }
-	  for(int i=0; i < NoOfMatrices; i++){
-		  if(retCnts[i].size() > 0){
-			  IntegerMatrix RdfTmp 	= matrix2Mat(retCnts[i], retCntsSampleNames, rowNames, transpose);
-			  RrarefyMatrices[i]		= RdfTmp;
+	  for(int i=0; i < opts->write; i++){
+		  if(MaRare[i].size() > 0){
+			  //IntegerMatrix RdfTmp 	= matrix2Mat(MaRare[i], retCntsSampleNames, rowNames, transpose);
+			  //RrarefyMatrices[i]		= RdfTmp;
 		  }
 	  }
     }
@@ -204,3 +220,11 @@ List rcpp_rarefaction(Rcpp::String input,
 
     return returnList;
 }
+
+
+options::options(int argc, char** argv) :input(""), output(""), mode(""),
+    referenceDir(""), referenceFile(""),
+    depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
+    modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
+    modCollapse(false), calcCoverage(false),
+    xtra("") {}

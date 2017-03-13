@@ -5,6 +5,7 @@ struct options
 {
 public:
 	options(int argc, char** argv);
+	options(std::string, std::string , int repeats, std::vector<long> depth, int NoOfMatrices, bool verbose, unsigned int threads);
 	void print_rare_details();
 	//~options();
 
