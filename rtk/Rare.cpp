@@ -36,7 +36,6 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
 rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options* opts,
         vector<vector<vector<uint>>>* abundInRow, vector<vector <vector<uint>>>* occuencesInRow, string outF,
         int repeats, int writeFiles){
-
     smplVec* cur = new smplVec(fileNames[i],4);
 
     std::vector<vector<uint>> cnts;
@@ -48,7 +47,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options
             div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
             writeFiles, false, wrAtAll);
 
-    rareStruct* tmpRS       = new rareStruct();// 	= {*div, retCnts};
+    rareStruct* tmpRS       = new rareStruct();
     tmpRS->div              = div;
     tmpRS->cnts             = cntsMap;
     tmpRS->cntsName         = cntsName;
@@ -57,9 +56,8 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options
     tmpRS->i                = i;
 
     delete cur;
-
     if( remove( fileNames[i].c_str() ) != 0 ){
-        cerr << "LowMem: Error deleting file: " << fileNames[i] << std::endl;
+        cerr << "Swap Mode: Error deleting file: " << fileNames[i] << std::endl;
     }
     return tmpRS;
 }
@@ -223,6 +221,11 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
             if (writeSwap) { mode = "swap"; 
             } else { mode = "memory"; }
         }
+        if( write > repeats){
+            cerr << "Can not create more tables than repeats of rarefaction\n";
+            cerr << "Writes is now equal to repeats ("<< repeats <<")\n";
+            write = repeats;
+        }
     }
 void options::print_rare_details(){
 
@@ -285,22 +288,22 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
             }
         } 
     }
+    size_t smpls = Mo->smplNum();
     delete Mo;
-    //	uint rareDep = uint(rareDep2);
+
 
     int NoOfMatrices = writeFiles;
-    //vector< vector< rare_map > > MaRare (NoOfMatrices);
     vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (NoOfMatrices));
     std::vector<string> cntsNames;
     vector < vector < vector < string >> > tmpMatFiles(opts->depth.size(), vector<vector <string>>(opts->write));
     vector<DivEsts*> divvs(fileNames.size(),NULL);
     vector < job > slots(opts->threads);
-    size_t smpls = Mo->smplNum();
+
     // now start a async in each slot
     uint i          = 0; 
     bool breakpoint(true);
-    while (breakpoint) {
 
+    while (breakpoint) {
         // check for any finished jobs
         for( uint j = 0; j < slots.size(); j++ ){
             if( i >= smpls){
@@ -310,13 +313,11 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
             }
 
             if(slots[j].inUse == true && slots[j].fut.wait_for(std::chrono::milliseconds(20)) == std::future_status::ready){
-
                 // move the information
                 rareStruct* tmpRS;
                 tmpRS               = slots[j].fut.get();
                 divvs[tmpRS->i]     = tmpRS->div;
                 string curS 	    = SampleNames[tmpRS->i];
-                cout << curS << std::endl;
                 // add the matrices to the container
                 if (NoOfMatrices > 0) {
                     if (opts->writeSwap) {
@@ -334,13 +335,11 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
 
             // open new slots
             if( slots[j].inUse == false){
-
                 slots[j].inUse = true;
                 // launch an async task
                 DivEsts * div   = new DivEsts();
                 div->SampleName = SampleNames[i];
                 slots[j].fut    = async(std::launch::async, calcDivRarVec, i, fileNames, div, opts, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
-
                 // send user some feedback
                 int thirds = 1;
                 if(smpls > 4){
@@ -400,7 +399,6 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     for (size_t i = 0; i < divvs.size(); i++){
         delete divvs[i];
     }
-    exit(0);
     // write rarefaction matrices to disk
     if(NoOfMatrices > 0){
         //vector< string > rowNames = Mo->getRowNames();

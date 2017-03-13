@@ -578,7 +578,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
     for (size_t i = 0; i < inD.size(); i++){
         if (inD[i] == NULL){
 #ifdef notRpackage
-            cerr << "Empty vector at index " << i << "in div mat building.\n";
+            cerr << "Empty vector at index " << i << " in div mat building.\n";
 #endif
             out << "-1\t-1\t-1\t-1\t-1\t-1\n";
             continue;
