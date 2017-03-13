@@ -90,7 +90,7 @@ IntegerMatrix matrix2Mat(std::vector<rare_map>& dfMat,
 
 
     
-List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>& ACE, vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& chao2, std::vector<string> skippedSamples, std::vector<string>  retCntsSampleNames, std::vector<string> rowNames, bool transpose, vector< vector< vector< rare_map > >> MaRare, unsigned int di){
+List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>& ACE, vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& chao2, std::vector<string> skippedSamples, std::vector<string>  cntsNam, std::vector<string> rowNames, bool transpose, vector< vector< vector< rare_map > >> MaRare, unsigned int di){
 
     std::list<Rcpp::List> majorLst;
     for(uint i = 0; i < divvs.size(); i++){
@@ -109,7 +109,7 @@ List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>&
 	  }
 	  for(int i=0; i < opts->write; i++){
 		  if(MaRare[di][i].size() > 0){
-			  IntegerMatrix RdfTmp 	= matrix2Mat(MaRare[di][i], retCntsSampleNames, rowNames, transpose);
+			  IntegerMatrix RdfTmp 	= matrix2Mat(MaRare[di][i], cntsNam, rowNames, transpose);
 			  RrarefyMatrices[i]		= RdfTmp;
 		  }
 	  }
@@ -197,10 +197,10 @@ List rcpp_rarefaction(Rcpp::String input,
     vector<DivEsts*>  divvs(0,NULL);
 	// return vector for counts
 	 vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write)); // initialize a vector of matrices with the number of repeats
-	std::vector<string> retCntsSampleNames;
+    std::vector<vector<string>> cntsNames(opts->depth.size(), vector<string>());
 	std::vector<string> rowNames;
 	std::vector<string> skippedSamples;
-    Rcout << "\ndivvs " << divvs.size() << std::endl;
+
 	// store chao etc.
     vector<vector<mat_fl>> chao2(opts->depth.size());
     vector<vector<mat_fl>> ICE(opts->depth.size());
@@ -212,7 +212,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	// call the rarefaction main function
 	rarefyMain( opts, mode,
 				 rmat, incolnames, inrownames ,
-				 divvs, MaRare, retCntsSampleNames,
+				 divvs, MaRare, cntsNames,
 				 skippedSamples, ACE, ICE, chao2,
 				rowNames, transpose);
 						
@@ -229,7 +229,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	}
 	List returnList;
 	for(unsigned int di = 0; di < opts->depth.size(); di++){
-	    returnList.push_back(returnRList(opts, divvs, ACE, ICE, chao2, skippedSamples, retCntsSampleNames, rowNames, transpose, MaRare, di));
+	    returnList.push_back(returnRList(opts, divvs, ACE, ICE, chao2, skippedSamples, cntsNames[di], rowNames, transpose, MaRare, di));
 	}
     if(verbose == true){
 		Rcout << "All R objects were produced\n";

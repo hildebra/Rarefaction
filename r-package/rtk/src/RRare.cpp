@@ -11,7 +11,6 @@ struct cDR{
 };*/
 
 
-
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
         vector<vector<vector<uint>>>* abundInRow, vector<vector<vector<uint>>>* occuencesInRow){
 
@@ -20,7 +19,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
     div->SampleName     = curS;
     std::vector<vector<uint>> cnts;
     vector<vector<rare_map>> cntsMap(opts->depth.size());
-    string cntsName;
+    vector<string> cntsName(opts->depth.size());
     string skippedNames;
     bool wrAtAll(opts->write > 0);
 
@@ -47,7 +46,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options
 
     std::vector<vector<uint>> cnts;
     vector<vector<rare_map>> cntsMap(opts->depth.size());
-    string cntsName;
+    vector<string> cntsName(opts->depth.size());
     string skippedNames;
     bool wrAtAll(opts->write > 0);
     cur->rarefy(opts->depth, opts->output, opts->repeats,
@@ -64,13 +63,11 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options
 
     delete cur;
     if( remove( fileNames[i].c_str() ) != 0 ){
-        //cerr << "Swap Mode: Error deleting file: " << fileNames[i] << std::endl;
+        cerr << "Swap Mode: Error deleting file: " << fileNames[i] << std::endl;
     }
     return tmpRS;
 }
 
-void helpMsg(){
-}
 
 /*
 
@@ -184,8 +181,7 @@ void rareLowMem(string inF, string outF, int NoOfMatrices, long arg4, int repeat
 
 */
 
-
-void binaryStoreSample(vector<vector<vector< string >>>& tmpMatFiles, rareStruct* tmpRS, vector<string>& rowNames, string outF,  vector<string>& cntsNames, bool reshapeMap){
+void binaryStoreSample(options* opts, vector<vector<vector< string >>>& tmpMatFiles, rareStruct* tmpRS, vector<string>& rowNames, string outF,  vector<vector<string>>& cntsNames, bool reshapeMap){
     // store vectors of rarefied matrix on hard disk for memory reduction
     if(reshapeMap){
         vector < string > rowIDs = tmpRS->IDs;
@@ -202,24 +198,28 @@ void binaryStoreSample(vector<vector<vector< string >>>& tmpMatFiles, rareStruct
             for (auto const& x : tmpRS->cnts[i][ii]){
                 tmpVec[nrowIDs[x.first]] = x.second;
             }
-            string vecLocation = printSimpleMap(tmpVec,	outF + "tmp_"  + std::to_string(ii)+"_" + std::to_string(i) + tmpRS->cntsName + ".binary",	tmpRS->cntsName, rowNames);
+            string vecLocation = printSimpleMap(tmpVec,	outF + "tmp_"  + std::to_string(ii)+"_" + std::to_string(i) + tmpRS->cntsName[i] + ".binary",	tmpRS->cntsName[i], rowNames);
+
             tmpMatFiles[i][ii].push_back(vecLocation);
         }
         }
     }else{
         for(uint i = 0; i < tmpRS->cnts.size(); i++){
             for(uint ii = 0; ii < tmpRS->cnts[i].size(); ii++){
-            string vecLocation = printSimpleMap(tmpRS->cnts[i][ii],	outF + "tmp_" + std::to_string(ii) + "_" + std::to_string(i) + tmpRS->cntsName + ".binary",	tmpRS->cntsName, rowNames);
+            string vecLocation = printSimpleMap(tmpRS->cnts[i][ii],	outF + "tmp_" + std::to_string(ii) + "_" + std::to_string(i) + tmpRS->cntsName[i] + ".binary",	tmpRS->cntsName[i], rowNames);
             tmpMatFiles[i][ii].push_back(vecLocation);
         } }
     }
     // save sample name
-    if(tmpRS->cntsName.size() != 0){
-        cntsNames.push_back(tmpRS->cntsName);
+    for(uint di = 0; di < opts->depth.size(); di++){
+        if(tmpRS->cntsName[di].size() != 0){
+            cntsNames[di].push_back(tmpRS->cntsName[di]);
+
+        }
     }
 }
 
-void memoryStoreSample(rareStruct* tmpRS, vector< vector< vector< rare_map >> >& MaRare,  vector<string>& cntsNames, bool reshapeMap){
+void memoryStoreSample(options* opts, rareStruct* tmpRS, vector< vector< vector< rare_map >> >& MaRare,  vector<vector<string>>& cntsNames, bool reshapeMap){
     if(reshapeMap){
         vector < string > rowIDs = tmpRS->IDs;
         vector < uint > nrowIDs(rowIDs.size());
@@ -246,11 +246,12 @@ void memoryStoreSample(rareStruct* tmpRS, vector< vector< vector< rare_map >> >&
         }
     }
     // save sample name
-    if(tmpRS->cntsName.size() != 0){
-        cntsNames.push_back(tmpRS->cntsName);
+    for(uint di = 0; di < opts->depth.size(); di++){
+        if(tmpRS->cntsName[di].size() != 0){
+            cntsNames[di].push_back(tmpRS->cntsName[di]);
+        }
     }
 }
-
 
 
 
@@ -267,7 +268,7 @@ int rarefyMain(options* opts,  string mode,
 	vector< string > cnames , vector< string > rnames ,
 	vector<DivEsts*>&  divvs,
 	std::vector<vector<vector<rare_map>>> &MaRare,
-	std::vector<string>& cntsNames,
+	std::vector<vector<string>>& cntsNames,
 	std::vector<string>& skippedNames,
 	std::vector<vector<mat_fl>>& ACE,
 	std::vector<vector<mat_fl>>& ICE,
@@ -350,10 +351,10 @@ int rarefyMain(options* opts,  string mode,
                 // add the matrices to the container
                 if (opts->write > 0) {
                     if (opts->writeSwap) {
-                       memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+                       memoryStoreSample(opts, tmpRS, MaRare, cntsNames, false);
                     }
                     else {
-                        memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+                        memoryStoreSample(opts, tmpRS, MaRare, cntsNames, false);
                     }
                 }
 
@@ -391,10 +392,10 @@ int rarefyMain(options* opts,  string mode,
         // add the matrices to the container
         if (opts->write > 0) {
             if (opts->writeSwap) {
-               memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+               memoryStoreSample(opts, tmpRS, MaRare, cntsNames, false);
             }
             else {
-                memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+                memoryStoreSample(opts, tmpRS, MaRare, cntsNames, false);
             }
         }
 
