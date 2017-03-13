@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 // rcpp_rarefaction
-List rcpp_rarefaction(Rcpp::String input, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, long depth, int NoOfMatrices, bool verbose, unsigned int threads, int margin, Rcpp::String tmpDir, bool lowmem);
+List rcpp_rarefaction(Rcpp::String input, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, vector<long> depth, int NoOfMatrices, bool verbose, unsigned int threads, int margin, Rcpp::String tmpDir, bool lowmem);
 RcppExport SEXP rtk_rcpp_rarefaction(SEXP inputSEXP, SEXP rMatrixSEXP, SEXP inColNamesSEXP, SEXP inRowNamesSEXP, SEXP repeatsSEXP, SEXP depthSEXP, SEXP NoOfMatricesSEXP, SEXP verboseSEXP, SEXP threadsSEXP, SEXP marginSEXP, SEXP tmpDirSEXP, SEXP lowmemSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -16,7 +16,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< StringVector >::type inColNames(inColNamesSEXP);
     Rcpp::traits::input_parameter< StringVector >::type inRowNames(inRowNamesSEXP);
     Rcpp::traits::input_parameter< int >::type repeats(repeatsSEXP);
-    Rcpp::traits::input_parameter< long >::type depth(depthSEXP);
+    Rcpp::traits::input_parameter< vector<long> >::type depth(depthSEXP);
     Rcpp::traits::input_parameter< int >::type NoOfMatrices(NoOfMatricesSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type threads(threadsSEXP);
