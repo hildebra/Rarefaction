@@ -350,7 +350,7 @@ int rarefyMain(options* opts,  string mode,
                 // add the matrices to the container
                 if (opts->write > 0) {
                     if (opts->writeSwap) {
-                       binaryStoreSample(tmpMatFiles, tmpRS, rowNames, opts->output, cntsNames, false);
+                       memoryStoreSample(tmpRS, MaRare, cntsNames, false);
                     }
                     else {
                         memoryStoreSample(tmpRS, MaRare, cntsNames, false);
@@ -391,7 +391,7 @@ int rarefyMain(options* opts,  string mode,
         // add the matrices to the container
         if (opts->write > 0) {
             if (opts->writeSwap) {
-               binaryStoreSample(tmpMatFiles, tmpRS, rowNames, opts->output, cntsNames, false);
+               memoryStoreSample(tmpRS, MaRare, cntsNames, false);
             }
             else {
                 memoryStoreSample(tmpRS, MaRare, cntsNames, false);

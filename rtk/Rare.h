@@ -5,7 +5,7 @@
 struct rareStruct{
 	int i;
 	DivEsts* div;
-	string cntsName;
+	vector<string> cntsName;
 	vector<vector<rare_map>> cnts;
 	string skippedNames;
 	vector<string> IDs;
@@ -17,11 +17,11 @@ struct job {
   bool inUse = false;
 };
 
-void binaryStoreSample(vector<vector< vector< string >> > & , rareStruct* , 
-	vector<string>& , string , vector<string>& , bool reshapeMap = false);
-void memoryStoreSample(rareStruct* tmpRS, vector< vector< vector< rare_map >> >& MaRare,  vector<string>& cntsNames, bool reshapeMap);
+void binaryStoreSample(options* opts, vector<vector< vector< string >> > & , rareStruct* , 
+	vector<string>& , string , vector<vector<string>>& , bool reshapeMap = false);
+void memoryStoreSample(options* opts, rareStruct* tmpRS, vector< vector< vector< rare_map >> >& MaRare,  vector<vector<string>>& cntsNames, bool reshapeMap);
 
 void printRarefactionMatrix(options* , vector<vector<vector< string >>>& , string,  
-                            vector<string>& , vector<string>&);
+                            vector<vector<string>>& , vector<string>&);
 void printRarefactionMatrix(options*, const vector<vector<vector< rare_map>>>& , 
-                            string , vector<string>& , vector<string>& );
+                            string , vector<vector<string>>& , vector<string>& );

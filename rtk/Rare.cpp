@@ -11,7 +11,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
     div->SampleName     = curS;
     std::vector<vector<uint>> cnts;
     vector<vector<rare_map>> cntsMap(opts->depth.size());
-    string cntsName;
+    vector<string> cntsName(opts->depth.size());
     string skippedNames;
     bool wrAtAll(opts->write > 0);
 
@@ -38,7 +38,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options
 
     std::vector<vector<uint>> cnts;
     vector<vector<rare_map>> cntsMap(opts->depth.size());
-    string cntsName;
+    vector<string> cntsName(opts->depth.size());
     string skippedNames;
     bool wrAtAll(opts->write > 0);
     cur->rarefy(opts->depth, opts->output, opts->repeats,
@@ -288,11 +288,11 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     }
     size_t smpls = Mo->smplNum();
     delete Mo;
+    cout << "smpls" << smpls << std::endl;
 
-
-    int NoOfMatrices = writeFiles;
+    //int NoOfMatrices = writeFiles;
     vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write));
-    std::vector<string> cntsNames;
+    std::vector<vector<string>> cntsNames(opts->depth.size(), vector<string>());
     vector < vector < vector < string >> > tmpMatFiles(opts->depth.size(), vector<vector <string>>(opts->write));
     vector<DivEsts*> divvs(fileNames.size(),NULL);
     vector < job > slots(opts->threads);
@@ -319,10 +319,10 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                 // add the matrices to the container
                 if (opts->write > 0) {
                     if (opts->writeSwap) {
-                        binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
+                        binaryStoreSample(opts, tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
                     }
                     else {
-                        memoryStoreSample(tmpRS, MaRare, cntsNames, true);
+                        memoryStoreSample(opts, tmpRS, MaRare, cntsNames, true);
                     }
                 }
 
@@ -378,10 +378,10 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
         // add the matrices to the container
         if (opts->write > 0) {
             if (opts->writeSwap) {
-                binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
+                binaryStoreSample(opts, tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
             }
             else {
-                memoryStoreSample(tmpRS, MaRare, cntsNames, true);
+                memoryStoreSample(opts, tmpRS, MaRare, cntsNames, true);
             }
         }
 
@@ -424,7 +424,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
 
 
 
-void binaryStoreSample(vector<vector<vector< string >>>& tmpMatFiles, rareStruct* tmpRS, vector<string>& rowNames, string outF,  vector<string>& cntsNames, bool reshapeMap){
+void binaryStoreSample(options* opts, vector<vector<vector< string >>>& tmpMatFiles, rareStruct* tmpRS, vector<string>& rowNames, string outF,  vector<vector<string>>& cntsNames, bool reshapeMap){
     // store vectors of rarefied matrix on hard disk for memory reduction
     if(reshapeMap){
         vector < string > rowIDs = tmpRS->IDs;
@@ -441,24 +441,28 @@ void binaryStoreSample(vector<vector<vector< string >>>& tmpMatFiles, rareStruct
             for (auto const& x : tmpRS->cnts[i][ii]){
                 tmpVec[nrowIDs[x.first]] = x.second;
             }
-            string vecLocation = printSimpleMap(tmpVec,	outF + "tmp_"  + std::to_string(ii)+"_" + std::to_string(i) + tmpRS->cntsName + ".binary",	tmpRS->cntsName, rowNames);
+            string vecLocation = printSimpleMap(tmpVec,	outF + "tmp_"  + std::to_string(ii)+"_" + std::to_string(i) + tmpRS->cntsName[i] + ".binary",	tmpRS->cntsName[i], rowNames);
+
             tmpMatFiles[i][ii].push_back(vecLocation);
         }
         }
     }else{
         for(uint i = 0; i < tmpRS->cnts.size(); i++){
             for(uint ii = 0; ii < tmpRS->cnts[i].size(); ii++){
-            string vecLocation = printSimpleMap(tmpRS->cnts[i][ii],	outF + "tmp_" + std::to_string(ii) + "_" + std::to_string(i) + tmpRS->cntsName + ".binary",	tmpRS->cntsName, rowNames);
+            string vecLocation = printSimpleMap(tmpRS->cnts[i][ii],	outF + "tmp_" + std::to_string(ii) + "_" + std::to_string(i) + tmpRS->cntsName[i] + ".binary",	tmpRS->cntsName[i], rowNames);
             tmpMatFiles[i][ii].push_back(vecLocation);
         } }
     }
     // save sample name
-    if(tmpRS->cntsName.size() != 0){
-        cntsNames.push_back(tmpRS->cntsName);
+    for(uint di = 0; di < opts->depth.size(); di++){
+        if(tmpRS->cntsName[di].size() != 0){
+            cntsNames[di].push_back(tmpRS->cntsName[di]);
+
+        }
     }
 }
 
-void memoryStoreSample(rareStruct* tmpRS, vector< vector< vector< rare_map >> >& MaRare,  vector<string>& cntsNames, bool reshapeMap){
+void memoryStoreSample(options* opts, rareStruct* tmpRS, vector< vector< vector< rare_map >> >& MaRare,  vector<vector<string>>& cntsNames, bool reshapeMap){
     if(reshapeMap){
         vector < string > rowIDs = tmpRS->IDs;
         vector < uint > nrowIDs(rowIDs.size());
@@ -485,20 +489,22 @@ void memoryStoreSample(rareStruct* tmpRS, vector< vector< vector< rare_map >> >&
         }
     }
     // save sample name
-    if(tmpRS->cntsName.size() != 0){
-        cntsNames.push_back(tmpRS->cntsName);
+    for(uint di = 0; di < opts->depth.size(); di++){
+        if(tmpRS->cntsName[di].size() != 0){
+            cntsNames[di].push_back(tmpRS->cntsName[di]);
+        }
     }
 }
 
 
 
-void printRarefactionMatrix(options* opts, vector<vector<vector< string >>>& tmpMatFiles, string outF,  vector<string>& cntsNames, vector<string>& rowNames){
+void printRarefactionMatrix(options* opts, vector<vector<vector< string >>>& tmpMatFiles, string outF,  vector<vector<string>>& cntsNames, vector<string>& rowNames){
     //vector < string > rowNames = Mo->getRowNames();
     // reassemble tmp fev files:
     for(uint i = 0; i < tmpMatFiles.size(); i++){
         for(uint ii = 0; ii < tmpMatFiles[i].size(); ii++){
         string matOut = outF + "rarefied_to_" + std::to_string(opts->depth[i]) + "_n_" +  std::to_string(ii) + ".tsv";
-        reassembleTmpMat(tmpMatFiles[i][ii], rowNames, cntsNames, matOut);
+        reassembleTmpMat(tmpMatFiles[i][ii], rowNames, cntsNames[i], matOut);
         // delete tmp rarefaction files now
         for(uint j = 0; j < tmpMatFiles[i][ii].size(); j++){
             if( remove( tmpMatFiles[i][ii][j].c_str() ) != 0 ){
@@ -508,10 +514,10 @@ void printRarefactionMatrix(options* opts, vector<vector<vector< string >>>& tmp
     }
     }
 }    
-void printRarefactionMatrix(options* opts, const vector<vector<vector< rare_map>>>& MaRare, string outF, vector<string>& cntsNames, vector<string>& rowNames){
+void printRarefactionMatrix(options* opts, const vector<vector<vector< rare_map>>>& MaRare, string outF, vector<vector<string>>& cntsNames, vector<string>& rowNames){
     for(uint i = 0; i < MaRare.size(); i++){
         for(uint ii = 0; ii < MaRare[i].size(); ii++){
-            printRareMat(outF + "rarefied_to_" + std::to_string(opts->depth[i]) + "_n_" +  std::to_string(ii) + ".tsv", MaRare[i][ii], cntsNames, rowNames);
+            printRareMat(outF + "rarefied_to_" + std::to_string(opts->depth[i]) + "_n_" +  std::to_string(ii) + ".tsv", MaRare[i][ii], cntsNames[i], rowNames);
     }                                                                                                  }
 }
 
@@ -670,9 +676,9 @@ else if (mode == "memory") {
 
     // hold rarefied matrices
     // stores : repeats - sampels eg rows - vectors of columns
-    int NoOfMatrices = opts->write;
+    //int NoOfMatrices = opts->write;
     vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write));
-    std::vector<string> cntsNames;
+    std::vector<vector<string>> cntsNames(opts->depth.size(), vector<string>());
 
 
     // abundance vectors to hold the number of occurences of genes per row
@@ -711,10 +717,10 @@ else if (mode == "memory") {
                 // add the matrices to the container
                 if (opts->write > 0) {
                     if (opts->writeSwap) {
-                       binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+                       binaryStoreSample(opts, tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
                     }
                     else {
-                        memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+                        memoryStoreSample(opts, tmpRS, MaRare, cntsNames, false);
                     }
                 }
 
@@ -770,10 +776,10 @@ else if (mode == "memory") {
         // add the matrices to the container
         if (opts->write > 0) {
             if (opts->writeSwap) {
-               binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+               binaryStoreSample(opts, tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
             }
             else {
-                memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+                memoryStoreSample(opts, tmpRS, MaRare, cntsNames, false);
             }
         }
 

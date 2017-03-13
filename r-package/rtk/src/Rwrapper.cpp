@@ -32,17 +32,19 @@ options::options(string in, string tmpDir, int r, std::vector<long> d, int NoOfM
 // mat : matrix object or path to file
 
 
+
+
 // helper function, that just converts a div
 // into an R list, as we have to do this serveral times
-List createDivList(DivEsts * div){
+List createDivList(DivEsts * div, int di){
     List divLst         = List::create(
 		                      Named("samplename",   div->SampleName),
-		                      Named("richness",     div->richness),
-		                      Named("shannon",      div->shannon),
-		                      Named("simpson",      div->simpson),
-		                      Named("invsimpson",   div->invsimpson),
-		                      Named("chao1",        div->chao1),
-		                      Named("eveness",      div->eve));
+		                      Named("richness",     div->richness[di]),
+		                      Named("shannon",      div->shannon[di]),
+		                      Named("simpson",      div->simpson[di]),
+		                      Named("invsimpson",   div->invsimpson[di]),
+		                      Named("chao1",        div->chao1[di]),
+		                      Named("eveness",      div->eve[di]));
     return divLst;
 }
 
@@ -85,6 +87,57 @@ IntegerMatrix matrix2Mat(std::vector<rare_map>& dfMat,
 	return(NM);
 }
 
+
+
+    
+List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>& ACE, vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& chao2, std::vector<string> skippedSamples, std::vector<string>  retCntsSampleNames, std::vector<string> rowNames, bool transpose, vector< vector< vector< rare_map > >> MaRare, unsigned int di){
+
+    std::list<Rcpp::List> majorLst;
+    for(uint i = 0; i < divvs.size(); i++){
+	    // create a Lst from div pointer
+	    List tmpDivLst = createDivList(divvs[i], di);
+	    majorLst.push_back(tmpDivLst);
+    }
+    
+
+	std::vector<Rcpp::IntegerMatrix> RrarefyMatrices(opts->write); // vector to hold te matrices
+
+    if(opts->write > 0){
+      // matrices with all the counts
+	  if(verbose == true){
+		  Rcout << "Will now prepare rarefied matrices for R\n";
+	  }
+	  for(int i=0; i < opts->write; i++){
+		  if(MaRare[di][i].size() > 0){
+			  IntegerMatrix RdfTmp 	= matrix2Mat(MaRare[di][i], retCntsSampleNames, rowNames, transpose);
+			  RrarefyMatrices[i]		= RdfTmp;
+		  }
+	  }
+    }
+
+
+    // create R object to return to R
+    List returnList;
+
+	if(opts->write > 0 ){
+		List retMatDF;
+		retMatDF 			= wrap(RrarefyMatrices);
+		returnList			= List::create(	Named("divvs", majorLst),
+											Named("raremat",retMatDF),
+                      Named("ICE", wrap(ICE)),
+                      Named("ACE", wrap(ACE)),
+                      Named("chao2", wrap(chao2)),
+											Named("skipped", wrap(skippedSamples)));
+    }else{
+		returnList			= List::create(Named("divvs", majorLst),
+                      Named("ICE", wrap(ICE)),
+                      Named("ACE", wrap(ACE)),
+                      Named("chao2", wrap(chao2)),
+										  Named("skipped", wrap(skippedSamples)));
+  }
+  return returnList;
+
+}
 
 // here we define what R passes on and returns to the C++ code
 // [[Rcpp::export]]
@@ -141,7 +194,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	}
 
     // create variables to be filled
-    vector<DivEsts*>  divvs(3,NULL);
+    vector<DivEsts*>  divvs(0,NULL);
 	// return vector for counts
 	 vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write)); // initialize a vector of matrices with the number of repeats
 	std::vector<string> retCntsSampleNames;
@@ -162,9 +215,7 @@ List rcpp_rarefaction(Rcpp::String input,
 				 divvs, MaRare, retCntsSampleNames,
 				 skippedSamples, ACE, ICE, chao2,
 				rowNames, transpose);
-				
-    Rcout << "divvs " << divvs.size() << std::endl;
-		
+						
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
 	if(verbose == true){
@@ -173,61 +224,16 @@ List rcpp_rarefaction(Rcpp::String input,
 	}
 
     // convert output to R
-    //List divLst = createDivList(dd);
-
-    // list of all divs of each sample
-    std::list<Rcpp::List> majorLst;
-	if(verbose == true){
+    if(verbose == true){
 		Rcout << "Will now prepare diversity measures for R\n";
 	}
-	for(uint i = 0; i < divvs.size(); i++){
-		// create a Lst from div pointer
-		List tmpDivLst = createDivList(divvs[i]);
-		majorLst.push_back(tmpDivLst);
-		//delete divvs[i];
+	List returnList;
+	for(unsigned int di = 0; di < opts->depth.size(); di++){
+	    returnList.push_back(returnRList(opts, divvs, ACE, ICE, chao2, skippedSamples, retCntsSampleNames, rowNames, transpose, MaRare, di));
 	}
-
-
-
-	std::vector<Rcpp::IntegerMatrix> RrarefyMatrices(NoOfMatrices); // vector to hold te matrices
-
-    if(NoOfMatrices > 0){
-      // matrices with all the counts
-	  if(verbose == true){
-		  Rcout << "Will now prepare rarefied matrices for R\n";
-	  }
-	  for(int i=0; i < opts->write; i++){
-		  if(MaRare[i].size() > 0){
-			  //IntegerMatrix RdfTmp 	= matrix2Mat(MaRare[i], retCntsSampleNames, rowNames, transpose);
-			  //RrarefyMatrices[i]		= RdfTmp;
-		  }
-	  }
-    }
-	if(verbose == true){
+    if(verbose == true){
 		Rcout << "All R objects were produced\n";
-
 	}
-
-    // create R object to return to R
-    List returnList;
-
-	if(NoOfMatrices > 0 ){
-		List retMatDF;
-		retMatDF 			= wrap(RrarefyMatrices);
-		returnList			= List::create(	Named("divvs", majorLst),
-											Named("raremat",retMatDF),
-                      Named("ICE", wrap(ICE)),
-                      Named("ACE", wrap(ACE)),
-                      Named("chao2", wrap(chao2)),
-											Named("skipped", wrap(skippedSamples)));
-    }else{
-		returnList			= List::create(Named("divvs", majorLst),
-                      Named("ICE", wrap(ICE)),
-                      Named("ACE", wrap(ACE)),
-                      Named("chao2", wrap(chao2)),
-										  Named("skipped", wrap(skippedSamples)));
-  }
-
 
     return returnList;
 }

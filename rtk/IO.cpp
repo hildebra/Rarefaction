@@ -154,7 +154,7 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
 
 void smplVec::rarefy(vector<long> depts, string ofile, int rep,
         DivEsts* divs, std::vector<vector<rare_map>> & RareSample,
-        string& retCntsSampleName, string& skippedSample,
+        vector<string>& retCntsSampleName, string& skippedSample,
         vector<vector<vector<uint>>>* abundInRow, vector<vector<vector<uint>>>* occuencesInRow,
         int writes,bool write, bool fillret){
     bool doShuffle = true;
@@ -176,7 +176,6 @@ void smplVec::rarefy(vector<long> depts, string ofile, int rep,
             if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
             return;
         }
-
         //long curIdx=(long)totSum+1;
         for (int curRep=0;curRep<rep;curRep++){
             if(curIdx+dep >= (long) totSum or doShuffle == true){
@@ -211,7 +210,7 @@ void smplVec::rarefy(vector<long> depts, string ofile, int rep,
                 }
                 RareSample[i].push_back(cntsMap);
                 if(curRep == 0){
-                    retCntsSampleName = divs->SampleName; // safe the sample name as well
+                    retCntsSampleName[i] = divs->SampleName; // safe the sample name as well
                 }
             }
             richness = 0;

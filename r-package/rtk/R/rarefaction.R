@@ -49,28 +49,27 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
 
     # call the actual software
 
-    result <- lapply(depth, function(d){
-            res <- rcpp_rarefaction("", input, colnames(input),
-                                    rownames(input), repeats, d,
+    result <-  rcpp_rarefaction("", input, colnames(input),
+                                    rownames(input), repeats, depth,
                                     ReturnMatrix, verbose, threads,
                                     margin, "NULL", FALSE)
-            gc()
+    gc()
 
-            # remove col and/or row names, as we've added them for
-            # the Cpp software to work well
-            if(removeRnames == TRUE && removeRnames == TRUE){
-              res$raremat <- lapply(res$raremat, unname)
-            }else{
-              if(removeRnames == TRUE){
-                res$raremat <- lapply(res$raremat, function(x) {rownames(x) <- NULL; return (x)})
-              }
-              if(removeCnames == TRUE){
-                res$raremat <- lapply(res$raremat, function(x) {colnames(x) <- NULL; return (x)})
-              }
-            }
-            gc()
-            return(res)
-          })
+    # remove col and/or row names, as we've added them for
+    # the Cpp software to work well
+    #if(removeRnames == TRUE && removeRnames == TRUE){
+    #  res$raremat <- lapply(res$raremat, unname)
+    #}else{
+    #  if(removeRnames == TRUE){
+    #    res$raremat <- lapply(res$raremat, function(x) {rownames(x) <- NULL; return (x)})
+    #  }
+    #  if(removeCnames == TRUE){
+    #    res$raremat <- lapply(res$raremat, function(x) {colnames(x) <- NULL; return (x)})
+    #  }
+    #}
+    #gc()
+        
+          
 
 
   }else if(class(input) == "character"){
@@ -89,30 +88,28 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
     if(!file.exists(input)){
       stop(paste("The file can not be found. Please verify that the file exists in the given location. The path given is:", input, sep = " "))
     }
-    result <- lapply(depth, function(d){
-              res <- rcpp_rarefaction( input,
-                                       matrix(1,1,c(1)),
-                                       c(NA),c(NA), # col and rownames
-                                       repeats, d,
-                                       ReturnMatrix,
-                                       verbose, threads,
-                                       margin, tmpdir, uselowmem)
-              gc()
-              return(res)
-            })
+    result <- rcpp_rarefaction( input,
+                               matrix(1,1,c(1)),
+                               c(NA),c(NA), # col and rownames
+                               repeats, depth,
+                               ReturnMatrix,
+                               verbose, threads,
+                               margin, tmpdir, uselowmem)
+
+            
   }else{
     stop("Unknown input type. Path to a file (character) or a numeric matrix are accepted types.")
   }
     result <- lapply(result, function(res){
 
-    if(length(res$skipped) > 0){
-      warning(paste(length(res$skipped), "samples where skipped because the depth was greater than the number of elements in the sample."))
-    }
+        if(length(res$skipped) > 0){
+          warning(paste(length(res$skipped), "samples where skipped because the depth was greater than the number of elements in the sample."))
+        }
 
-    # calculate median for diversity measures
-    measures               <- c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eveness')
-    res$div.median         <- lapply(measures, r.median, x=res$divvs)
-    names(res$div.median)  <- paste("median.", measures, sep = "")
+        # calculate median for diversity measures
+        measures               <- c('richness', 'shannon', 'simpson', 'invsimpson', 'chao1', 'eveness')
+        res$div.median         <- lapply(measures, r.median, x=res$divvs)
+        names(res$div.median)  <- paste("median.", measures, sep = "")
 
     return(res)
   })
