@@ -316,9 +316,12 @@ int rarefyMain(options* opts,  string mode,
         vector<vector<vector<uint>>> occuencesInRow(opts->depth.size(), vector<vector<uint>>(opts->repeats, vector<uint>(Mo->rowNum(),0)));
         vector<vector<vector<uint>>> abundInRow(opts->depth.size(), vector<vector<uint>>(opts->repeats, vector<uint>(Mo->rowNum(),0)));
             vector < vector < vector < string >> > tmpMatFiles(opts->depth.size(), vector<vector <string>>(opts->write));
+        if(Mo->smplNum() < 1){
+        divvs.resize(44, NULL);
+        }else{
+        divvs.resize(Mo->smplNum(), NULL);
+        }
         
-        divvs.resize(Mo->smplNum());
-
         // vector keeping all the slots
         vector < job > slots(opts->threads);
 
@@ -402,9 +405,9 @@ int rarefyMain(options* opts,  string mode,
 
     // output matrix
     //printDivMat(opts->output, divvs, true, opts);
-    for (size_t i = 0; i < divvs.size(); i++) {
+    /*for (size_t i = 0; i < divvs.size(); i++) {
         delete divvs[i];
-    }
+    }*/
 
     // write rarefaction matrices to disk
     /*if (opts->write > 0) {

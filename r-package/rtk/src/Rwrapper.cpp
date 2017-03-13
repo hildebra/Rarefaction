@@ -10,14 +10,20 @@ using namespace Rcpp;
 
 
 
-options::options(string input, string tmpDir, int repeats, vector<long> depth, int NoOfMatrices, bool verbose, unsigned int threads){
-    depth  = depth;
-    input = input;
+options::options(string in, string tmpDir, int r, std::vector<long> d, int NoOfMatrices, bool v, unsigned int t) :input(""), output(""), mode(""),
+    referenceDir(""), referenceFile(""),
+    depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
+    modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
+    modCollapse(false), calcCoverage(false),
+    xtra("")
+    {
+    depth  = d;
+    input = in;
     output = tmpDir;
-    repeats = repeats;
+    repeats = r;
     write = NoOfMatrices;
-    verbose = verbose;
-    threads = threads;
+    verbose = v;
+    threads = t;
 }
 
 // get the options passed from R
@@ -85,7 +91,7 @@ IntegerMatrix matrix2Mat(std::vector<rare_map>& dfMat,
 List rcpp_rarefaction(Rcpp::String input,
 						NumericMatrix rMatrix, StringVector inColNames,
 						StringVector inRowNames,
-						int repeats, vector<long> depth, int NoOfMatrices,
+						int repeats, Rcpp::IntegerVector depth, int NoOfMatrices,
 						bool verbose = false, unsigned int threads = 1,
 						 int margin=2, Rcpp::String tmpDir = "", bool lowmem = false)
 						{
@@ -93,14 +99,15 @@ List rcpp_rarefaction(Rcpp::String input,
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
     // make options:
-    options* opts = new options(input, tmpDir, repeats, depth, NoOfMatrices, verbose, threads);
+    options* opts = new options(input, tmpDir, repeats, Rcpp::as<std::vector<long>>(depth), NoOfMatrices, verbose, threads);
+
     
 	// initialize variables
 	std::vector< std::vector < double > > rmat;
 	vector < string > incolnames;
 	vector < string > inrownames;
-  string outF = "";
-  string mode = "memory";
+    string outF = "";
+    string mode = "memory";
 
 	if(input == ""){
 		// use R matrix as input
@@ -124,6 +131,7 @@ List rcpp_rarefaction(Rcpp::String input,
     mode = "memory";
     opts->writeSwap = false;
   }
+    
 
 	// transpose matrix, yes or no
 	bool transpose = false;
@@ -133,13 +141,13 @@ List rcpp_rarefaction(Rcpp::String input,
 	}
 
     // create variables to be filled
-    vector<DivEsts*>  divvs(0,NULL);
+    vector<DivEsts*>  divvs(3,NULL);
 	// return vector for counts
 	 vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write)); // initialize a vector of matrices with the number of repeats
 	std::vector<string> retCntsSampleNames;
 	std::vector<string> rowNames;
 	std::vector<string> skippedSamples;
-	
+    Rcout << "\ndivvs " << divvs.size() << std::endl;
 	// store chao etc.
     vector<vector<mat_fl>> chao2(opts->depth.size());
     vector<vector<mat_fl>> ICE(opts->depth.size());
@@ -154,11 +162,13 @@ List rcpp_rarefaction(Rcpp::String input,
 				 divvs, MaRare, retCntsSampleNames,
 				 skippedSamples, ACE, ICE, chao2,
 				rowNames, transpose);
-
+				
+    Rcout << "divvs " << divvs.size() << std::endl;
+		
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
 	if(verbose == true){
-		Rcout << "Done rarefying, will now produce R objects in Cpp\n";
+		Rcout << "\nDone rarefying, will now produce R objects in Cpp\n";
 		Rcout << "and pass them to R\n";
 	}
 
@@ -195,6 +205,7 @@ List rcpp_rarefaction(Rcpp::String input,
     }
 	if(verbose == true){
 		Rcout << "All R objects were produced\n";
+
 	}
 
     // create R object to return to R
