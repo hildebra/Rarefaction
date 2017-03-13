@@ -291,7 +291,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
 
 
     int NoOfMatrices = writeFiles;
-    vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (NoOfMatrices));
+    vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write));
     std::vector<string> cntsNames;
     vector < vector < vector < string >> > tmpMatFiles(opts->depth.size(), vector<vector <string>>(opts->write));
     vector<DivEsts*> divvs(fileNames.size(),NULL);
@@ -317,7 +317,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                 divvs[tmpRS->i]     = tmpRS->div;
                 string curS 	    = SampleNames[tmpRS->i];
                 // add the matrices to the container
-                if (NoOfMatrices > 0) {
+                if (opts->write > 0) {
                     if (opts->writeSwap) {
                         binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
                     }
@@ -376,7 +376,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
         string curS 	    = SampleNames[tmpRS->i];
 
         // add the matrices to the container
-        if (NoOfMatrices > 0) {
+        if (opts->write > 0) {
             if (opts->writeSwap) {
                 binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
             }
@@ -398,7 +398,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
         delete divvs[i];
     }
     // write rarefaction matrices to disk
-    if(NoOfMatrices > 0){
+    if(opts->write > 0){
         //vector< string > rowNames = Mo->getRowNames();
         if (opts->writeSwap) {
             printRarefactionMatrix(opts, tmpMatFiles, outF, cntsNames, rowNames);
@@ -671,7 +671,7 @@ else if (mode == "memory") {
     // hold rarefied matrices
     // stores : repeats - sampels eg rows - vectors of columns
     int NoOfMatrices = opts->write;
-    vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (NoOfMatrices));
+    vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write));
     std::vector<string> cntsNames;
 
 
@@ -689,12 +689,9 @@ else if (mode == "memory") {
     // now start a async in each slot
     uint i          = 0; 
 
-
     size_t smpls = Mo->smplNum();
     bool breakpoint(true);
     while (breakpoint) {
-
-
         // check for any finished jobs
         for( uint j = 0; j < slots.size(); j++ ){
             if( i >= smpls){
@@ -702,7 +699,6 @@ else if (mode == "memory") {
                 // break in case we have more slots than work
                 break;
             }
-
 
             if(slots[j].inUse == true && slots[j].fut.wait_for(std::chrono::milliseconds(20)) == std::future_status::ready){
 
@@ -713,7 +709,7 @@ else if (mode == "memory") {
                 string curS         = Mo->getSampleName(tmpRS->i);
 
                 // add the matrices to the container
-                if (NoOfMatrices > 0) {
+                if (opts->write > 0) {
                     if (opts->writeSwap) {
                        binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
                     }
@@ -772,7 +768,7 @@ else if (mode == "memory") {
         string curS         = Mo->getSampleName(tmpRS->i);
 
         // add the matrices to the container
-        if (NoOfMatrices > 0) {
+        if (opts->write > 0) {
             if (opts->writeSwap) {
                binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
             }
@@ -793,7 +789,7 @@ else if (mode == "memory") {
     }
 
     // write rarefaction matrices to disk
-    if (NoOfMatrices > 0) {
+    if (opts->write > 0) {
         vector< string > rowNames = Mo->getRowNames();
         if (opts->writeSwap) {
             printRarefactionMatrix(opts, tmpMatFiles, outF, cntsNames, rowNames);
