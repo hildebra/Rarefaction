@@ -4,8 +4,7 @@ const char* rar_ver="0.93";
 
 
 rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
-        vector<vector<vector<uint>>>* abundInRow, vector<vector<vector<uint>>>* occuencesInRow,
-        string outF, int repeats, int writeFiles){
+        vector<vector<vector<uint>>>* abundInRow, vector<vector<vector<uint>>>* occuencesInRow){
 
     smplVec* cur        = Mo->getSampleVec(i);
     string curS         = Mo->getSampleName(i);
@@ -14,11 +13,11 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
     vector<vector<rare_map>> cntsMap(opts->depth.size());
     string cntsName;
     string skippedNames;
-    bool wrAtAll(writeFiles > 0);
+    bool wrAtAll(opts->write > 0);
 
-    cur->rarefy(opts->depth, outF, repeats,
+    cur->rarefy(opts->depth, opts->output, opts->repeats,
             div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-            writeFiles, false, wrAtAll);
+            opts->write, false, wrAtAll);
 
     // put everything in our nice return container
     rareStruct* tmpRS       = new rareStruct();
@@ -34,18 +33,17 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
 
 
 rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options* opts,
-        vector<vector<vector<uint>>>* abundInRow, vector<vector <vector<uint>>>* occuencesInRow, string outF,
-        int repeats, int writeFiles){
+        vector<vector<vector<uint>>>* abundInRow, vector<vector <vector<uint>>>* occuencesInRow){
     smplVec* cur = new smplVec(fileNames[i],4);
 
     std::vector<vector<uint>> cnts;
     vector<vector<rare_map>> cntsMap(opts->depth.size());
     string cntsName;
     string skippedNames;
-    bool wrAtAll(writeFiles > 0);
-    cur->rarefy(opts->depth, outF, repeats,
+    bool wrAtAll(opts->write > 0);
+    cur->rarefy(opts->depth, opts->output, opts->repeats,
             div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-            writeFiles, false, wrAtAll);
+            opts->write, false, wrAtAll);
 
     rareStruct* tmpRS       = new rareStruct();
     tmpRS->div              = div;
@@ -339,7 +337,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                 // launch an async task
                 DivEsts * div   = new DivEsts();
                 div->SampleName = SampleNames[i];
-                slots[j].fut    = async(std::launch::async, calcDivRarVec, i, fileNames, div, opts, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+                slots[j].fut    = async(std::launch::async, calcDivRarVec, i, fileNames, div, opts, &abundInRow, &occuencesInRow);
                 // send user some feedback
                 int thirds = 1;
                 if(smpls > 4){
@@ -551,7 +549,7 @@ int main(int argc, char* argv[])
     //	if (argc>3){
     if (mode == "splitMat") {
         vector<string> empt;
-        Matrix* Mo = new Matrix(inF, outF, opts->xtra, empt, false);
+        Matrix* Mo = new Matrix(inF, opts->output, opts->xtra, empt, false);
         //Mo->splitOnHDD(outF);	//Mo->writeSums(outF);
         delete Mo;
         std::exit(0);
@@ -620,10 +618,10 @@ else if (mode == "rarefaction" || mode == "rare_inmat") {
 else if (mode == "colSums" || mode == "colsums" || mode == "colSum") {
     // just load and discard the matrix and report back the colsums
     vector<string> fileNames;
-    Matrix* Mo = new Matrix(inF, outF, "", fileNames, false, true, false);
+    Matrix* Mo = new Matrix(inF, opts->output, "", fileNames, false, true, false);
     column co = Mo->getMinColumn();
     vector< pair< double, string>> colsums = Mo->getColSums();
-    Mo->writeColSums(outF);
+    Mo->writeColSums(opts->output);
 
     cout << "" << std::endl;
     cout << "------------------------------------" << std::endl;
@@ -632,8 +630,8 @@ else if (mode == "colSums" || mode == "colsums" || mode == "colSum") {
     cout << "With counts:     " << co.colsum << std::endl;
     cout << "" << std::endl;
     cout << "Colsums where written into the files:" << std::endl;
-    cout << "    " << outF << "colSums.txt" << std::endl;
-    cout << "    " << outF << "colSums_sorted.txt" << std::endl;
+    cout << "    " << opts->output << "colSums.txt" << std::endl;
+    cout << "    " << opts->output << "colSums_sorted.txt" << std::endl;
 
     delete Mo;
     std::exit(0);
@@ -641,13 +639,13 @@ else if (mode == "colSums" || mode == "colsums" || mode == "colSum") {
 else if (mode == "geneMat") {
     cout << "Gene clustering matrix creation\n";
     if (argc < 5) { cerr << "Needs at least 4 arguments\n"; std::exit(0); }
-    ClStr2Mat* cl = new ClStr2Mat(inF, outF, map, refD,opts->calcCoverage);
+    ClStr2Mat* cl = new ClStr2Mat(inF, opts->output, map, refD,opts->calcCoverage);
     delete cl;
     std::exit(0);
 }
 else if (mode == "swap") {
     vector < vector < vector < string > >> tmpMatFiles(opts->write);
-    rareExtremLowMem(opts, inF, outF, opts->write, arg4, opts->repeats, numThr, opts->writeSwap);
+    rareExtremLowMem(opts, inF, opts->output, opts->write, arg4, opts->repeats, numThr, opts->writeSwap);
     printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
     std::exit(0);
 }
@@ -735,7 +733,7 @@ else if (mode == "memory") {
                 slots[j].inUse = true;
                 // launch an async task
                 DivEsts * div   = new DivEsts();
-                slots[j].fut    = async(std::launch::async, calcDivRar, i, Mo, div, opts, &abundInRow, &occuencesInRow, outF, opts->repeats, opts->write);
+                slots[j].fut    = async(std::launch::async, calcDivRar, i, Mo, div, opts, &abundInRow, &occuencesInRow);
 
                 // send user some feedback
                 int thirds = 1;
