@@ -19,8 +19,7 @@ struct job {
 
 void binaryStoreSample(vector<vector< vector< string >> > & , rareStruct* , 
 	vector<string>& , string , vector<string>& , bool reshapeMap = false);
-void memoryStoreSample(rareStruct* tmpRS, vector< vector< rare_map > >& MaRare, 
-	vector<string>& cntsNames,  bool reshapeMap = false);
+void memoryStoreSample(rareStruct* tmpRS, vector< vector< vector< rare_map >> >& MaRare,  vector<string>& cntsNames, bool reshapeMap);
 
 void printRarefactionMatrix(options* , vector<vector<vector< string >>>& , string,  
                             vector<string>& , vector<string>&);

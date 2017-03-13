@@ -322,7 +322,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                         binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
                     }
                     else {
-                       // memoryStoreSample(tmpRS, MaRare, cntsNames, true);
+                        memoryStoreSample(tmpRS, MaRare, cntsNames, true);
                     }
                 }
 
@@ -381,7 +381,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                 binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, true);
             }
             else {
-               // memoryStoreSample(tmpRS, MaRare, cntsNames, true);
+                memoryStoreSample(tmpRS, MaRare, cntsNames, true);
             }
         }
 
@@ -714,7 +714,7 @@ else if (mode == "memory") {
                        binaryStoreSample(tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
                     }
                     else {
-                        //memoryStoreSample(tmpRS, MaRare, cntsNames, false);
+                        memoryStoreSample(tmpRS, MaRare, cntsNames, false);
                     }
                 }
 
