@@ -81,10 +81,10 @@ public:
 	DivEsts():richness(0),shannon(0),
 		simpson(0),invsimpson(0),chao1(0),eve(0){}
 	~DivEsts(){}
-	void print2file(const string);
+	//void print2file(const string);
 	//data vectors
-	vector<long> richness;
-	vector<double> shannon,simpson,invsimpson,chao1,eve;
+	vector<vector<long>> richness;
+	vector<vector<double>> shannon,simpson,invsimpson,chao1,eve;
 	string SampleName;
 	int depth;
 };

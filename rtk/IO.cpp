@@ -160,6 +160,14 @@ void smplVec::rarefy(vector<long> depts, string ofile, int rep,
     bool doShuffle = true;
     long curIdx = 0;
     long dep;
+    // resize divvs
+    divs->richness.resize(depts.size());
+    divs->shannon.resize(depts.size());
+    divs->simpson.resize(depts.size());
+    divs->invsimpson.resize(depts.size());
+    divs->chao1.resize(depts.size());
+    divs->eve.resize(depts.size());
+    
     for(uint i = 0; i < depts.size(); i++){
         dep = depts[i];
 
@@ -207,13 +215,13 @@ void smplVec::rarefy(vector<long> depts, string ofile, int rep,
                 }
             }
             richness = 0;
-            divs->richness.push_back(this->getRichness(cnts));
+            divs->richness[i].push_back(this->getRichness(cnts));
             vector<double> three = this->calc_div(cnts, 4);
-            divs->shannon.push_back(three[0]);
-            divs->simpson.push_back(three[1]);
-            divs->invsimpson.push_back(three[2]);
-            divs->chao1.push_back(this->calc_chao1(cnts,1));
-            divs->eve.push_back(this->calc_eveness(cnts));
+            divs->shannon[i].push_back(three[0]);
+            divs->simpson[i].push_back(three[1]);
+            divs->invsimpson[i].push_back(three[2]);
+            divs->chao1[i].push_back(this->calc_chao1(cnts,1));
+            divs->eve[i].push_back(this->calc_eveness(cnts));
             richness = 0;
 
             // save abundance for chao2 calculations later
@@ -530,7 +538,7 @@ int smplVec::binarySearch( vector<float> vec, const float toFind)
 
 
 
-
+/*
 void DivEsts::print2file(const string file){
     if (richness.size()<1){return;}
     ofstream out(file.c_str());
@@ -564,7 +572,7 @@ void DivEsts::print2file(const string file){
         out << "\t"<<eve[i];
     }
     out.close();
-}
+}*/
 void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, options* opts){
 
     string outFmedian = outF + "median_alpha_diversity.tsv";
@@ -574,7 +582,18 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
         cerr << "Couldn't open diversity estimate matrix " << outF << endl; std::exit(99);
 #endif
     }
-    out << "Smpl\tRichness\tShannon\tSimpson\tInv. Simpson\tChao1\tEveness\n";
+    out << "depth";
+    for( uint di = 0; di < opts->depth.size(); di++){
+        for( uint j = 0; j < 6; j++){
+                out << "\t" << opts->depth[di];   
+        }
+    }
+    out << "\n";
+    out << "Smpl";
+    for( uint di = 0; di < opts->depth.size(); di++){
+       out << "\tRichness\tShannon\tSimpson\tInv. Simpson\tChao1\tEveness";
+    }
+    out << "\n";
     for (size_t i = 0; i < inD.size(); i++){
         if (inD[i] == NULL){
 #ifdef notRpackage
@@ -583,13 +602,16 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
             out << "-1\t-1\t-1\t-1\t-1\t-1\n";
             continue;
         }
-        out << inD[i]->SampleName << "\t";
-        out << getMedian(inD[i]->richness) << "\t";
-        out << getMedian(inD[i]->shannon) << "\t";
-        out << getMedian(inD[i]->simpson) << "\t";
-        out << getMedian(inD[i]->invsimpson) << "\t";
-        out << getMedian(inD[i]->chao1) << "\t";
-        out << getMedian(inD[i]->eve) << "\n";
+        out << inD[i]->SampleName;
+        for( uint di = 0; di < opts->depth.size(); di++){
+            out << "\t" << getMedian(inD[i]->richness[di]) ;
+            out  << "\t"<< getMedian(inD[i]->shannon[di]);
+            out  << "\t"<< getMedian(inD[i]->simpson[di]);
+            out  << "\t"<< getMedian(inD[i]->invsimpson[di]) ;
+            out  << "\t"<< getMedian(inD[i]->chao1[di]) << "";
+            out  << "\t" << getMedian(inD[i]->eve[di]) << "";
+        }
+        out << "\n";
     }
     out.close();
 
@@ -628,11 +650,13 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
             // richness
             uint k = 0;
             outFs[k] << inD[i]->SampleName ;
-            for( uint j = 0; j < inD[i]->richness.size(); j++){
-                outFs[k] << "\t" << inD[i]->richness[j] ;
+            for( uint di = 0; di < opts->depth.size(); di++){
+                for( uint j = 0; j < inD[i]->richness[di].size(); j++){
+                    outFs[k] << "\t" << inD[i]->richness[di][j] ;
+                }
             }
             outFs[k] << '\n';
-
+/*
             // shannon
             k = 1;
             outFs[k] << inD[i]->SampleName ;
@@ -671,7 +695,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
             for( uint j = 0; j < inD[i]->chao1.size(); j++){
                 outFs[k] << "\t" << inD[i]->eve[j] ;
             }
-            outFs[k] << '\n';
+            outFs[k] << '\n';*/
         }
 
         // close streams
