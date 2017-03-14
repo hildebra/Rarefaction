@@ -78,7 +78,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
       uselowmem <- TRUE;
       rare.status("Low memory mode will be used. Temporary files will be stored on storage medium", verbose)
     }else if(!is.null(tmpdir) & margin != 2){
-      warning("Can not use low mem on margin = 1. Please consider transforming your input data, to use low mem mode.")
+      warning("Can not use low mem on margin = 1. Please consider transforming your input data, to use low memory (swap) mode.")
     }else{
       uselowmem   <- FALSE;
       tmpdir     <- "NULL";

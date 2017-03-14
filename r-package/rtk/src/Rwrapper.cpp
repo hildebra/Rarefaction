@@ -91,14 +91,13 @@ IntegerMatrix matrix2Mat(std::vector<rare_map>& dfMat,
 
     
 List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>& ACE, vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& chao2, std::vector<string> skippedSamples, std::vector<string>  cntsNam, std::vector<string> rowNames, bool transpose, vector< vector< vector< rare_map > >> MaRare, unsigned int di){
-
     std::list<Rcpp::List> majorLst;
+    
     for(uint i = 0; i < divvs.size(); i++){
 	    // create a Lst from div pointer
 	    List tmpDivLst = createDivList(divvs[i], di);
 	    majorLst.push_back(tmpDivLst);
     }
-    
 
 	std::vector<Rcpp::IntegerMatrix> RrarefyMatrices(opts->write); // vector to hold te matrices
 
@@ -115,10 +114,8 @@ List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>&
 	  }
     }
 
-
     // create R object to return to R
     List returnList;
-
 	if(opts->write > 0 ){
 		List retMatDF;
 		retMatDF 			= wrap(RrarefyMatrices);
@@ -208,7 +205,11 @@ List rcpp_rarefaction(Rcpp::String input,
 
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
-
+    if(verbose == true){
+		Rcout << "\nPass data to C++ for rarefaction.\n";
+		Rcout << "This might take long, depending on your input\n";
+		Rcout << "please wait ...\n";
+	}
 	// call the rarefaction main function
 	rarefyMain( opts, mode,
 				 rmat, incolnames, inrownames ,
@@ -219,8 +220,8 @@ List rcpp_rarefaction(Rcpp::String input,
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
 	if(verbose == true){
-		Rcout << "\nDone rarefying, will now produce R objects in Cpp\n";
-		Rcout << "and pass them to R\n";
+		Rcout << "\nDone rarefying, will now produce R objects\n";
+		Rcout << "and pass them back to R\n";
 	}
 
     // convert output to R
