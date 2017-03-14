@@ -13,6 +13,10 @@ rare.status <- function(msg, verbose=TRUE){
 rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, verbose = FALSE, threads = 1, tmpdir = NULL ){
 
 
+    # pass 1:x to Cpp as colnames
+    removeCnames <- FALSE
+    removeRnames <- FALSE
+
   if(repeats < ReturnMatrix ){
     repeats <- ReturnMatrix
     warning(paste("Repeats can not be smaller than number of matrices to return. Repeats set to match ReturnMatrix. repeats = ReturnMatrix =", repeats, sep=" "))
@@ -35,9 +39,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
       stop("The supplied matrix object is not numeric. Please check your input matrix.")
     }
 
-    # pass 1:x to Cpp as colnames
-    removeCnames <- FALSE
-    removeRnames <- FALSE
+
     if(is.null(colnames(input))){
       colnames(input) <- paste("col ", seq(1:ncol(input)), sep="")
       removeCnames <- TRUE
@@ -55,19 +57,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
                                     margin, "NULL", FALSE)
     gc()
 
-    # remove col and/or row names, as we've added them for
-    # the Cpp software to work well
-    #if(removeRnames == TRUE && removeRnames == TRUE){
-    #  res$raremat <- lapply(res$raremat, unname)
-    #}else{
-    #  if(removeRnames == TRUE){
-    #    res$raremat <- lapply(res$raremat, function(x) {rownames(x) <- NULL; return (x)})
-    #  }
-    #  if(removeCnames == TRUE){
-    #    res$raremat <- lapply(res$raremat, function(x) {colnames(x) <- NULL; return (x)})
-    #  }
-    #}
-    #gc()
+    
         
           
 
@@ -101,6 +91,19 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
     stop("Unknown input type. Path to a file (character) or a numeric matrix are accepted types.")
   }
     result <- lapply(result, function(res){
+        # remove names, if there werent any
+        if(removeRnames == TRUE && removeRnames == TRUE){
+          res$raremat <- lapply(res$raremat, unname)
+        }else{
+          if(removeRnames == TRUE){
+            res$raremat <- lapply(res$raremat, function(x) {rownames(x) <- NULL; return (x)})
+          }
+          if(removeCnames == TRUE){
+            res$raremat <- lapply(res$raremat, function(x) {colnames(x) <- NULL; return (x)})
+          }
+        }
+            
+        
 
         if(length(res$skipped) > 0){
           warning(paste(length(res$skipped), "samples where skipped because the depth was greater than the number of elements in the sample."))

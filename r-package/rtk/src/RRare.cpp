@@ -63,7 +63,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options
 
     delete cur;
     if( remove( fileNames[i].c_str() ) != 0 ){
-        cerr << "Swap Mode: Error deleting file: " << fileNames[i] << std::endl;
+        //cerr << "Swap Mode: Error deleting file: " << fileNames[i] << std::endl;
     }
     return tmpRS;
 }
