@@ -57,6 +57,7 @@ This file contains the median diversity measures for all Samples in a tab separa
 Each diversity measures is exported as a table containing all repeats for all sample.
 
 **global_diversity.tsv**
+
 Holds the ACE,ICE and chao2 for the table.
 
 **rarefied_to_X_n_Y.tsv**
