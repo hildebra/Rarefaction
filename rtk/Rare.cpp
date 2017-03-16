@@ -74,43 +74,43 @@ void stateVersion(){
 }
 
 void helpMsg(){
-    stateVersion();
-    printf("\n");
-    printf("USAGE\n");
-    printf("    rtk <mode> -i <input.csv> -o <output> [options] \n");
-    printf("\n");
-    printf("MODE rarefaction\n");
-    printf("\n");
-    printf("OPTIONS\n");
+	stateVersion();
+	printf("\n");
+	printf("USAGE\n");
+	printf("    rtk <mode> -i <input.csv> -o <output> [options] \n");
+	printf("\n");
+	printf("MODE rarefaction\n");
+	printf("\n");
+	printf("OPTIONS\n");
 
-    printf("<mode>      For rarefaction: mode can be either swap or memory.\n");
-    printf("            Swap mode creates temporary files but uses less memory. \n");
-    printf("            The speed of both modes is comparable.\n");
-    printf("    -i      path to an .csv file to rarefy\n");
-    printf("    -o      path to a output directory\n");
-    printf("    -d      Depth to rarefy to. Default is 0.95 times the minimal column sum.\n");
-    printf("    -r      Number of times to create diversity measures. Default is 10.\n");
-    printf("    -w      Number of rarefied tables to write.\n");
-    printf("    -t      Number of threads to use. Default: 1\n");
-    printf("    -ns     If set, no temporary files will be used when writing rarefaction tables to disk.\n");
-    printf("\n");
-    printf("EXAMPLE\n");
-    printf("    Rarefy a table to 1000 counts per sample with two threads. Create one table:\n");
-    printf("        rtk swap -i table.csv -o outputdir/prefix. -d 1000 -r 10 -w 1 -t 2\n");
-    printf("\n");
-    printf("    Rarefy with most memory and least amount of IO:\n");
-    printf("        rtk memory -i table.csv -o outputdir/prefix. -ns\n");
-    printf("\n");
-    printf("MODE: Colsums\n");
-    printf("Reports the column sums of all columns in form of a sorted and an unsorted file.\n");
-    printf("\n");
-    printf("EXAMPLE\n");
-    printf("    Repot column sums of file 'table.csv'\n");
-    printf("        rtk colsums -i table.csv -o prefix\n");
+	printf("<mode>      For rarefaction: mode can be either swap or memory.\n");
+	printf("            Swap mode creates temporary files but uses less memory. \n");
+	printf("            The speed of both modes is comparable.\n");
+	printf("    -i      path to an .csv file to rarefy\n");
+	printf("    -o      path to a output directory\n");
+	printf("    -d      Depth or multiple comma seperated depths to rarefy to. Default is 0.95 times the minimal column sum.\n");
+	printf("    -r      Number of times to create diversity measures. Default is 10.\n");
+	printf("    -w      Number of rarefied tables to write.\n");
+	printf("    -t      Number of threads to use. Default: 1\n");
+	printf("    -ns     If set, no temporary files will be used when writing rarefaction tables to disk.\n");
+	printf("\n");
+	printf("EXAMPLE\n");
+	printf("    Rarefy a table to 1000 counts per sample with two threads. Create one table:\n");
+	printf("        rtk swap -i table.csv -o outputdir/prefix. -d 1000 -r 10 -w 1 -t 2\n");
+	printf("\n");
+	printf("    Rarefy with most memory and least amount of IO:\n");
+	printf("        rtk memory -i table.csv -o outputdir/prefix. -ns\n");
+	printf("\n");
+	printf("MODE: Colsums\n");
+	printf("Reports the column sums of all columns in form of a sorted and an unsorted file.\n");
+	printf("\n");
+	printf("EXAMPLE\n");
+	printf("    Repot column sums of file 'table.csv'\n");
+	printf("        rtk colsums -i table.csv -o prefix\n");
 
-    printf("\n");
+	printf("\n");
 
-    std::exit(2);
+	std::exit(2);
 }
 
 
