@@ -642,6 +642,14 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
                 }
             }
             outFs[i] << std::endl;
+            
+            outFs[i] << "repeat" ;
+            for(uint ii = 0; ii < opts->depth.size(); ii++){
+                for(uint ij = 0; ij < opts->repeats ; ij++){
+                    outFs[i] << "\t" << ij+1;
+                }
+            }
+            outFs[i] << std::endl;
         }
 
         // write the divvs to disk
@@ -655,46 +663,51 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
                 }
             }
             outFs[k] << '\n';
-/*
+
             // shannon
             k = 1;
             outFs[k] << inD[i]->SampleName ;
+            for( uint di = 0; di < opts->depth.size(); di++){
             for( uint j = 0; j < inD[i]->shannon.size(); j++){
-                outFs[k] << "\t" << inD[i]->shannon[j] ;
-            }
+                outFs[k] << "\t" << inD[i]->shannon[di][j] ;
+            }}
             outFs[k] << '\n';
 
             // simpson
             k = 2;
             outFs[k] << inD[i]->SampleName ;
+            for( uint di = 0; di < opts->depth.size(); di++){
             for( uint j = 0; j < inD[i]->simpson.size(); j++){
-                outFs[k] << "\t" << inD[i]->simpson[j] ;
-            }
+                outFs[k] << "\t" << inD[i]->simpson[di][j] ;
+            }}
             outFs[k] << '\n';
 
             // invsimpson
             k = 3;
             outFs[k] << inD[i]->SampleName ;
+            for( uint di = 0; di < opts->depth.size(); di++){
             for( uint j = 0; j < inD[i]->invsimpson.size(); j++){
-                outFs[k] << "\t" << inD[i]->invsimpson[j] ;
-            }
+                outFs[k] << "\t" << inD[i]->invsimpson[di][j] ;
+            }}
             outFs[k] << '\n';
 
             // chao1
             k = 4;
             outFs[k] << inD[i]->SampleName ;
+            for( uint di = 0; di < opts->depth.size(); di++){
             for( uint j = 0; j < inD[i]->chao1.size(); j++){
-                outFs[k] << "\t" << inD[i]->chao1[j] ;
-            }
+                outFs[k] << "\t" << inD[i]->chao1[di][j] ;
+            }}
             outFs[k] << '\n';
 
             // eve
             k = 5;
             outFs[k] << inD[i]->SampleName ;
+            for( uint di = 0; di < opts->depth.size(); di++){
             for( uint j = 0; j < inD[i]->chao1.size(); j++){
-                outFs[k] << "\t" << inD[i]->eve[j] ;
-            }
-            outFs[k] << '\n';*/
+                outFs[k] << "\t" << inD[i]->eve[di][j] ;
+            }}
+            outFs[k] << '\n';
         }
 
         // close streams
@@ -963,6 +976,16 @@ void writeGlobalDiv(options* opts, vector<vector<mat_fl>>& ICE, vector<vector<ma
     for(uint j = 0; j < opts->depth.size(); j++){
         for(uint i = 0; i < opts->repeats; i++){
             out << "\t" << opts->depth[j];
+        }
+    }    
+    out << '\n';
+    
+    
+    out << "repeat";
+
+    for(uint j = 0; j < opts->depth.size(); j++){
+        for(uint i = 0; i < opts->repeats; i++){
+            out << "\t" << i+1;
         }
     }    
     out << '\n';
