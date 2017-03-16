@@ -629,7 +629,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
 
         // open files
         for(uint i = 0; i < divNames.size(); i++){
-            string outFdiv = outF + "_alpha_" + divNames[i] + ".tsv";
+            string outFdiv = outF + "alpha_" + divNames[i] + ".tsv";
             outFs[i].open(outFdiv.c_str(), ios_base::out);
 
             // write depth in first line of each file

@@ -416,7 +416,7 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     computeChao2(chao2, abundInRow);
     computeCE(ICE, abundInRow);
     computeCE(ACE, occuencesInRow);
-    writeGlobalDiv(opts, ICE, ACE, chao2, outF + "_gDiv.tsv");
+    writeGlobalDiv(opts, ICE, ACE, chao2, outF + "global_diversity.tsv");
 
     cout << "Finished\n";
 }
@@ -814,7 +814,7 @@ else if (mode == "memory") {
     computeChao2(chao2, abundInRow);
     computeCE(ICE, abundInRow);
     computeCE(ACE, occuencesInRow);
-    writeGlobalDiv(opts, ICE, ACE, chao2, outF + "_gDiv.tsv");
+    writeGlobalDiv(opts, ICE, ACE, chao2, outF + "global_diversity.tsv");
 
     printf("CPU time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
     //cout << "Finished\n";
