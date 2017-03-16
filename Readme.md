@@ -7,10 +7,10 @@ To use RTK you can download the binary files under https://github.com/hildebra/R
 For the R package please see the [readme of RTK](r-package/rtk/README.md).
 
 ## Compile from source
-To build this software you will need to have a compiler for C++11 on your system. On a GNU/Linux system you usuallu have to install developer tools to do that. For Ubuntu this is explained here: https://help.ubuntu.com/community/InstallingCompilers
+To build this software you will need to have a compiler for C++11 on your system. On a GNU/Linux system you usually have to install developer tools to do that. For Ubuntu this is explained here: https://help.ubuntu.com/community/InstallingCompilers
 
 
-RTK was tested to compile successfully on windows (version? with compiler XY), GNU/Linux (g++ v. 4.8.5 and v. 6.1.1) and on Mac OS 10.11.2 (Apple LLVM version 7.0.0 (clang-700.0.72)).
+RTK was tested to compile successfully on windows, GNU/Linux (g++ v. 4.8.5 and v. 6.1.1) and on Mac OS 10.11.2 (Apple LLVM version 7.0.0 (clang-700.0.72)).
 
 
 **Compile in UNIX**
@@ -36,7 +36,7 @@ rtk  <mode> -i <input.csv> -o <output> [options]
 
 -i      path to an .csv file to rarefy
 -o      path to a output directory
--d      Depth to rarefy to. Default is 0.95 times the minimal column sum.
+-d      Depth to rarefy to, may be comma seperated list. Default is 0.95 times the minimal column sum.
 -r      Number of times to create diversity measures. Default is 10.
 -w      Number of rarefied tables to write.
 -t      Number of threads to use. Default: 1
@@ -55,6 +55,9 @@ This file contains the median diversity measures for all Samples in a tab separa
 **richness|eveness|...|.tsv**
 
 Each diversity measures is exported as a table containing all repeats for all sample.
+
+**global_diversity.tsv**
+Holds the ACE,ICE and chao2 for the table.
 
 **rarefied_to_X_n_Y.tsv**
 

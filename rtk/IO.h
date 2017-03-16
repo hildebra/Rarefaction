@@ -21,6 +21,8 @@
 #include <future>
 #include <mutex>
 
+#include "options.h"
+
 //#include <tchar.h>
 //#include <string.h>
 
@@ -79,13 +81,14 @@ public:
 	DivEsts():richness(0),shannon(0),
 		simpson(0),invsimpson(0),chao1(0),eve(0){}
 	~DivEsts(){}
-	void print2file(const string);
+	//void print2file(const string);
 	//data vectors
-	vector<long> richness;
-	vector<double> shannon,simpson,invsimpson,chao1,eve;
+	vector<vector<long>> richness;
+	vector<vector<double>> shannon,simpson,invsimpson,chao1,eve;
 	string SampleName;
+	int depth;
 };
-void printDivMat(const string outF, vector<DivEsts*>&, bool);
+void printDivMat(const string outF, vector<DivEsts*>&, bool, options*);
 void printRareMat(const string outF,const vector< rare_map>& rMat, vector< string >& sampleNames, vector < string >& rowId);
 string printSimpleMap(const rare_map &vec, string outF, string id, vector<string> rowNames);
 void reassembleTmpMat(vector<string> inF, vector< string > rowNames,vector< string > colNames, string outF);
@@ -97,8 +100,8 @@ public:
 	~smplVec(){
 		//delete[] arr;
 	}
-	void rarefy(long,string o,int rep,DivEsts*, vector<rare_map>& RareSample,
-		string& retCntsSampleName, string& skippedSample, vector<vector<uint>>* ,vector<vector<uint>>* , int=0,bool=false, bool=false);
+	void rarefy(vector<long> ,string o,int rep,DivEsts*, vector<vector<rare_map>>& RareSample,
+		vector<string>& retCntsSampleName, string& skippedSample, vector<vector<vector<uint>>>* ,vector<vector<vector<uint>>>* , int=0,bool=false, bool=false);
 	long getRichness(rare_map& cnts);
 	long getRichness(const vector<unsigned int>&);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
@@ -133,7 +136,10 @@ private:
 	//vector<float> vec;
 };
 
-void computeChao2(std::vector<mat_fl>& chao2, vector<vector<uint>>& abundInRow);
+void computeChao2(std::vector<vector<mat_fl>>& chao2, vector<vector<vector<uint>>>& abundInRow);
 // compute ace or ice, depending on input data
-void computeCE(vector<mat_fl>& CE, vector<vector<uint>>& abundInRow);
-void writeGlobalDiv(vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<mat_fl>& chao2, string outF);
+void computeCE(vector<vector<mat_fl>>& CE, vector<vector<vector<uint>>>& abundInRow);
+
+
+void writeGlobalDiv(options* opts, vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& ACE, vector<vector<mat_fl>>& chao2, string outF);
+//void writeGlobalDiv(vector<mat_fl>& ICE, vector<mat_fl>& ACE, vector<mat_fl>& chao2, string outF);

@@ -5,9 +5,8 @@
 struct rareStruct{
 	int i;
 	DivEsts* div;
-	string cntsName;
-	//std::vector<vector<uint>> cnts;
-	vector<rare_map> cnts;
+	vector<string> cntsName;
+	vector<vector<rare_map>> cnts;
 	string skippedNames;
 	vector<string> IDs;
 	
@@ -18,12 +17,11 @@ struct job {
   bool inUse = false;
 };
 
-void binaryStoreSample(vector< vector< string > > & tmpMatFiles, rareStruct* tmpRS, 
-	vector<string>& rowNames, string outF, vector<string>& cntsNames, bool reshapeMap = false);
-void memoryStoreSample(rareStruct* tmpRS, vector< vector< rare_map > >& MaRare, 
-	vector<string>& cntsNames,  bool reshapeMap = false);
+void binaryStoreSample(options* opts, vector<vector< vector< string >> > & , rareStruct* , 
+	vector<string>& , string , vector<vector<string>>& , bool reshapeMap = false);
+void memoryStoreSample(options* opts, rareStruct* tmpRS, vector< vector< vector< rare_map >> >& MaRare,  vector<vector<string>>& cntsNames, bool reshapeMap);
 
-void printRarefactionMatrix(vector< vector< string > > & tmpMatFiles, string outF, 
-	int rareDep, vector<string>& cntsNames, vector<string>& rowNames);
-void printRarefactionMatrix(const vector < vector< rare_map >>& MaRare, string outF,
-	int rareDep, vector<string>& cntsNames, vector<string>& rowNames);
+void printRarefactionMatrix(options* , vector<vector<vector< string >>>& , string,  
+                            vector<vector<string>>& , vector<string>&);
+void printRarefactionMatrix(options*, const vector<vector<vector< rare_map>>>& , 
+                            string , vector<vector<string>>& , vector<string>& );
