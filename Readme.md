@@ -116,7 +116,7 @@ http://stackoverflow.com/questions/1729824/transpose-a-file-in-bash
 # Example
 A minimal working example of a rarefaction is shown here. This example should run on any UNIX system.
 ```
-#!/bin/sh
+#!/bin/bash
 FILE="example.input.csv"
 touch $FILE
 echo -e "OUT    \tSample 1\tSample 2\tSample 3"       >> $FILE
