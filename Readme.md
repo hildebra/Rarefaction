@@ -10,7 +10,7 @@ For the R package please see the [readme of RTK](r-package/rtk/README.md).
 To build this software you will need to have a compiler for C++11 on your system. On a GNU/Linux system you usually have to install developer tools to do that. For Ubuntu this is explained here: https://help.ubuntu.com/community/InstallingCompilers
 
 
-RTK was tested to compile successfully on windows, GNU/Linux (g++ v. 4.8.5 and v. 6.1.1) and on Mac OS 10.11.2 (Apple LLVM version 7.0.0 (clang-700.0.72)).
+RTK was tested to compile successfully on windows (Microsoft Visual Studio C++ 2017 RC, Windows 10), GNU/Linux (g++ v. 4.8.5 and v. 6.1.1) and on Mac OS 10.11.2 (Apple LLVM version 7.0.0 (clang-700.0.72)).
 
 
 **Compile in UNIX**
