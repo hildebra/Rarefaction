@@ -18,9 +18,9 @@ public:
   std::string map = "";
   std::vector<long> depth;
   long depthMin;
-  uint repeats = 10;
-  uint write = 0;
-  uint threads = 1;
+  unsigned int repeats = 10;
+  unsigned int write = 0;
+  unsigned int threads = 1;
   bool writeSwap = true;
   bool verbose = false;
 
