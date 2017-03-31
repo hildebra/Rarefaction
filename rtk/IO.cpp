@@ -496,8 +496,10 @@ if (verbose){
 
 void smplVec::shuffle_singl() {
     //auto engine = std::default_random_engine{};
-    std::random_device rd;
-    auto engine = std::mt19937_64{rd()};
+//    std::random_device rd;
+//    auto engine = std::mt19937_64{rd()};
+	unsigned long long seed = (unsigned long long)chrono::high_resolution_clock::now().time_since_epoch().count();
+	auto engine = std::mt19937_64{ seed };
     std::shuffle(std::begin(arr), std::end(arr), engine);	
 }
 

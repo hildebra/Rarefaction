@@ -20,7 +20,7 @@
 #include <numeric>
 #include <future>
 #include <mutex>
-
+#include <chrono>
 #include "options.h"
 
 //#include <tchar.h>
