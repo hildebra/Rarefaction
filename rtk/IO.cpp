@@ -670,7 +670,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
             k = 1;
             outFs[k] << inD[i]->SampleName ;
             for( uint di = 0; di < opts->depth.size(); di++){
-                for( uint j = 0; j < inD[i]->shannon.size(); j++){
+                for( uint j = 0; j < inD[i]->shannon[di].size(); j++){
                     outFs[k] << "\t" << inD[i]->shannon[di][j] ;
                 }
             }
@@ -680,7 +680,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
             k = 2;
             outFs[k] << inD[i]->SampleName ;
             for( uint di = 0; di < opts->depth.size(); di++){
-                for( uint j = 0; j < inD[i]->simpson.size(); j++){
+                for( uint j = 0; j < inD[i]->simpson[di].size(); j++){
                     outFs[k] << "\t" << inD[i]->simpson[di][j] ;
                 }
             }
@@ -690,7 +690,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
             k = 3;
             outFs[k] << inD[i]->SampleName ;
             for( uint di = 0; di < opts->depth.size(); di++){
-                for( uint j = 0; j < inD[i]->invsimpson.size(); j++){
+                for( uint j = 0; j < inD[i]->invsimpson[di].size(); j++){
                     outFs[k] << "\t" << inD[i]->invsimpson[di][j] ;
                 }
             }
@@ -700,7 +700,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
             k = 4;
             outFs[k] << inD[i]->SampleName ;
             for( uint di = 0; di < opts->depth.size(); di++){
-                for( uint j = 0; j < inD[i]->chao1.size(); j++){
+                for( uint j = 0; j < inD[i]->chao1[di].size(); j++){
                     outFs[k] << "\t" << inD[i]->chao1[di][j] ;
                 }
             }
@@ -710,7 +710,7 @@ void printDivMat(const string outF, vector<DivEsts*>& inD, bool printDIV, option
             k = 5;
             outFs[k] << inD[i]->SampleName ;
             for( uint di = 0; di < opts->depth.size(); di++){
-                for( uint j = 0; j < inD[i]->chao1.size(); j++){
+                for( uint j = 0; j < inD[i]->chao1[di].size(); j++){
                     outFs[k] << "\t" << inD[i]->eve[di][j] ;
                 }
             }

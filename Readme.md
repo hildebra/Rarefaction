@@ -57,6 +57,7 @@ This file contains the median diversity measures for all Samples in a tab separa
 Each diversity measures is exported as a table containing all repeats for all sample.
 
 **global_diversity.tsv**
+
 Holds the ACE,ICE and chao2 for the table.
 
 **rarefied_to_X_n_Y.tsv**
@@ -115,7 +116,7 @@ http://stackoverflow.com/questions/1729824/transpose-a-file-in-bash
 # Example
 A minimal working example of a rarefaction is shown here. This example should run on any UNIX system.
 ```
-#!/bin/sh
+#!/bin/bash
 FILE="example.input.csv"
 touch $FILE
 echo -e "OUT    \tSample 1\tSample 2\tSample 3"       >> $FILE
