@@ -288,7 +288,6 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
     }
     size_t smpls = Mo->smplNum();
     delete Mo;
-    cout << "smpls" << smpls << std::endl;
 
     //int NoOfMatrices = writeFiles;
     vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write));
