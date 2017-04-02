@@ -100,7 +100,7 @@ public:
 	~smplVec(){
 		//delete[] arr;
 	}
-	void rarefy(vector<long> ,string o,int rep,DivEsts*, vector<vector<rare_map>>& RareSample,
+	void rarefy(vector<double> ,string o,int rep,DivEsts*, vector<vector<rare_map>>& RareSample,
 		vector<string>& retCntsSampleName, string& skippedSample, vector<vector<vector<uint>>>* ,vector<vector<vector<uint>>>* , int=0,bool=false, bool=false);
 	long getRichness(rare_map& cnts);
 	long getRichness(const vector<unsigned int>&);

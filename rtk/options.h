@@ -16,7 +16,7 @@ public:
   std::string referenceDir = "";
   std::string referenceFile = "";
   std::string map = "";
-  std::vector<long> depth;
+  std::vector<double> depth;
   long depthMin;
   unsigned int repeats = 10;
   unsigned int write = 0;

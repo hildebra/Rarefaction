@@ -116,16 +116,16 @@ void helpMsg(){
 
 
 
-vector<long> parseDepths(string a){
-    std::vector<long> vect;
+vector<double> parseDepths(string a){
+    std::vector<double> vect;
     std::stringstream ss(a);
 
-    int i;
+    float i;
 
     while (ss >> i)
     {
         vect.push_back(i);
-
+        cout << i << " ";
         if (ss.peek() == ',')
             ss.ignore();
     }
@@ -210,6 +210,10 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
             cerr << "Output must be specified\n";
             hasErr = true;
         }
+        // default to min*0.95
+        if(depth.size() == 0){
+            depth.push_back(0.95);
+        }
 
         if (hasErr) {
             cerr << "Use \"rtk -h\" to get full help.\n";
@@ -284,8 +288,10 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                 cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
                 exit(1);
             }
+
         } 
     }
+
     size_t smpls = Mo->smplNum();
     delete Mo;
 
