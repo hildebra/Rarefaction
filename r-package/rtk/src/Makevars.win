@@ -1,5 +1,7 @@
 ## -*- mode: makefile; -*-
 
-## With R 3.1.0 or later, you can uncomment the following line to tell R to
-## enable compilation with C++11 (where available)
+#PKG_CXXFLAGS=-std=c++11
+#PKG_CXXFLAGS="-cflags"
+CC=g++
+CXX=g++
 CXX_STD=CXX11
