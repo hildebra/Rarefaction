@@ -502,8 +502,8 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 	size_t cidS(colIDs.size());
 	ModUsed.resize(rowIDs.size(), false);
 	//if (onlyFilled) { 
-	rowSums = getRowSums(); 
-	for (size_t i = 0; i<rowIDs.size(); i++) {
+	rowSums = getRowSums();
+	for (size_t i = 0; i < rowIDs.size(); i++) {
 		if (onlyFilled && rowSums[i] == 0) {
 			continue;
 		}
@@ -511,9 +511,9 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 			ModUsed[i] = true;
 		}
 		writeCnt++;
-		vector<mat_fl> wrVec (cidS,0.f);
+		vector<mat_fl> wrVec(cidS, 0.f);
 		if (collapseDblFeats && ModPos[rowIDs[i]].size() > 1) {//this is collapseable
-			if (ModCnt.find(rowIDs[i]) != ModCnt.end()) { 
+			if (ModCnt.find(rowIDs[i]) != ModCnt.end()) {
 				continue;
 			}
 			ModCnt[rowIDs[i]] = 1;
@@ -525,7 +525,8 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 				}
 			}
 
-		} else {
+		}
+		else {
 			for (size_t smpl = 0; smpl < cidS; smpl++) {
 				wrVec[smpl] = mat[smpl][i];
 			}
@@ -547,20 +548,29 @@ vector<string> Modules::modNms_numbered() {
 	for (auto it = ModPos.begin(); it != ModPos.end(); ++it) {
 		vector<int> pps = it->second;
 		for (size_t i = 0; i < pps.size(); i++) {
-			out[pps[i]] += "."+itos(i);
+			out[pps[i]] += "." + itos(i);
 		}
 	}
 	return out;
 }
 
-void Modules::writeModDescr(const string& nos, bool onlyUsed){
+void Modules::writeModDescr(const string& nos, bool onlyUsed) {
 	if (onlyUsed && ModUsed.size() == 0) { return; }
 	ofstream of(nos.c_str());
+	bool useHie = false;
+	if (hierachy.size() == moduleDescriptions.size()) { useHie = true; }
 	unordered_map<string, int> usedMN;
 	for (size_t i = 0; i < rowIDs.size(); i++) {
-		if (usedMN.find(rowIDs[i]) != usedMN.end()){continue;}
+		if (usedMN.find(rowIDs[i]) != usedMN.end()) { continue; }
 		if (onlyUsed && !ModUsed[i]) { continue; }
-		of << rowIDs[i] << "\t" << moduleDescriptions[i] << endl;
+		of << rowIDs[i] ;
+		if (useHie) {
+			for (int u = 0; u < hierachy[i].size(); u++){
+				of << "\t" << hierachy[i][u];
+			}
+		}
+		of << "\t" << moduleDescriptions[i];
+		of << endl;
 		usedMN[rowIDs[i]] = 1;
 	}
 	of.close();
