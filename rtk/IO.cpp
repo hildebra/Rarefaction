@@ -178,7 +178,7 @@ void smplVec::rarefy(vector<double> depts, string ofile, int rep,
         }
         //long curIdx=(long)totSum+1;
         for (int curRep=0;curRep<rep;curRep++){
-            if(curIdx+dep >= (long) totSum or doShuffle == true){
+            if(curIdx+dep >= (long) totSum || doShuffle == true){
                 shuffle_singl();	
                 curIdx = 0;
                 doShuffle = false;

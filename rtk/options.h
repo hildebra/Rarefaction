@@ -32,5 +32,7 @@ public:
   bool modCollapse;
   bool calcCoverage;
 
+  std::string modDescr;
+  std::string modHiera;
   std::string xtra;
 };

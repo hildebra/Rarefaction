@@ -112,11 +112,11 @@ ModStep::ModStep(const string & s, bool & recMod, vector<string>& subMod) :alter
 	string token(""), tok2("");
 	//std::istream_iterator<std::string> beg(ss), end;
 	//std::vector<std::string> tokens(beg, end); // done!
-	//for (auto& s : tokens) { cout << s; }
+	//for (auto& s : tokens) { std::cout << s; }
 	while (std::getline(ss, token, '\t')) {
 		stringstream buff(token);
 		vector<string> tmp(0);
-		while (getline(buff, tok2, ',')) {
+		while (std::getline(buff, tok2, ',')) {
 			tmp.push_back(tok2);
 			if (tok2[0] == 'M') {
 				recMod = true;
@@ -204,8 +204,8 @@ Module::Module(vector<string>& n) :name(""), description(""), steps(0),
 	for (size_t i = 0; i < n.size(); i++) {
 		if (i == 0) {//module name & description
 			istringstream ss(n[i]);
-			getline(ss, token, '\t'); name = token;
-			getline(ss, token, '\t'); description = token;
+			std::getline(ss, token, '\t'); name = token;
+			std::getline(ss, token, '\t'); description = token;
 		} else { //actual modules components (e.g. KOs)
 			steps.push_back( ModStep(n[i], containsMods, submods));
 		}
@@ -299,7 +299,7 @@ mat_fl Module::pathAbundance(const vector<mat_fl>& v, const unordered_map<string
 Modules::Modules(const string& inF, vector<string> cns) :
 	Matrix(),
 	moduleDescriptions(0), redundantUsedMods(0),
-	recurrentMods(0),redund(1), PathwCompl(0.6f), enzymCompl(0.8f) 
+	recurrentMods(0), ModUsed(0),redund(1), PathwCompl(0.6f), enzymCompl(0.8f)
 {
 	//ini matrix base class members
 	colIDs = cns; 
@@ -311,7 +311,7 @@ Modules::Modules(const string& inF, vector<string> cns) :
 	string ModToken = "M";
 	while (safeGetline(is, line)) {
 		//comment
-		if (line[0] == '#') { continue; }
+		if (line[0] == '#' || line.substr(0,7)=="Mod Des") { continue; }
 		//new module opens, create old module
 		if (buffer.size()>0 && line.find(ModToken) == 0 && line.find("\t") != string::npos) {
 			if (buffer.size() > 0) {
@@ -372,7 +372,7 @@ Modules::Modules(const string& inF, vector<string> cns) :
 		moduleDescriptions[i] = mods[i].description;
 	}
     #ifdef notRpackage
-	cout << "Read " << mods.size() << " modules\n";
+	std::cout << "Read " << mods.size() << " modules\n";
     #endif
 	//ini base class
 	//Matrix(this->modNms(), colIDs);
@@ -380,6 +380,78 @@ Modules::Modules(const string& inF, vector<string> cns) :
 
 
 }
+
+void Modules::addDescription(const string& inF) {
+	if (inF == "") { return; }
+	ifstream in(inF.c_str());
+	if (!in) { cerr << "Couldn't open module description infile " << inF << endl; exit(329); }
+	string line("");
+	moduleDescriptions.resize(mods.size());
+	while (safeGetline(in, line)) {
+		stringstream ss;
+		ss << line;
+		std::map<std::string, vector<string>>::iterator fnd;
+		string modN(""), modD("");
+		getline(ss, modN, '\t');
+		if (modN == "Mod" || modN == "") { continue; }
+		getline(ss, modD, '\t');
+		auto x = ModPos.find(modN);
+		if (x == ModPos.end()) {
+			cerr << "Couldn't find module " << modN << endl; exit(743);
+		}	else {
+			moduleDescriptions[ x->second[0] ] = modD;
+		}
+
+	}
+	in.close();
+}
+void Modules::addHierachy(const string& inF){
+	if (inF == "") { return; }
+	ifstream in(inF.c_str());
+	if (!in) { cerr << "Couldn't open module hierachy infile " << inF << endl; exit(329); }
+	string line("");
+	hierachy.resize(mods.size(),vector<string>(0));
+	int cnt (-1); int modDef(-1);
+	while (safeGetline(in, line)) {
+		stringstream ss;
+		ss << line;
+		cnt++;
+		string modN(""), modD("");
+		if (cnt == 0) {
+			int yy = 0;
+			while (getline(ss, modD, '\t')) {
+				if (modD == "Mod") {
+					modDef = yy; break;
+				}
+				yy++;
+			}
+			if (modDef == -1) {
+				cerr << "Error: couldn not find \"Mod\" tag in module hierachy file\n";
+			}
+			continue;
+		}
+		vector<string> tmp;
+		int yy = 0;
+		while (getline(ss, modD, '\t')) {			
+			if (yy == modDef) { modN = modD;
+			}	else {
+				tmp.push_back(modD);
+			}
+			yy++;
+		}
+		if (modN == "") { continue; }
+
+		auto x = ModPos.find(modN);
+		if (x == ModPos.end()) {
+			cerr << "Couldn't find module " << modN << endl; exit(743);
+		}
+
+		hierachy[x->second[0]] = tmp;
+	}
+	in.close();
+
+}
+
 void Modules::calc_redund() {
 	list<string> fL; //full list of KOs
 	for (size_t i = 0; i < mods.size(); i++) {
@@ -406,10 +478,10 @@ void Modules::calc_redund() {
 		}
 		statKOr[kor.second] ++;
 	}
-	//cout << "stats on DB KO redundancy (redundancy : occurence):\n";
+	//std::cout << "stats on DB KO redundancy (redundancy : occurence):\n";
 	for (size_t i = 0; i < statKOr.size(); i++) {
 		if (statKOr[i] < 1) { continue; }
-		//cout << i << " : " << statKOr[i] << endl;
+		//std::cout << i << " : " << statKOr[i] << endl;
 	}
 	for (size_t i = 0; i < mods.size(); i++) {
 		mods[i].setReddundancy(MO);
@@ -428,10 +500,15 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 	vector<mat_fl> rowSums;
 	uint writeCnt(0);
 	size_t cidS(colIDs.size());
-	if (onlyFilled) { rowSums = getRowSums(); }
+	ModUsed.resize(rowIDs.size(), false);
+	//if (onlyFilled) { 
+	rowSums = getRowSums(); 
 	for (size_t i = 0; i<rowIDs.size(); i++) {
 		if (onlyFilled && rowSums[i] == 0) {
 			continue;
+		}
+		if (rowSums[i] > 0) {
+			ModUsed[i] = true;
 		}
 		writeCnt++;
 		vector<mat_fl> wrVec (cidS,0.f);
@@ -462,9 +539,7 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 		out << endl;
 	}
 	out.close();
-	#ifdef notRpackage
-	cout << "Wrote " << writeCnt << " modules in final matrix\n";
-	#endif
+	std::cout << "Wrote " << writeCnt << " modules in final matrix\n";
 }
 
 vector<string> Modules::modNms_numbered() {
@@ -478,6 +553,19 @@ vector<string> Modules::modNms_numbered() {
 	return out;
 }
 
+void Modules::writeModDescr(const string& nos, bool onlyUsed){
+	if (onlyUsed && ModUsed.size() == 0) { return; }
+	ofstream of(nos.c_str());
+	unordered_map<string, int> usedMN;
+	for (size_t i = 0; i < rowIDs.size(); i++) {
+		if (usedMN.find(rowIDs[i]) != usedMN.end()){continue;}
+		if (onlyUsed && !ModUsed[i]) { continue; }
+		of << rowIDs[i] << "\t" << moduleDescriptions[i] << endl;
+		usedMN[rowIDs[i]] = 1;
+	}
+	of.close();
+}
+
 void Modules::calcModAbund( vector<mat_fl>& v, const int pos, const unordered_map<string,
 	int>& IDX, vector<string> &retStr, vector<float> &retScore) {
 	vector<mat_fl> ret(mods.size(), (mat_fl)0);
@@ -485,8 +573,7 @@ void Modules::calcModAbund( vector<mat_fl>& v, const int pos, const unordered_ma
 	//mat_fl unass_cnt(0.f);//TOGO
 						  //vector<bool> usedKOs(v.size()); //initial idea to save KOs used to estimated unassigned fraction - better to scale by seq depth external
 	for (size_t i = 0; i < mods.size(); i++) {
-		if (mods[i].name == "M00022") {
-			int x = 0;		} /**/
+		//if (mods[i].name == "M00022") {			int x = 0;		} /**/
 		if (mods[i].containsMods) {
 			if (mods[i].usedInOtherMods) {
     			#ifdef notRpackage
@@ -656,10 +743,10 @@ cerr << segments << " error!\n"; std::exit(5);
 						cntNA++;
 						if (cntNA < 100) {
 							#ifdef notRpackage
-							cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit24);
+							std::cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit24);
 
 							if (cntNA == 99) {
-								cout << " ..\n"; }
+								std::cout << " ..\n"; }
 							#endif
 						}
 					}
@@ -745,7 +832,7 @@ cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_
 	}
 	out.close();*/
 	#ifdef notRpackage
-	cout << "Read " << geneCnt << " genes" << endl;
+	std::cout << "Read " << geneCnt << " genes" << endl;
 	#endif
 }
 
@@ -880,8 +967,8 @@ cerr << segments << " error!\n"; std::exit(5);
 						cntNA++;
 						if (cntNA < 100) {
 							#ifdef notRpackage
-							cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit(24);
-							if (cntNA == 99) { cout << " ..\n"; }
+							std::cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit(24);
+							if (cntNA == 99) { std::cout << " ..\n"; }
 							#endif
 						}
 					}
@@ -929,7 +1016,7 @@ cerr << "C2: Number of columns on line " << cnt << " is " << cnt2 + 2 << ". Expe
 	in.close();
 	maxCols = (int)mat.size();
 	#ifdef notRpackage
-	cout << "Read " << geneCnt << " genes" << endl;
+	std::cout << "Read " << geneCnt << " genes" << endl;
 	#endif
 
 	if (geneCnt == 0) {
@@ -966,7 +1053,7 @@ void Matrix::estimateModuleAbund(char ** argv, int argc) {
 	psOpt->modModCompl = (float)atof(argv[6]);
 	psOpt->modEnzCompl = (float)atof(argv[7]);
 	psOpt->modWrXtraInfo = false;
-	//cout << argv[8] << endl;
+	//std::cout << argv[8] << endl;
 	if (argc > 8 && strcmp(argv[8], "1") == 0) { psOpt->modWrXtraInfo = true; }
 }
 
@@ -1024,6 +1111,9 @@ void Matrix::estimateModuleAbund(options* opts) {
 
 	//read module DB
 	Modules* modDB = new Modules(opts->modDB, colIDs);
+	modDB->addDescription(opts->modDescr);
+	modDB->addHierachy(opts->modHiera);
+
 	
 	//get modules that are used in red mods and add them to inKOmatrix )(this matrix)
 	vector<string> recUsedMods= modDB->getRedundantUsedMods();
@@ -1044,18 +1134,22 @@ void Matrix::estimateModuleAbund(options* opts) {
 //	Matrix modMat = Matrix(modDB->modNms(), colIDs);
 	vector<vector<string>> modStr(maxCols);
 	vector<vector<float>> modScore(maxCols);
+
 	for (int i = 0; i < maxCols; i++) {
+		//mat[i] contains KO abundances for 1 sample (i)
 		modDB->calcModAbund(mat[i], i, rowID_hash, modStr[i], modScore[i]);			
 	}
 	//write description
-	ofstream of; ofstream of2; vector<string> moD = modDB->modDescr(); 
+	ofstream of; ofstream of2; string nos;
+	vector<string> moD = modDB->modDescr(); 
 	vector<string> moN = modDB->modNms_numbered();
-	string nos = outFile+".descr";
+/*	string nos = outFile+".descr";
 	of.open(nos.c_str());
 	for (size_t i = 0; i < moD.size(); i++) {
 		of << moN[i] << "\t" << moD[i] << endl;
 	}
 	of.close();
+	*/
 	//write KOs used
 	if (writeKOused) {
 		nos = outFile + ".KOused";
@@ -1087,6 +1181,9 @@ void Matrix::estimateModuleAbund(options* opts) {
 
 	//write module matrix
 	modDB->writeMatrix(outFile+".mat",true,opts->modCollapse);//ModPos
+	//after writeMatrix to get the ModUsed vec filled
+	modDB->writeModDescr(outFile + ".descr", true);
+
 	delete modDB;
 
 }
@@ -1217,7 +1314,7 @@ cerr << "Can't open geneID file " << xtra << endl; std::exit(13);
 	if (cnt >= 1){
 		doSubsets = true;
 		#ifdef notRpackage
-		cout << "Read " << cnt << " gene subsets\n";
+		std::cout << "Read " << cnt << " gene subsets\n";
 		#endif
 	}
 }
@@ -1264,7 +1361,7 @@ cerr << "Can't open hierachy file " << xtra << endl; std::exit(13);
 	}
 	in.close();
 	#ifdef notRpackage
-	cout << "Read hierachy. Found " << maxLvl << " hierachical levels.\n";
+	std::cout << "Read hierachy. Found " << maxLvl << " hierachical levels.\n";
 	#endif
 }
 void Matrix::splitOnHDD(string out_seed){
