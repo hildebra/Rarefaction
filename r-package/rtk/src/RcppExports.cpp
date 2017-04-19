@@ -16,7 +16,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< StringVector >::type inColNames(inColNamesSEXP);
     Rcpp::traits::input_parameter< StringVector >::type inRowNames(inRowNamesSEXP);
     Rcpp::traits::input_parameter< int >::type repeats(repeatsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type depth(depthSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type depth(depthSEXP);
     Rcpp::traits::input_parameter< int >::type NoOfMatrices(NoOfMatricesSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type threads(threadsSEXP);

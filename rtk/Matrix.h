@@ -204,6 +204,11 @@ public:
 	Modules(const string&, vector<string>);
 	~Modules() {}
 
+	void addDescription(const string&);
+	void addHierachy(const string&);
+	void writeModDescr(const string&,bool onlyUsed);
+
+
 	void setRedund(int x) { redund = x; }
 	void setPathwCompl(float x) { PathwCompl = x; }
 	void setEnzymCompl(float x) { enzymCompl = x; }
@@ -225,12 +230,14 @@ private:
 	//contains the modules in the DB, each entry being one module
 	vector<Module> mods;
 	vector<string>  moduleDescriptions, redundantUsedMods; 
+	vector<vector<string>> hierachy;
 	//moduleNames = rowIDs
 	//list of KOs used in DB, and how often they occur
 	ModOccur MO;
 	//in case of double entries, track these
 	unordered_map<string, vector<int>> ModPos;
 	vector<int> recurrentMods;
+	vector<bool> ModUsed;
 
 	//list of options
 	int redund; // max redundancy of KOs used

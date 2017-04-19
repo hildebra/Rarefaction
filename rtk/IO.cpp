@@ -152,7 +152,7 @@ smplVec::smplVec(const string inF, const int nt) :IDs(0),totSum(0), num_threads(
     }
 
 
-void smplVec::rarefy(vector<long> depts, string ofile, int rep,
+void smplVec::rarefy(vector<double> depts, string ofile, int rep,
         DivEsts* divs, std::vector<vector<rare_map>> & RareSample,
         vector<string>& retCntsSampleName, string& skippedSample,
         vector<vector<vector<uint>>>* abundInRow, vector<vector<vector<uint>>>* occuencesInRow,
@@ -178,7 +178,7 @@ void smplVec::rarefy(vector<long> depts, string ofile, int rep,
         }
         //long curIdx=(long)totSum+1;
         for (int curRep=0;curRep<rep;curRep++){
-            if(curIdx+dep >= (long) totSum or doShuffle == true){
+            if(curIdx+dep >= (long) totSum || doShuffle == true){
                 shuffle_singl();	
                 curIdx = 0;
                 doShuffle = false;

@@ -10,7 +10,7 @@ using namespace Rcpp;
 
 
 
-options::options(string in, string tmpDir, int r, std::vector<long> d, int NoOfMatrices, bool v, unsigned int t) :input(""), output(""), mode(""),
+options::options(string in, string tmpDir, int r, std::vector<double> d, int NoOfMatrices, bool v, unsigned int t) :input(""), output(""), mode(""),
     referenceDir(""), referenceFile(""),
     depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
@@ -141,7 +141,7 @@ List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>&
 List rcpp_rarefaction(Rcpp::String input,
 						NumericMatrix rMatrix, StringVector inColNames,
 						StringVector inRowNames,
-						int repeats, Rcpp::IntegerVector depth, int NoOfMatrices,
+						int repeats, Rcpp::NumericVector depth, int NoOfMatrices,
 						bool verbose = false, unsigned int threads = 1,
 						 int margin=2, Rcpp::String tmpDir = "", bool lowmem = false)
 						{

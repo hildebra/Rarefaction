@@ -116,16 +116,16 @@ void helpMsg(){
 
 
 
-vector<long> parseDepths(string a){
-    std::vector<long> vect;
+vector<double> parseDepths(string a){
+    std::vector<double> vect;
     std::stringstream ss(a);
 
-    int i;
+    float i;
 
     while (ss >> i)
     {
         vect.push_back(i);
-
+        cout << i << " ";
         if (ss.peek() == ',')
             ss.ignore();
     }
@@ -139,7 +139,7 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
     depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
     modCollapse(false), calcCoverage(false),
-    xtra("") {
+	modDescr(""), modHiera(""), xtra("") {
 
 
         bool hasErr = false;
@@ -193,7 +193,11 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
                 modCollapse = true;
             else if (!strcmp(argv[i], "-useCoverage"))//for gene catalog, default is counts
                 calcCoverage = true;
-            else if (!strcmp(argv[i], "-xtra"))
+			else if (!strcmp(argv[i], "-description")) //description of single modules
+				modDescr = (argv[++i]);
+			else if (!strcmp(argv[i], "-hiera")) // hierachy for modules
+				modHiera = (argv[++i]);
+			else if (!strcmp(argv[i], "-xtra"))
                 xtra = (argv[++i]);
 
 
@@ -209,6 +213,10 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
         if (output == "") {//just set some defaults
             cerr << "Output must be specified\n";
             hasErr = true;
+        }
+        // default to min*0.95
+        if(depth.size() == 0){
+            depth.push_back(0.95);
         }
 
         if (hasErr) {
@@ -284,11 +292,12 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                 cerr << "Minimal sample count is 0. This can not be the rarefaction depth. Please provide a rarefaction depth > 0." << std::endl;
                 exit(1);
             }
+
         } 
     }
+
     size_t smpls = Mo->smplNum();
     delete Mo;
-    cout << "smpls" << smpls << std::endl;
 
     //int NoOfMatrices = writeFiles;
     vector< vector< vector< rare_map > >> MaRare(opts->depth.size(), vector< vector< rare_map> > (opts->write));
