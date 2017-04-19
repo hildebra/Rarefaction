@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 // rcpp_rarefaction
-List rcpp_rarefaction(Rcpp::String input, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, Rcpp::IntegerVector depth, int NoOfMatrices, bool verbose, unsigned int threads, int margin, Rcpp::String tmpDir, bool lowmem);
+List rcpp_rarefaction(Rcpp::String input, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, Rcpp::NumericVector depth, int NoOfMatrices, bool verbose, unsigned int threads, int margin, Rcpp::String tmpDir, bool lowmem);
 RcppExport SEXP rtk_rcpp_rarefaction(SEXP inputSEXP, SEXP rMatrixSEXP, SEXP inColNamesSEXP, SEXP inRowNamesSEXP, SEXP repeatsSEXP, SEXP depthSEXP, SEXP NoOfMatricesSEXP, SEXP verboseSEXP, SEXP threadsSEXP, SEXP marginSEXP, SEXP tmpDirSEXP, SEXP lowmemSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

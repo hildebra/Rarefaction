@@ -384,7 +384,11 @@ Modules::Modules(const string& inF, vector<string> cns) :
 void Modules::addDescription(const string& inF) {
 	if (inF == "") { return; }
 	ifstream in(inF.c_str());
-	if (!in) { cerr << "Couldn't open module description infile " << inF << endl; exit(329); }
+	if (!in) { 
+	#ifdef notRpackage
+	cerr << "Couldn't open module description infile " << inF << endl; exit(329); 
+	#endif
+	}
 	string line("");
 	moduleDescriptions.resize(mods.size());
 	while (safeGetline(in, line)) {
@@ -397,7 +401,9 @@ void Modules::addDescription(const string& inF) {
 		getline(ss, modD, '\t');
 		auto x = ModPos.find(modN);
 		if (x == ModPos.end()) {
+		    #ifdef notRpackage
 			cerr << "Couldn't find module " << modN << endl; exit(743);
+			#endif
 		}	else {
 			moduleDescriptions[ x->second[0] ] = modD;
 		}
@@ -408,7 +414,11 @@ void Modules::addDescription(const string& inF) {
 void Modules::addHierachy(const string& inF){
 	if (inF == "") { return; }
 	ifstream in(inF.c_str());
-	if (!in) { cerr << "Couldn't open module hierachy infile " << inF << endl; exit(329); }
+	if (!in) { 
+	#ifdef notRpackage
+	cerr << "Couldn't open module hierachy infile " << inF << endl; exit(329); 
+	#endif
+	}
 	string line("");
 	hierachy.resize(mods.size(),vector<string>(0));
 	int cnt (-1); int modDef(-1);
@@ -426,7 +436,9 @@ void Modules::addHierachy(const string& inF){
 				yy++;
 			}
 			if (modDef == -1) {
+			    #ifdef notRpackage
 				cerr << "Error: couldn not find \"Mod\" tag in module hierachy file\n";
+				#endif
 			}
 			continue;
 		}
@@ -443,7 +455,9 @@ void Modules::addHierachy(const string& inF){
 
 		auto x = ModPos.find(modN);
 		if (x == ModPos.end()) {
+    		#ifdef notRpackage
 			cerr << "Couldn't find module " << modN << endl; exit(743);
+			#endif
 		}
 
 		hierachy[x->second[0]] = tmp;
@@ -540,7 +554,9 @@ void Modules::writeMatrix(const string of, bool onlyFilled, bool collapseDblFeat
 		out << endl;
 	}
 	out.close();
+	#ifdef notRpackage
 	std::cout << "Wrote " << writeCnt << " modules in final matrix\n";
+	#endif
 }
 
 vector<string> Modules::modNms_numbered() {
@@ -565,7 +581,7 @@ void Modules::writeModDescr(const string& nos, bool onlyUsed) {
 		if (onlyUsed && !ModUsed[i]) { continue; }
 		of << rowIDs[i] ;
 		if (useHie) {
-			for (int u = 0; u < hierachy[i].size(); u++){
+			for (uint u = 0; u < hierachy[i].size(); u++){
 				of << "\t" << hierachy[i][u];
 			}
 		}
@@ -1559,9 +1575,9 @@ void VecFiles::readVecFile(const string inF){
 		int CurIdx(-1);
 		while (getline(ss,segments,'\t')) {
 			cnt2++;
-			if (cnt2==-1){
+			if (cnt2 == -1){
 				//rowID = segments;
-				CurIdx=this->getIdx(segments);
+				CurIdx = this->getIdx(segments);
 				continue;
 			}
 			mat_fl tmp =  atof(segments.c_str());

@@ -149,7 +149,7 @@ List rcpp_rarefaction(Rcpp::String input,
 	// check for user interrup
 	Rcpp::checkUserInterrupt();
     // make options:
-    options* opts = new options(input, tmpDir, repeats, Rcpp::as<std::vector<long>>(depth), NoOfMatrices, verbose, threads);
+    options* opts = new options(input, tmpDir, repeats, Rcpp::as<std::vector<double>>(depth), NoOfMatrices, verbose, threads);
 
     
 	// initialize variables
