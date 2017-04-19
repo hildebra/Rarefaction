@@ -139,7 +139,7 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
     depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
     modCollapse(false), calcCoverage(false),
-    xtra("") {
+	modDescr(""), modHiera(""), xtra("") {
 
 
         bool hasErr = false;
@@ -193,7 +193,11 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
                 modCollapse = true;
             else if (!strcmp(argv[i], "-useCoverage"))//for gene catalog, default is counts
                 calcCoverage = true;
-            else if (!strcmp(argv[i], "-xtra"))
+			else if (!strcmp(argv[i], "-description")) //description of single modules
+				modDescr = (argv[++i]);
+			else if (!strcmp(argv[i], "-hiera")) // hierachy for modules
+				modHiera = (argv[++i]);
+			else if (!strcmp(argv[i], "-xtra"))
                 xtra = (argv[++i]);
 
 
