@@ -129,6 +129,12 @@ echo -e "OTU 4\t  5        \t  83       \t  0"        >> $FILE
 ls -lh test.*
 ```
 
+# Citation
+If you use RTK in a publication, please considire citing the bioinformactics application note at https://academic.oup.com/bioinformatics/article/3111845/RTK-efficient-rarefaction-analysis-of-large
+
+>Saary, Paul, et al. "RTK: efficient rarefaction analysis of large datasets." Bioinformatics (2017) 
+
+
 
 # Copyright
 RTK is licensed under the GPLv2. See notice and license file for more information.

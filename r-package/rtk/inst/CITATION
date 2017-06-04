@@ -2,12 +2,24 @@ citHeader("To cite the 'rtk' package in publications use:")
 year <- sub("-.*", "", meta$Date)
 note <- sprintf("R package version %s", meta$Version)
 
-bibentry(bibtype = "Manual",
-         title = "rtk: Rarefaction Tool Kit",
-         author = c(person("Paul", "Saary"),
-                    person("Falk", "Hildebrand")),
-         year = year,
-         note = note,
-         url = "https://cran.r-project.org/package=rtk")
+#bibentry(bibtype = "Manual",
+#         title = "rtk: Rarefaction Tool Kit",
+#         author = c(person("Paul", "Saary"),
+#                    person("Falk", "Hildebrand")),
+#         year = year,
+#         note = note,
+#         url = "https://cran.r-project.org/package=rtk")
 
-     
+bibentry(bibtype = "Manual",
+         title = "RTK: efficient rarefaction analysis of large datasets",
+         author = c(person("Paul", "Saary"),
+                    person("Kristoffer", "Forslund"),
+                    person("Peer", "Bork"),
+                    person("Falk", "Hildebrand")),
+         year = "2017",
+         note = note,
+         doi = "https://doi.org/10.1093/bioinformatics/btx206",
+         journal = "Bioinformatics",       
+         url = "https://github.com/hildebra/Rarefaction")
+
+        
