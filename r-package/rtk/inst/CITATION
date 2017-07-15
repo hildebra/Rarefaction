@@ -18,7 +18,7 @@ bibentry(bibtype = "Manual",
                     person("Falk", "Hildebrand")),
          year = "2017",
          note = note,
-         doi = "https://doi.org/10.1093/bioinformatics/btx206",
+         doi = "10.1093/bioinformatics/btx206",
          journal = "Bioinformatics",       
          url = "https://github.com/hildebra/Rarefaction")
 
