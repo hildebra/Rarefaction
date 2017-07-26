@@ -38,7 +38,9 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
     if(!is.numeric(input)){
       stop("The supplied matrix object is not numeric. Please check your input matrix.")
     }
-
+    if(any(is.na(input))){
+        stop("The input data contains NA values. Please sanitize your input first.")
+    }
 
     if(is.null(colnames(input))){
       colnames(input) <- paste("col ", seq(1:ncol(input)), sep="")
