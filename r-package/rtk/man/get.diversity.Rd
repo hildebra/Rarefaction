@@ -27,8 +27,8 @@ depth and a list of matrices or vectors if rarefaction was done for multiple dep
 }
 
 \references{
-  To be filled someday
-	}
+Saary, Paul, et al. "RTK: efficient rarefaction analysis of large datasets." Bioinformatics (2017): btx206.	
+}
 
 \seealso{Use \code{\link{rt}} before calling this function.}
 

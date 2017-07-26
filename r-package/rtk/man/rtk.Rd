@@ -42,7 +42,8 @@ It is possible to plot the results of the rarefaction, depending on the paramete
 }
 
 \references{
-To be filled someday
+Saary, Paul, et al. "RTK: efficient rarefaction analysis of large datasets." 
+Bioinformatics (2017): btx206.
 }
 
 \seealso{\code{\link{plot.rtk}}, \code{\link{collectors.curve}}}

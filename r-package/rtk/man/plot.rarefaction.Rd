@@ -39,7 +39,7 @@ Rarefaction curves can be fittet to either the arrhenius-equation, the michaelis
 
 
 \references{
- To be filled someday
+Saary, Paul, et al. "RTK: efficient rarefaction analysis of large datasets." Bioinformatics (2017): btx206.
 }
 
 

@@ -20,7 +20,7 @@ This package might be used to rarefy data and compute diversity measures. Rarefi
 Maintainer: \packageMaintainer{rtk}
 }
 \references{
-~~ Literature or other references for background information ~~
+Saary, Paul, et al. "RTK: efficient rarefaction analysis of large datasets." Bioinformatics (2017): btx206.
 }
 
 \seealso{

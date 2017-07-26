@@ -37,7 +37,7 @@ The function \code{collectors.curve} can visualize the richness a dataset has, i
 }
 
 \references{
-  To be filled someday
+Saary, Paul, et al. "RTK: efficient rarefaction analysis of large datasets." Bioinformatics (2017): btx206.
 }
 
 \seealso{Use \code{\link{plot.rtk}} for how to plot your results.}
