@@ -43,8 +43,8 @@ test_that("zeros are reproduced", {
 test_that("Skipped samples are reported", {
     # columns that contain only zeros or are saller than depth
     # are skipped. this should be mentioned
-    data <- matrix(c(0,10,20,30,0, 0,0,0,2,3, 10,20,0,0,30, 10,20,30,0,0, 10,0,20,0,30, 10, 0,0,20,30), 5)
+    data  <- matrix(c(0,10,20,30,0, 0,0,0,2,3, 10,20,0,0,30, 10,20,30,0,0, 10,0,20,0,30, 10, 0,0,20,30), 5)
     data.r <- rtk(data, 1, 10)
     expect_that(length(data.r$skipped),equals(1)) 
 
-}
+})
