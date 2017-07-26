@@ -171,7 +171,7 @@ void smplVec::rarefy(vector<double> depts, string ofile, int rep,
     for(uint i = 0; i < depts.size(); i++){
         dep = depts[i];
 
-        if (dep>totSum){
+        if (dep > totSum){
             skippedSample = divs->SampleName;
             if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
             return;
@@ -241,6 +241,7 @@ void smplVec::rarefy(vector<double> depts, string ofile, int rep,
 
 // vector version of diversity fuctions:
 long smplVec::getRichness(const vector<unsigned int>& cnts){
+    richness = 0;
     for (size_t i = 0; i<cnts.size(); i++){
         //out<<IDs[i]<<"\t"<<cnts[i]<<endl;
         if (cnts[i]>0){

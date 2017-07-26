@@ -129,6 +129,9 @@ void rareLowMem(options* opts,
                 tmpRS               = slots[j].fut.get();
                 divvs[tmpRS->i]     = tmpRS->div;
                 string curS 	    = SampleNames[tmpRS->i];
+                if(tmpRS->skippedNames.size() > 0){
+                    skippedNames.push_back(tmpRS->skippedNames);
+                }
                 // add the matrices to the container
                 if (opts->write > 0) {
                     if (opts->writeSwap) {
@@ -175,6 +178,9 @@ void rareLowMem(options* opts,
         divvs[tmpRS->i]     = tmpRS->div;
         string curS 	    = SampleNames[tmpRS->i];
 
+        if(tmpRS->skippedNames.size() > 0){
+            skippedNames.push_back(tmpRS->skippedNames);
+        }
         // add the matrices to the container
         if (opts->write > 0) {
             if (opts->writeSwap) {
@@ -366,6 +372,9 @@ int rarefyMain(options* opts,  string mode,
                 divvs[tmpRS->i]     = tmpRS->div;
                 string curS         = Mo->getSampleName(tmpRS->i);
 
+                if(tmpRS->skippedNames.size() > 0){
+                    skippedNames.push_back(tmpRS->skippedNames);
+                }
                 // add the matrices to the container
                 if (opts->write > 0) {
                     if (opts->writeSwap) {
@@ -406,6 +415,12 @@ int rarefyMain(options* opts,  string mode,
         tmpRS               = slots[j].fut.get();
         divvs[tmpRS->i]     = tmpRS->div;
         string curS         = Mo->getSampleName(tmpRS->i);
+
+
+        if(tmpRS->skippedNames.size() > 0){
+            skippedNames.push_back(tmpRS->skippedNames);
+        }
+
 
         // add the matrices to the container
         if (opts->write > 0) {
