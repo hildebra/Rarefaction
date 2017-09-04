@@ -760,8 +760,6 @@ cerr << segments << " error!\n"; std::exit(5);
 					breaker = true;
 					break;
 				}
-				rowID_hash[rowID] = cnt;
-				rowIDs.push_back(rowID);
 				if (doHigh){
 					fnd = LUp.find(rowID);
 					if (fnd == LUp.end()){//needs to be added to HMat
@@ -780,6 +778,9 @@ cerr << segments << " error!\n"; std::exit(5);
 						taxa = (*fnd).second;
 					}
 
+				} else {
+					rowID_hash[rowID] = cnt;
+					rowIDs.push_back(rowID);
 				}
 				geneCnt++;
 				continue;
@@ -1518,7 +1519,7 @@ void HMat::set(string kk, int j, mat_fl v) {
 			i = Feat2mat.find(yy);
 			//
 #ifdef notRpackage
-cerr << "Could not find entry " << yy << " in registered subset\nAborting.";
+cerr << "Could not find entry " << yy << " in registered subset\";
 			//std::exit(23);
 #endif
 

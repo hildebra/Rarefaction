@@ -622,7 +622,7 @@ else if (mode == "mergeMat") {
 }
 else if (mode == "sumMat") {
     vector<string> empt;
-    Matrix* Mo = new Matrix(inF, outF, refD, empt, true);
+    Matrix* Mo = new Matrix(inF, outF, refD, empt, true,false,false);
     delete Mo;
     std::exit(0);
 }
