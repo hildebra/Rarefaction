@@ -136,7 +136,7 @@ vector<double> parseDepths(string a){
 
 options::options(int argc, char** argv) :input(""), output(""), mode(""),
     referenceDir(""), referenceFile(""),
-    depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
+    depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false), oldMapStyle(false)
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
     modCollapse(false), calcCoverage(false),
 	modDescr(""), modHiera(""), xtra("") {
@@ -186,10 +186,12 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
             else if (!strcmp(argv[i], "-enzymeCompl"))
                 modEnzCompl = (float)atof(argv[++i]);
             else if (!strcmp(argv[i], "-moduleCompl"))
-                modModCompl = (float)atof(argv[++i]);
-            else if (!strcmp(argv[i], "-writeExtraModEstimates"))
-                modWrXtraInfo = true;
-            else if (!strcmp(argv[i], "-collapseDblModules"))
+				modModCompl = (float)atof(argv[++i]);
+			else if (!strcmp(argv[i], "-newMapStyle"))
+				oldMapStyle = true;
+			else if (!strcmp(argv[i], "-writeExtraModEstimates"))
+				modWrXtraInfo = true;
+			else if (!strcmp(argv[i], "-collapseDblModules"))
                 modCollapse = true;
             else if (!strcmp(argv[i], "-useCoverage"))//for gene catalog, default is counts
                 calcCoverage = true;
@@ -654,7 +656,7 @@ else if (mode == "colSums" || mode == "colsums" || mode == "colSum") {
 else if (mode == "geneMat") {
     cout << "Gene clustering matrix creation\n";
     if (argc < 5) { cerr << "Needs at least 4 arguments\n"; std::exit(0); }
-    ClStr2Mat* cl = new ClStr2Mat(inF, opts->output, map, refD,opts->calcCoverage);
+    ClStr2Mat* cl = new ClStr2Mat(inF, opts->output, map, refD,opts->calcCoverage,opts->oldMapStyle);
     delete cl;
     std::exit(0);
 }

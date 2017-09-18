@@ -40,10 +40,11 @@ class ClStr2Mat
 {
 	//class for gene catalog creation with cd-hit
 public:
-	ClStr2Mat(const string inF, const string outF, const string mapF, const string baseP, bool covCalc);
+	ClStr2Mat(const string inF, const string outF, const string mapF, const string baseP, 
+		bool covCalc, bool oldMap);
 	virtual ~ClStr2Mat();
 private:
-	void read_map(const string,bool);
+	void read_map(const string,bool,bool);
 	void printVec(ofstream&, vector<smat_fl>&,const string&);
 
 	vector<GeneAbundance*> GAs;

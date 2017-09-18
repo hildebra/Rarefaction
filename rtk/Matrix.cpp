@@ -809,7 +809,7 @@ cerr << segments << " error!\n"; std::exit(5);
 		if (cnt2+2 != ini_ColPerRow){
 
 #ifdef notRpackage
-cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
+			cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
 			std::exit(62);
 #endif
 

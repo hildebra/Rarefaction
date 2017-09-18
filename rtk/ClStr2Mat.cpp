@@ -2,7 +2,7 @@
 
 
 ClStr2Mat::ClStr2Mat(const string inF, const string outF,
-	const string mapF, const string basePX, bool covCalc):
+	const string mapF, const string basePX, bool covCalc,bool oldMap):
 	GAs(0), CCH(NULL),smplLoc(0), baseP(0), smplN(0), curr(-1) {
 	ifstream incl;
 	//set up baseP
@@ -36,7 +36,7 @@ exit(55);
 	//read map(s) and check that
 	stringstream ss2(mapF);
 	while (getline(ss2, segments, ',')) {
-		read_map(segments, covCalc);
+		read_map(segments, covCalc, oldMap);
 	}
 	if ( baseP.size() > curr+1) {
 	 #ifdef notRpackage
@@ -149,8 +149,9 @@ void ClStr2Mat::printVec(ofstream& of,vector<smat_fl>& pr,const string&rowN) {
 	}
 	of << "\n";
 }
-void ClStr2Mat::read_map(const string mapF,bool calcCoverage) {
+void ClStr2Mat::read_map(const string mapF,bool calcCoverage, bool oldFolderStructure) {
 	ifstream in;
+	int map2folderIdx = 0; if (oldFolderStructure) {map2folderIdx = 1;}
 	curr++;//keep track of different maps and inPaths
 	uint preMapSize((int)smplLoc.size());
 	if (curr > baseP.size()) {
@@ -224,7 +225,8 @@ exit(56);
 
 
 		//getline(ss, segments, '\t');
-		string locality = curLine[1];
+		//idx 1 for old folder structure, 0 for new folder structure
+		string locality = curLine[map2folderIdx];
 
 		string assGrp ("");
 		if (assGrpN != -1) {

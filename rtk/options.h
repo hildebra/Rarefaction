@@ -23,6 +23,7 @@ public:
   unsigned int threads = 1;
   bool writeSwap = true;
   bool verbose = false;
+  bool oldMapStyle = true;
 
     std::string modDB;
     int modRedund;
