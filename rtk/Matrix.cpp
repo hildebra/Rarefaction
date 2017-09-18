@@ -1519,7 +1519,7 @@ void HMat::set(string kk, int j, mat_fl v) {
 			i = Feat2mat.find(yy);
 			//
 #ifdef notRpackage
-cerr << "Could not find entry " << yy << " in registered subset\";
+cerr << "Could not find entry " << yy << " in registered subset\n";
 			//std::exit(23);
 #endif
 
