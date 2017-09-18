@@ -136,7 +136,7 @@ vector<double> parseDepths(string a){
 
 options::options(int argc, char** argv) :input(""), output(""), mode(""),
     referenceDir(""), referenceFile(""),
-    depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false), oldMapStyle(false)
+    depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false), oldMapStyle(false),
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
     modCollapse(false), calcCoverage(false),
 	modDescr(""), modHiera(""), xtra("") {
@@ -158,7 +158,7 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
             else if (!strcmp(argv[i], "-d")){
                 // split by any given komma
                 depth = parseDepths(argv[++i]);
-                depthMin = *std::min_element(depth.begin(), depth.end());
+                depthMin = (long) *std::min_element(depth.begin(), depth.end());
             }else if (!strcmp(argv[i], "-r"))
                 repeats = atoi(argv[++i]);
             else if (!strcmp(argv[i], "-w"))
