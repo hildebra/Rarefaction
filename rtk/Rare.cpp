@@ -187,7 +187,7 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
                 modEnzCompl = (float)atof(argv[++i]);
             else if (!strcmp(argv[i], "-moduleCompl"))
 				modModCompl = (float)atof(argv[++i]);
-			else if (!strcmp(argv[i], "-newMapStyle"))
+			else if (!strcmp(argv[i], "-oldMapStyle"))
 				oldMapStyle = true;
 			else if (!strcmp(argv[i], "-writeExtraModEstimates"))
 				modWrXtraInfo = true;

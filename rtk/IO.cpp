@@ -169,7 +169,7 @@ void smplVec::rarefy(vector<double> depts, string ofile, int rep,
     divs->eve.resize(depts.size());
     
     for(uint i = 0; i < depts.size(); i++){
-        dep = depts[i];
+        dep = (long)depts[i];
 
         if (dep > totSum){
             skippedSample = divs->SampleName;

@@ -829,7 +829,7 @@ cerr << segments << " error!\n"; std::exit(5);
 	}
 	in.close();
 	ofstream out;
-	if (doHigh && writeTmpFiles){//write out high lvl mats
+	if (doHigh ){//write out high lvl mats
 		for (int i = 0; i < maxLvl; i++){
 			string oF2 = outF + LvlNms[i] + ".txt";
 			out.open(oF2.c_str(), ios_base::out);
