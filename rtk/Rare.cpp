@@ -604,9 +604,25 @@ else if (mode == "normalize") {
         cerr << "Not enough arguments for \"normalize\" function\n";
         exit(3);
     }
-    Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
-    Mo->normalize();
-    Mo->writeMatrix(outF);
+
+	//two step: first get colSums, then read again to norm
+	vector< double> colsums;
+	vector< string> colID;
+	if (true) {
+		vector<string> fileNames;
+		Matrix* Mo = new Matrix(inF, "", "", fileNames, false, true, false);
+		column co = Mo->getMinColumn();
+		colsums = Mo->getCSum();
+		colID = Mo->getSampleNames();
+		delete Mo;
+	}
+	
+	vector<string> fileNames;
+	Matrix* Mo = new Matrix(inF, opts->output, colsums, colID); //needs to be KO file
+    
+	//Matrix* Mo = new Matrix(inF, "");
+	//Mo->normalize();
+    //Mo->writeMatrix(outF);
     delete Mo;
     std::exit(0);
 }
@@ -623,6 +639,7 @@ else if (mode == "mergeMat") {
     std::exit(0);
 }
 else if (mode == "sumMat") {
+	//creates a matrix summed to reference system (NOG, Taxa, ..)
     vector<string> empt;
     Matrix* Mo = new Matrix(inF, outF, refD, empt, true,false,false);
     delete Mo;

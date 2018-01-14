@@ -644,7 +644,158 @@ Matrix::Matrix(void)
 {
 }
 
-Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl, bool NumericRowId, bool writeTmpFiles)
+void Matrix::readColNms(ifstream& in) {
+	string segments; string line;
+	safeGetline(in, line);
+	//getline(in, line, '\n');
+	while (line.substr(0, 1) == "#") {
+		safeGetline(in, line);
+	}
+	stringstream sso;
+	int cnt2(-2);
+	sso << line;
+	while (getline(sso, segments, '\t')) {
+		cnt2++;
+		if (segments.length() > 150) {
+	#ifdef notRpackage
+			cerr << segments << " error!\n"; std::exit(5);
+	#endif
+		}
+		if (cnt2 == -1) { continue; }
+		colIDs[cnt2] = segments;
+	}
+}
+
+int Matrix::iniCols(ifstream& in) {
+	int ini_ColPerRow = 0;
+	int cnt = 0;
+	string line;
+	while (getline(in, line, '\n')) {
+		if (line.substr(0, 1) == "#" || line.length() < 2) { continue; }
+		string segments;
+		int ColsPerRow = 0; // Initialize counter.
+		stringstream ss;
+		ss << line;
+		while (getline(ss, segments, '\t')) {
+			ColsPerRow++;
+		}
+
+		if (cnt == 0) {
+			ini_ColPerRow = ColsPerRow;
+		}
+		else {
+			if (ColsPerRow != ini_ColPerRow) {
+
+#ifdef notRpackage
+				cerr << "C1: Number of columns on line " << cnt << " is " << ColsPerRow << ". Expected " << ini_ColPerRow << " columns.\n" << line << endl;
+				std::exit(6);
+#endif
+
+			}
+		}
+		cnt++;
+		if (cnt > 10) { break; }
+	}
+	if (ini_ColPerRow == 0) {
+#ifdef notRpackage
+		cerr << "Could not find valid columns in matrix.. exiting\n"; exit(432);
+#endif
+	}
+	//reset input stream
+	in.clear();
+	in.seekg(0, ios::beg);
+	colIDs.resize(ini_ColPerRow - 1, "");
+	colSum.resize(ini_ColPerRow - 1, 0.0);
+
+	return ini_ColPerRow;
+}
+Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vector<string> colNms)
+	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(false)
+{
+	//reads matrix from HDD
+	//and writes it simultaneously to single files
+	string line;
+	ifstream in(inF.c_str());
+	ofstream out(outF.c_str(), ios::out);
+	out.precision(9);
+
+	if (!in) {
+		cerr << "Cant open file " << inF << endl; std::exit(11);
+	}
+	if (!out) {
+		cerr << "Can't open out file " << outF << endl; std::exit(11);
+	}
+	int ini_ColPerRow = iniCols(in);
+	readColNms(in);
+
+	//check that colNames and colSums are in same order..
+	for (int i = 0; i < colIDs.size(); i++) {
+		if (colNms[i] != colIDs[i]) {
+			cout << "Unequal order!\n";
+			exit(339);
+		}
+	}
+	
+
+	int cnt(-1), geneCnt(0);
+	string SEP = "\t";
+	stringstream ss;
+
+	string rowID,segments;
+
+	while (safeGetline(in, line)) {
+		//while (getline(in, line, '\n')) {
+		cnt++;
+		if (line.substr(0, 1) == "#") { continue; }
+		if (line.length()<10) { continue; }
+		int cnt2(-2);
+		stringstream ss;
+		ss << line;
+		bool breaker(false);
+		while (getline(ss, segments, '\t')) {
+			cnt2++;
+			if (cnt2 == -1) {
+				rowID = segments;
+
+				//maybe add functionality later: only normalize subset
+				if (doSubsets && subset.find(rowID) == subset.end()) {
+					breaker = true;
+					break;
+				}
+				
+				geneCnt++;
+				out << rowID;
+				continue;
+			}
+			mat_fl tmp = atof(segments.c_str());
+			colSum[cnt2] += (double)tmp;
+			out  <<SEP << (tmp/ colsums[cnt2]);
+		}
+		if (breaker) {
+			continue;
+		}
+		if (cnt2 + 2 != ini_ColPerRow) {
+			cerr << "C2: Number of columns on line " << cnt << " is " << cnt2 + 2 << ". Expected " << ini_ColPerRow << " columns.\n";
+			std::exit(62);
+		}
+		out << endl;
+
+	}
+	
+	for (uint i = 0; i < colSum.size(); i++) {
+		if (colsums[i] != colSum[i]) {
+			cout << "Unequal colSum!\n";
+			exit(339);
+		}
+	}
+
+
+
+	in.close();
+	out.close();
+}
+Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, 
+			bool highLvl, bool NumericRowId, bool writeTmpFiles)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
@@ -661,86 +812,32 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		cerr << "Cant open file " << inF << endl; std::exit(11);
 		#endif		
 	}
-	int ini_ColPerRow(0),cnt(0);
-
-
-	//check MAP format
-	//while (safeGetline(in, line)) {
-	while (getline(in, line,'\n')) {
-		if (line.substr(0, 1) == "#" || line.length()<2){ continue; }
-		string segments;
-		int ColsPerRow = 0; // Initialize counter.
-		stringstream ss;
-		ss << line;
-		while (getline(ss,segments,'\t')) {
-			ColsPerRow++;
-		}
-
-		if (cnt==0){
-			ini_ColPerRow = ColsPerRow;
-		} else {
-			if (ColsPerRow != ini_ColPerRow){
-
-#ifdef notRpackage
-cerr<<"C1: Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<ini_ColPerRow<<" columns.\n"<<line<<endl;
-				std::exit(6);
-#endif
-
-			}
-		}
-		cnt++;
-		if (cnt>10){break;}
-	}
-	if (ini_ColPerRow == 0) {
-    	#ifdef notRpackage
-		cerr << "Could not find valid columns in matrix.. exiting\n"; exit(432);
-		#endif
-	}
-	colIDs.resize(ini_ColPerRow-1,"");
-	colSum.resize(ini_ColPerRow-1,0.0);
+	int ini_ColPerRow = iniCols(in);
+	int cnt(0);
+	cnt=-1;
+	readColNms(in);
+	//set up levels to calc sum stat for
 	vector<ofstream> outFs(ini_ColPerRow-1);
 	vector<string> outStr(ini_ColPerRow-1);
-	//int lineCnt= cnt;
-	//reset input stream
-	in.clear();
-	in.seekg(0, ios::beg);
-	cnt=-1;
-	string segments;
-	safeGetline(in, line);
-	//getline(in, line, '\n');
-	while (line.substr(0, 1) == "#"){
-		safeGetline(in, line);
-	}
-	stringstream sso;
-	int cnt2(-2);
-	sso << line;
-	while (getline(sso,segments,'\t')) {
-		cnt2++;
-		if (segments.length() > 150){
-
-#ifdef notRpackage
-cerr << segments << " error!\n"; std::exit(5);
-#endif
-
-		}
-		if (cnt2==-1){continue;}
-		colIDs[cnt2] = segments;
-		string oF2 = outF + sampleNameSep + colIDs[cnt2];
-		outFName.push_back(oF2);
-		if (!doHigh && writeTmpFiles){
-			outFs[cnt2].open(oF2.c_str(), ios_base::out);
-			outFs[cnt2].precision(12);
-			outFs[cnt2].close();
-		}
-	}
 	if (doHigh){
 		for (int i = 0; i < maxLvl; i++){
 			HI.push_back(new HMat(LvlNms[i], colIDs, vector<string>(0)));
 		}
 	}
+	//set up tmp empty files
+	if (!doHigh && writeTmpFiles) {
+		for (int i = 0; i < colIDs.size(); i++) {
+			string oF2 = outF + sampleNameSep + colIDs[i];
+			outFName.push_back(oF2);
+			outFs[i].open(oF2.c_str(), ios_base::out);
+			outFs[i].precision(12);
+			outFs[i].close();
+		}
+	}
 	string rowID="";
 	int geneCnt(0);
 	int cntNA(0);
+	string segments;
 	while (safeGetline(in, line)) {
 	//while (getline(in, line, '\n')) {
 		cnt++;
@@ -870,7 +967,7 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
-	//and writes it simultaneously to single files
+	//into mem.. careful with big files!
 	if (doHigh){
 		read_hierachy(xtra);
 	}
@@ -884,77 +981,26 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 cerr << "Cant open file " << inF << endl; std::exit(11);
 #endif
 }
-	int ini_ColPerRow(0), cnt(0);
+	int ini_ColPerRow = iniCols(in);
+	int cnt(0);
 
 
-	//check MAP format
-	//while (safeGetline(in, line)) {
-	while (getline(in, line, '\n')) {
-		if (line.substr(0, 1) == "#" || line.length()<2){ continue; }
-		string segments;
-		int ColsPerRow = 0; // Initialize counter.
-		stringstream ss;
-		ss << line;
-		while (getline(ss, segments, '\t')) {
-			ColsPerRow++;
-		}
-
-		if (cnt == 0){
-			ini_ColPerRow = ColsPerRow;
-		}
-		else {
-			if (ColsPerRow != ini_ColPerRow){
-
-#ifdef notRpackage
-cerr << "C1: Number of columns on line " << cnt << " is " << ColsPerRow << ". Expected " << ini_ColPerRow << " columns.\n" << line << endl;
-				std::exit(63);
-#endif
-
-			}
-		}
-		cnt++;
-		if (cnt>10){ break; }
-	}
 	if (ini_ColPerRow == 0) {
 
 #ifdef notRpackage
-cerr << "Empty matrix provided\n";
+		cerr << "Empty matrix provided\n";
 #endif
-
 		return;
 	}
-	colIDs.resize(ini_ColPerRow - 1, "");
-	colSum.resize(ini_ColPerRow - 1, 0.0);
-	in.clear();
-	in.seekg(0, ios::beg);
 	cnt = -1;
-	string segments;
-	safeGetline(in, line);
-	//getline(in, line, '\n');
-	while (line.substr(0, 1) == "#"){
-		safeGetline(in, line);
-	}
-	stringstream sso;
-	int cnt2(-2);
-	//read & prep header
-	sso << line;
-	while (getline(sso, segments, '\t')) {
-		cnt2++;
-		if (segments.length() > 150){
-
-#ifdef notRpackage
-cerr << segments << " error!\n"; std::exit(5);
-#endif
-
-		}
-		if (cnt2 == -1){ continue; }
-		colIDs[cnt2] = segments;
-	}
+	
+	readColNms(in);
 	if (doHigh){
 		for (int i = 0; i < maxLvl; i++){
 			HI.push_back(new HMat(LvlNms[i], colIDs, vector<string>(0)));
 		}
 	}
+	string segments;
 	string rowID = "";
 	int geneCnt(0);
 	int cntNA(0);
@@ -1168,6 +1214,9 @@ void Matrix::estimateModuleAbund(options* opts) {
 	}
 	//write description
 	ofstream of; ofstream of2; string nos;
+	of.precision(9);
+	of2.precision(9);
+
 	vector<string> moD = modDB->modDescr(); 
 	vector<string> moN = modDB->modNms_numbered();
 /*	string nos = outFile+".descr";
@@ -1301,7 +1350,7 @@ vector<mat_fl> Matrix::getRowSums() {
 void Matrix::writeMatrix(const string of, bool onlyFilled) {
 	ofstream out;
 	out.open(of.c_str(), ios_base::out);
-	out.precision(8); out << "Gene";
+	out.precision(9); out << "Gene";
 	for (size_t smpl = 0; smpl < (colIDs.size() ); smpl++) {
 		out << "\t" << colIDs[smpl ];
 	}
@@ -1439,7 +1488,7 @@ vector< pair <double, string>> Matrix::getColSums(bool sorted){
 	if(sorted == false){
 		return colsums;
 	}else{
-		// now we sort this shit
+		// now we sort this vector
 		std::sort(colsums.begin(), colsums.end(), sortPair);
 		return colsums;
 	}
