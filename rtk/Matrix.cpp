@@ -729,7 +729,7 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 	readColNms(in);
 
 	//check that colNames and colSums are in same order..
-	for (int i = 0; i < colIDs.size(); i++) {
+	for (uint i = 0; i < colIDs.size(); i++) {
 		if (colNms[i] != colIDs[i]) {
 			cout << "Unequal order!\n";
 			exit(339);
@@ -741,13 +741,19 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 	string SEP = "\t";
 	stringstream ss;
 
+	out << "Norm_rtk";
+	for (uint i = 0; i < colIDs.size(); i++) {
+		out << SEP << colIDs[i];
+	}
+	out << endl;
+
 	string rowID,segments;
 
 	while (safeGetline(in, line)) {
 		//while (getline(in, line, '\n')) {
 		cnt++;
-		if (line.substr(0, 1) == "#") { continue; }
-		if (line.length()<10) { continue; }
+		if (line.substr(0, 1) == "#") { out << line; continue; }
+		if (line.length()<3) { continue; }
 		int cnt2(-2);
 		stringstream ss;
 		ss << line;
@@ -769,7 +775,12 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 			}
 			mat_fl tmp = atof(segments.c_str());
 			colSum[cnt2] += (double)tmp;
-			out  <<SEP << (tmp/ colsums[cnt2]);
+			if (tmp == 0) {
+				out << SEP << "0";
+			}
+			else {
+				out << SEP << (tmp / colsums[cnt2]);
+			}
 		}
 		if (breaker) {
 			continue;
@@ -842,7 +853,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	//while (getline(in, line, '\n')) {
 		cnt++;
 		if(line.substr(0,1) == "#"){continue;}
-		if (line.length()<10){continue;}
+		if (line.length()<3){continue;}
 		int cnt2(-2);
 		vector<string> taxa(0);
 		stringstream ss;
@@ -883,13 +894,13 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 				continue;
 			}
 			mat_fl tmp =  atof(segments.c_str());
+			colSum[cnt2] += (double)tmp;
 			if (doHigh){//1:finds relevant rowID, extracts taxa; 2:add on all HighLvl mats
 				for (int tt = 0; tt< maxLvl; tt++){
 					HI[tt]->set(taxa[tt], cnt2, tmp);
 				}
-				colSum[cnt2] += (double)tmp;
 			}
-			else if (tmp>0){//write to File
+			else if (writeTmpFiles && tmp>0){//write to File
 				//outFs[cnt2]<<rowID<<"\t"<<tmp<<endl;
 				// if id is numeric (number of row) or the actual id as string
 				if(NumericRowId == true){
@@ -897,7 +908,6 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 				}else{
 					outStr[cnt2] += rowID+"\t"+segments.c_str()+"\n";
 				}
-				colSum[cnt2] += (double)tmp;
 			}
 		}
 		if (breaker){

@@ -615,8 +615,9 @@ else if (mode == "normalize") {
 		colsums = Mo->getCSum();
 		colID = Mo->getSampleNames();
 		delete Mo;
+		cout << "Read matrix\n";
 	}
-	
+	cout << "Normalizing matrix\n";
 	vector<string> fileNames;
 	Matrix* Mo = new Matrix(inF, opts->output, colsums, colID); //needs to be KO file
     
