@@ -351,8 +351,8 @@ void rareExtremLowMem(options * opts, string inF, string outF, int writeFiles, s
                 slots[j].fut    = async(std::launch::async, calcDivRarVec, i, fileNames, div, opts, &abundInRow, &occuencesInRow);
                 // send user some feedback
                 int thirds = 1;
-                if(smpls > 4){
-                    thirds = (int) floor((smpls-3)/3);
+                if(smpls > 5){
+                    thirds = (int) ceil((smpls-3)/3);
                 }
 
                 if(i < 3 || i % thirds == 0  ){
@@ -768,8 +768,8 @@ else if (mode == "memory") {
 
                 // send user some feedback
                 int thirds = 1;
-                if(smpls > 4){
-                    thirds = (int) floor((smpls-3)/3);
+                if(smpls > 5){
+                    thirds = (int) ceil((smpls-3)/3);
                 }
                 if(i < 3 || i % thirds == 0  ){
                     cout << "At Sample " << i+1 << " of " << smpls << " Samples" << std::endl  ;
