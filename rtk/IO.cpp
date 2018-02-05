@@ -942,7 +942,7 @@ void computeCE(vector<vector<mat_fl>>& CE, vector<vector<vector<uint>>>& abundIn
             std::vector< int > abundOneToTen(10,0);
             float nr = 0.0, sa = 0.0, sr = 0.0, f1 = 0.0, ca= 0.0,sumf= 0.0, g2a = 0.0;
 
-            for(uint j = 0; j < abundInRow[i].size(); j++){
+            for(uint j = 0; j < abundInRow[i][ii].size(); j++){
                 val = abundInRow[i][ii][j];
                 if(val < 11 && val != 0){
                     nr += val;
