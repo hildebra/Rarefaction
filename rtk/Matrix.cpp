@@ -914,12 +914,10 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 			continue;
 		}
 		if (cnt2+2 != ini_ColPerRow){
-
 #ifdef notRpackage
 			cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
 			std::exit(62);
 #endif
-
 		}
 		if (cnt % 1000 == 0 && writeTmpFiles){
 			// every 1000 lines, write to file. The rest will be written later

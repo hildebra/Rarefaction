@@ -86,7 +86,7 @@ void helpMsg(){
 	printf("<mode>      For rarefaction: mode can be either swap or memory.\n");
 	printf("            Swap mode creates temporary files but uses less memory. \n");
 	printf("            The speed of both modes is comparable.\n");
-	printf("    -i      path to an .csv file to rarefy\n");
+	printf("    -i      path to an .txt file (tab delimited) to rarefy\n");
 	printf("    -o      path to a output directory\n");
 	printf("    -d      Depth or multiple comma seperated depths to rarefy to. Default is 0.95 times the minimal column sum.\n");
 	printf("    -r      Number of times to create diversity measures. Default is 10.\n");
