@@ -187,7 +187,7 @@ exit(56);
 					cerr << "Map has to start with tag \"#SmplID\"\n";exit(83);
 					#endif
 				}
-				if (sbcnt == 1 && segments != "Path") {
+				if (sbcnt == 1 && segments != "Path"&& segments != "SmplPrefix") {
 					#ifdef notRpackage
 					cerr << "Map has to have tag \"Path\" as second entry\n";
 					exit(83);
