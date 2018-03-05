@@ -1592,7 +1592,7 @@ cerr << "implied row index larger than high level mat!\nAborting.."; std::exit(2
 	}
 }
 void HMat::print(ofstream& O){
-	O << LvlName << "\t";
+	O << LvlName ;
 	for (unsigned int i = 0; i < SampleNs.size(); i++){
 		O << "\t" << SampleNs[i];
 	}
