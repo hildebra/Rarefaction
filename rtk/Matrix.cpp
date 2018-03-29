@@ -1041,15 +1041,15 @@ cerr << "Cant open file " << inF << endl; std::exit(11);
 				rowID_hash[rowID] = cnt;
 				rowIDs.push_back(rowID);
 
-				if (doHigh){
+				if (doHigh){//check if present in hierachy already..
 					fnd = LUp.find(rowID);
 					if (fnd == LUp.end()){//needs to be added to HMat
 						taxa = vector<string>(maxLvl, "-1");
 						cntNA++;
-						if (cntNA < 100) {
+						if (cntNA < 50) {
 							#ifdef notRpackage
 							std::cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit(24);
-							if (cntNA == 99) { std::cout << " ..\n"; }
+							if (cntNA == 49) { std::cout << " ..\n"; }
 							#endif
 						}
 					}
@@ -1561,7 +1561,7 @@ void HMat::set(string kk, int j, mat_fl v) {
 	while (pos != string::npos ){
 		subkk.push_back(kk.substr(npos, pos-npos));
 		npos = pos+1;
-		pos = kk.find(",", npos);
+		pos = kk.find("|", npos);
 		div += 1.f;
 	}
 	subkk.push_back(kk.substr(npos));
