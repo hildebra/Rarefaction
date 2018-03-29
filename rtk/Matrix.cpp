@@ -1547,7 +1547,7 @@ void SparseMatrix::addCount(string smpl, int row, smat_fl abund) {
 
 
 HMat::HMat(string L, vector<string> Samples, vector<string> Features)
-:LvlName(L), FeatureNs(Features), SampleNs(Samples),mat(0){
+:LvlName(L), FeatureNs(Features), SampleNs(Samples),mat(0), hiTaNAcnt(0){
 	empty = vector<mat_fl>(SampleNs.size(), 0);
 	mat.resize(FeatureNs.size(), empty);
 	for (unsigned int i = 0; i < FeatureNs.size(); i++){
@@ -1556,7 +1556,7 @@ HMat::HMat(string L, vector<string> Samples, vector<string> Features)
 }
 
 void HMat::set(string kk, int j, mat_fl v) {
-	mat_fl div(1); size_t pos(kk.find(",", 0)), npos(0);
+	mat_fl div(1); size_t pos(kk.find("|", 0)), npos(0);
 	vector<string> subkk(0);
 	while (pos != string::npos ){
 		subkk.push_back(kk.substr(npos, pos-npos));
@@ -1576,7 +1576,10 @@ void HMat::set(string kk, int j, mat_fl v) {
 			i = Feat2mat.find(yy);
 			//
 #ifdef notRpackage
-cerr << "Could not find entry " << yy << " in registered subset\n";
+			if (hiTaNAcnt < 100) {
+				cerr << "Could not find entry " << yy << " in registered subset\n";
+				hiTaNAcnt++;
+			}
 			//std::exit(23);
 #endif
 

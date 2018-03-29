@@ -46,6 +46,7 @@ private:
 	vector<string> FeatureNs, SampleNs;
 	vector< mat_fl > empty;
 	vector< vector< mat_fl > > mat;
+	uint hiTaNAcnt;
 };
 
 class SparseMatrix
