@@ -5,7 +5,8 @@ struct options
 {
 public:
 	options(int argc, char** argv);
-	options(std::string, std::string , int repeats, std::vector<double> depth, int NoOfMatrices, bool verbose, unsigned int threads);
+	options(std::string, std::string , int repeats, std::vector<double> depth, int NoOfMatrices, 
+		bool verbose, unsigned int threads);
 	void print_rare_details();
 	//~options();
 
@@ -31,7 +32,9 @@ public:
     float modModCompl;
     bool modWrXtraInfo;
     bool modCollapse;
-    bool calcCoverage;
+	bool calcCoverage;
+	bool calcCovMedian;
+	bool check4idxMatch;//assummes tab separated row name, that is number (idx); used in "lineExtr"
 
   std::string modDescr;
   std::string modHiera;

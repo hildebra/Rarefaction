@@ -644,12 +644,12 @@ Matrix::Matrix(void)
 {
 }
 
-void Matrix::readColNms(ifstream& in) {
+void Matrix::readColNms(istream* in) {
 	string segments; string line;
-	safeGetline(in, line);
+	safeGetline((*in), line);
 	//getline(in, line, '\n');
 	while (line.substr(0, 1) == "#") {
-		safeGetline(in, line);
+		safeGetline((*in), line);
 	}
 	stringstream sso;
 	int cnt2(-2);
@@ -666,11 +666,11 @@ void Matrix::readColNms(ifstream& in) {
 	}
 }
 
-int Matrix::iniCols(ifstream& in) {
+int Matrix::iniCols(istream* in) {
 	int ini_ColPerRow = 0;
 	int cnt = 0;
 	string line;
-	while (getline(in, line, '\n')) {
+	while (getline((*in), line, '\n')) {
 		if (line.substr(0, 1) == "#" || line.length() < 2) { continue; }
 		string segments;
 		int ColsPerRow = 0; // Initialize counter.
@@ -702,8 +702,8 @@ int Matrix::iniCols(ifstream& in) {
 #endif
 	}
 	//reset input stream
-	in.clear();
-	in.seekg(0, ios::beg);
+	(*in).clear();
+	(*in).seekg(0, ios::beg);
 	colIDs.resize(ini_ColPerRow - 1, "");
 	colSum.resize(ini_ColPerRow - 1, 0.0);
 
@@ -715,11 +715,25 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 	//reads matrix from HDD
 	//and writes it simultaneously to single files
 	string line;
-	ifstream in(inF.c_str());
+	//ifstream in(inF.c_str());
 	ofstream out(outF.c_str(), ios::out);
 	out.precision(9);
+	
+	istream* in;
+	if (isGZfile(inF)) {
+#ifdef _gzipread
+		in = new igzstream(inF.c_str(), ios::in);
+		cout << "Reading gzip input\n";
+#else
+		cout << "gzip not supported in your rtk build\n"; exit(50);
+#endif
 
-	if (!in) {
+	}
+	else {
+		in = new ifstream(inF.c_str());
+	}
+
+	if (!(*in)) {
 		cerr << "Cant open file " << inF << endl; std::exit(11);
 	}
 	if (!out) {
@@ -749,7 +763,7 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 
 	string rowID,segments;
 
-	while (safeGetline(in, line)) {
+	while (safeGetline((*in), line)) {
 		//while (getline(in, line, '\n')) {
 		cnt++;
 		if (line.substr(0, 1) == "#") { out << line; continue; }
@@ -802,7 +816,7 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 
 
 
-	in.close();
+	delete in; //in.close();
 	out.close();
 }
 Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, 
@@ -817,8 +831,24 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		read_subset_genes(xtra);
 	}
 	string line;
-	ifstream in(inF.c_str());
-	if (!in){
+
+	istream* in;
+	if (isGZfile(inF)) {
+#ifdef _gzipread
+		in = new igzstream(inF.c_str(), ios::in);
+		cout << "Reading gzip input\n";
+#else
+		cout << "gzip not supported in your rtk build\n"; exit(50);
+#endif
+
+	}
+	else {
+		in = new ifstream(inF.c_str());
+	}
+	
+
+	//ifstream in(inF.c_str());
+	if (!(*in)){
 		#ifdef notRpackage
 		cerr << "Cant open file " << inF << endl; std::exit(11);
 		#endif		
@@ -837,7 +867,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	}
 	//set up tmp empty files
 	if (!doHigh && writeTmpFiles) {
-		for (int i = 0; i < colIDs.size(); i++) {
+		for (uint i = 0; i < colIDs.size(); i++) {
 			string oF2 = outF + sampleNameSep + colIDs[i];
 			outFName.push_back(oF2);
 			outFs[i].open(oF2.c_str(), ios_base::out);
@@ -849,7 +879,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	int geneCnt(0);
 	int cntNA(0);
 	string segments;
-	while (safeGetline(in, line)) {
+	while (safeGetline((*in), line)) {
 	//while (getline(in, line, '\n')) {
 		cnt++;
 		if(line.substr(0,1) == "#"){continue;}
@@ -932,7 +962,7 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		}
 
 	}
-	in.close();
+	delete in;//in.close();
 	ofstream out;
 	if (doHigh ){//write out high lvl mats
 		for (int i = 0; i < maxLvl; i++){
@@ -983,8 +1013,21 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 		read_subset_genes(xtra);
 	}
 	string line;
-	ifstream in(inF.c_str());
-	if (!in){
+//	ifstream in(inF.c_str());
+	istream* in;
+	if (isGZfile(inF)) {
+#ifdef _gzipread
+		in = new igzstream(inF.c_str(), ios::in);
+		cout << "Reading gzip input\n";
+#else
+		cout << "gzip not supported in your rtk build\n"; exit(50);
+#endif
+
+	}
+	else {
+		in = new ifstream(inF.c_str());
+	}
+	if (!(*in)){
 #ifdef notRpackage
 cerr << "Cant open file " << inF << endl; std::exit(11);
 #endif
@@ -1014,7 +1057,7 @@ cerr << "Cant open file " << inF << endl; std::exit(11);
 	int cntNA(0);
 	//vector<mat_fl> emptyVec(ini_ColPerRow, (mat_fl)0);
 	mat.resize(ini_ColPerRow -1, vector<mat_fl>(0));
-	while (safeGetline(in, line)) {
+	while (safeGetline((*in), line)) {
 		//while (getline(in, line, '\n')) {
 		cnt++;
 		if (line.substr(0, 1) == "#"){ continue; }
@@ -1094,7 +1137,8 @@ cerr << "C2: Number of columns on line " << cnt << " is " << cnt2 + 2 << ". Expe
 		}
 
 	}
-	in.close();
+	//in.close();
+	delete in;
 	maxCols = (int)mat.size();
 	#ifdef notRpackage
 	std::cout << "Read " << geneCnt << " genes" << endl;
@@ -1574,11 +1618,11 @@ void HMat::set(string kk, int j, mat_fl v) {
 			mat.push_back(empty);
 			FeatureNs.push_back(yy);
 			i = Feat2mat.find(yy);
+			hiTaNAcnt++;
 			//
 #ifdef notRpackage
 			if (hiTaNAcnt < 100) {
 				cerr << "Could not find entry " << yy << " in registered subset\n";
-				hiTaNAcnt++;
 			}
 			//std::exit(23);
 #endif
@@ -1633,12 +1677,12 @@ void VecFiles::readVecFile(const string inF){
 		stringstream ss;
 		ss << line;
 		int cnt2(-1);
-		int CurIdx(-1);
+		//int CurIdx(-1);
 		while (getline(ss,segments,'\t')) {
 			cnt2++;
 			if (cnt2 == -1){
 				//rowID = segments;
-				CurIdx = this->getIdx(segments);
+				//CurIdx = this->getIdx(segments);
 				continue;
 			}
 			mat_fl tmp =  atof(segments.c_str());

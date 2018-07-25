@@ -138,7 +138,7 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
     referenceDir(""), referenceFile(""),
     depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false), oldMapStyle(false),
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
-    modCollapse(false), calcCoverage(false),
+    modCollapse(false), calcCoverage(false), calcCovMedian(false), check4idxMatch(false),
 	modDescr(""), modHiera(""), xtra("") {
 
 
@@ -150,51 +150,56 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
 
         for (int i = 1; i < argc; i++)
         {
-            if (!strcmp(argv[i], "-i"))
-                input = argv[++i];
-            else if (!strcmp(argv[i], "-o"))
-                output = argv[++i];
-            ///else if (!strcmp(argv[i], "-m"))
-            else if (!strcmp(argv[i], "-d")){
-                // split by any given komma
-                depth = parseDepths(argv[++i]);
-                depthMin = (long) *std::min_element(depth.begin(), depth.end());
-            }else if (!strcmp(argv[i], "-r"))
-                repeats = atoi(argv[++i]);
-            else if (!strcmp(argv[i], "-w"))
-                write = atoi(argv[++i]);
-            else if (!strcmp(argv[i], "-t"))
-                threads = atoi(argv[++i]);
-            else if (!strcmp(argv[i], "-ns"))   // no swap
-                writeSwap = false;
-            else if (!strcmp(argv[i], "-v"))
-                verbose = true;
-            else if (!strcmp(argv[i], "-h"))
-                helpMsg();
-            //geneMat specific args
-            else if (!strcmp(argv[i], "-map"))
-                map = argv[++i];
-            else if (!strcmp(argv[i], "-refD"))
-                referenceDir = argv[++i];
-            else if (!strcmp(argv[i], "-reference"))
-                referenceFile = argv[++i];
-            //module specific args
-            else if (!strcmp(argv[i], "-refMods"))
-                modDB = (argv[++i]);
-            else if (!strcmp(argv[i], "-redundancy"))
-                modRedund = atoi(argv[++i]);
-            else if (!strcmp(argv[i], "-enzymeCompl"))
-                modEnzCompl = (float)atof(argv[++i]);
-            else if (!strcmp(argv[i], "-moduleCompl"))
+			if (!strcmp(argv[i], "-i"))
+				input = argv[++i];
+			else if (!strcmp(argv[i], "-o"))
+				output = argv[++i];
+			///else if (!strcmp(argv[i], "-m"))
+			else if (!strcmp(argv[i], "-d")) {
+				// split by any given komma
+				depth = parseDepths(argv[++i]);
+				depthMin = (long)*std::min_element(depth.begin(), depth.end());
+			}
+			else if (!strcmp(argv[i], "-r"))
+				repeats = atoi(argv[++i]);
+			else if (!strcmp(argv[i], "-w"))
+				write = atoi(argv[++i]);
+			else if (!strcmp(argv[i], "-t"))
+				threads = atoi(argv[++i]);
+			else if (!strcmp(argv[i], "-ns"))   // no swap
+				writeSwap = false;
+			else if (!strcmp(argv[i], "-v"))
+				verbose = true;
+			else if (!strcmp(argv[i], "-h"))
+				helpMsg();
+			//geneMat specific args
+			else if (!strcmp(argv[i], "-map"))
+				map = argv[++i];
+			else if (!strcmp(argv[i], "-refD"))
+				referenceDir = argv[++i];
+			else if (!strcmp(argv[i], "-reference"))
+				referenceFile = argv[++i];
+			//module specific args
+			else if (!strcmp(argv[i], "-refMods"))
+				modDB = (argv[++i]);
+			else if (!strcmp(argv[i], "-redundancy"))
+				modRedund = atoi(argv[++i]);
+			else if (!strcmp(argv[i], "-enzymeCompl"))
+				modEnzCompl = (float)atof(argv[++i]);
+			else if (!strcmp(argv[i], "-moduleCompl"))
 				modModCompl = (float)atof(argv[++i]);
 			else if (!strcmp(argv[i], "-oldMapStyle"))
 				oldMapStyle = true;
 			else if (!strcmp(argv[i], "-writeExtraModEstimates"))
 				modWrXtraInfo = true;
+			else if (!strcmp(argv[i], "-checkRowName2Idx"))
+				check4idxMatch = true;
 			else if (!strcmp(argv[i], "-collapseDblModules"))
                 modCollapse = true;
             else if (!strcmp(argv[i], "-useCoverage"))//for gene catalog, default is counts
                 calcCoverage = true;
+			else if (!strcmp(argv[i], "-useCovMedian"))//for gene catalog, default is counts
+				calcCovMedian = true;
 			else if (!strcmp(argv[i], "-description")) //description of single modules
 				modDescr = (argv[++i]);
 			else if (!strcmp(argv[i], "-hiera")) // hierachy for modules
@@ -205,6 +210,17 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
 
 
         }
+
+		if (calcCovMedian && calcCoverage) {
+			cout << "Can not calc median and coverage at the same time, please use only one option\n(-useCoverage && -useCovMedian)\n";
+			exit(734);
+		}
+		if (calcCovMedian) {
+			cout << "Using median coverage for abundance estimates\n";
+		}
+		if (calcCoverage) {
+			cout << "Using mean coverage for abundance estimates\n";
+		}
 
         // sanity checks
         // we need input
@@ -566,12 +582,12 @@ int main(int argc, char* argv[])
     //	if (argc>3){
     if (mode == "splitMat") {
         vector<string> empt;
-        Matrix* Mo = new Matrix(inF, opts->output, opts->xtra, empt, false);
-        //Mo->splitOnHDD(outF);	//Mo->writeSums(outF);
+        Matrix* Mo = new Matrix(opts->input, opts->output, opts->xtra, empt, false);
+        //Mo->splitOnHDD(opts->output);	//Mo->writeSums(opts->output);
         delete Mo;
         std::exit(0);
         //}else if (mode == "rare_lowMem") {
-        //	rareLowMem(inF, outF, writeFiles,  arg4,  repeats, numThr);
+        //	rareLowMem(opts->input, opts->output, writeFiles,  arg4,  repeats, numThr);
 }
 else if (mode == "correl2") {
     //usage: ./rare correl2 [signature matrix] [output matrix] [big gene matrix]
@@ -587,10 +603,10 @@ else if (mode == "module") {
         cerr << "Not enough arguments for \"module\" function\n";
         exit(3);
     }
-    Matrix* Mo = new Matrix(inF, ""); //needs to be KO file
+    Matrix* Mo = new Matrix(opts->input, ""); //needs to be KO file
     cerr << "Estimate mod AB\n";
     if (opts->modDB == "") {//try legacy mode
-        Mo->estimateModuleAbund(argv, argc);// arg4, outF); //arg4 needs to be module file, outF makes the (several) matrices
+        Mo->estimateModuleAbund(argv, argc);// arg4, opts->output); //arg4 needs to be module file, opts->output makes the (several) matrices
     }
     else {
         Mo->estimateModuleAbund(opts);
@@ -610,7 +626,7 @@ else if (mode == "normalize") {
 	vector< string> colID;
 	if (true) {
 		vector<string> fileNames;
-		Matrix* Mo = new Matrix(inF, "", "", fileNames, false, true, false);
+		Matrix* Mo = new Matrix(opts->input, "", "", fileNames, false, true, false);
 		column co = Mo->getMinColumn();
 		colsums = Mo->getCSum();
 		colID = Mo->getSampleNames();
@@ -619,11 +635,11 @@ else if (mode == "normalize") {
 	}
 	cout << "Normalizing matrix\n";
 	vector<string> fileNames;
-	Matrix* Mo = new Matrix(inF, opts->output, colsums, colID); //needs to be KO file
+	Matrix* Mo = new Matrix(opts->input, opts->output, colsums, colID); //needs to be KO file
     
-	//Matrix* Mo = new Matrix(inF, "");
+	//Matrix* Mo = new Matrix(opts->input, "");
 	//Mo->normalize();
-    //Mo->writeMatrix(outF);
+    //Mo->writeMatrix(opts->output);
     delete Mo;
     std::exit(0);
 }
@@ -631,18 +647,18 @@ else if (mode == "help" || mode == "-help" || mode == "-h" || mode == "--help") 
     helpMsg();
 }
 else if (mode == "lineExtr") {
-    lineCntOut(inF, outF, opts->referenceFile);
+    lineCntOut(opts);
     std::exit(0);
 }
 else if (mode == "mergeMat") {
-    VecFiles* VFs = new VecFiles(inF, outF, arg4);
+    VecFiles* VFs = new VecFiles(opts->input, opts->output, arg4);
     delete VFs;
     std::exit(0);
 }
 else if (mode == "sumMat") {
 	//creates a matrix summed to reference system (NOG, Taxa, ..)
     vector<string> empt;
-    Matrix* Mo = new Matrix(inF, outF, refD, empt, true,false,false);
+    Matrix* Mo = new Matrix(opts->input, opts->output, opts->referenceDir, empt, true,false,false);
     delete Mo;
     std::exit(0);
 }
@@ -653,7 +669,7 @@ else if (mode == "rarefaction" || mode == "rare_inmat") {
 else if (mode == "colSums" || mode == "colsums" || mode == "colSum") {
     // just load and discard the matrix and report back the colsums
     vector<string> fileNames;
-    Matrix* Mo = new Matrix(inF, opts->output, "", fileNames, false, true, false);
+    Matrix* Mo = new Matrix(opts->input, opts->output, "", fileNames, false, true, false);
     column co = Mo->getMinColumn();
     vector< pair< double, string>> colsums = Mo->getColSums();
     Mo->writeColSums(opts->output);
@@ -674,19 +690,20 @@ else if (mode == "colSums" || mode == "colsums" || mode == "colSum") {
 else if (mode == "geneMat") {
     cout << "Gene clustering matrix creation\n";
     if (argc < 5) { cerr << "Needs at least 4 arguments\n"; std::exit(0); }
-    ClStr2Mat* cl = new ClStr2Mat(inF, opts->output, map, refD,opts->calcCoverage,opts->oldMapStyle);
+	ClStr2Mat* cl = new ClStr2Mat(opts);// opts->input, opts->output, opts->map, opts->referenceDir, opts->calcCoverage, opts->oldMapStyle);
     delete cl;
+	cout << "Finished Gene matrix conversion\n";
     std::exit(0);
 }
 else if (mode == "swap") {
     vector < vector < vector < string > >> tmpMatFiles(opts->write);
-    rareExtremLowMem(opts, inF, opts->output, opts->write, arg4, opts->repeats, numThr, opts->writeSwap);
+    rareExtremLowMem(opts, opts->input, opts->output, opts->write, arg4, opts->repeats, numThr, opts->writeSwap);
     printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
     std::exit(0);
 }
 else if (mode == "memory") {
     cout << "Loading input matrix to memory" << std::endl;
-    Matrix* Mo = new Matrix(inF, "");//no arg for outfile &  hierachy | gene subset
+    Matrix* Mo = new Matrix(opts->input, "");//no arg for outfile &  hierachy | gene subset
     vector<DivEsts*> divvs(Mo->smplNum(), NULL);
     vector< string > rowNames = Mo->getRowNames();
     cout << "Done loading matrix" << std::endl;
@@ -746,7 +763,7 @@ else if (mode == "memory") {
                 // add the matrices to the container
                 if (opts->write > 0) {
                     if (opts->writeSwap) {
-                       binaryStoreSample(opts, tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+                       binaryStoreSample(opts, tmpMatFiles, tmpRS, rowNames, opts->output, cntsNames, false);
                     }
                     else {
                         memoryStoreSample(opts, tmpRS, MaRare, cntsNames, false);
@@ -805,7 +822,7 @@ else if (mode == "memory") {
         // add the matrices to the container
         if (opts->write > 0) {
             if (opts->writeSwap) {
-               binaryStoreSample(opts, tmpMatFiles, tmpRS, rowNames, outF, cntsNames, false);
+               binaryStoreSample(opts, tmpMatFiles, tmpRS, rowNames, opts->output, cntsNames, false);
             }
             else {
                 memoryStoreSample(opts, tmpRS, MaRare, cntsNames, false);
@@ -818,7 +835,7 @@ else if (mode == "memory") {
     }
 
     // output matrix
-    printDivMat(outF, divvs, true, opts);
+    printDivMat(opts->output, divvs, true, opts);
     for (size_t i = 0; i < divvs.size(); i++) {
         delete divvs[i];
     }
@@ -827,10 +844,10 @@ else if (mode == "memory") {
     if (opts->write > 0) {
         vector< string > rowNames = Mo->getRowNames();
         if (opts->writeSwap) {
-            printRarefactionMatrix(opts, tmpMatFiles, outF, cntsNames, rowNames);
+            printRarefactionMatrix(opts, tmpMatFiles, opts->output, cntsNames, rowNames);
         }
         else {
-            printRarefactionMatrix(opts, MaRare, outF,  cntsNames, rowNames);
+            printRarefactionMatrix(opts, MaRare, opts->output,  cntsNames, rowNames);
         }
     }
 
@@ -843,7 +860,7 @@ else if (mode == "memory") {
     computeChao2(chao2, abundInRow);
     computeCE(ICE, abundInRow);
     computeCE(ACE, occuencesInRow);
-    writeGlobalDiv(opts, ICE, ACE, chao2, outF + "global_diversity.tsv");
+    writeGlobalDiv(opts, ICE, ACE, chao2, opts->output + "global_diversity.tsv");
 
     printf("CPU time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
     //cout << "Finished\n";

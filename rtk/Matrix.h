@@ -167,8 +167,8 @@ public:
 protected:
 	//subroutines
 	//reads the number of columns and checks in first few lines
-	void readColNms(ifstream& in);
-	int iniCols(ifstream& in);
+	void readColNms(istream* in);
+	int iniCols(istream* in);
 	void read_subset_genes(const string);
 	void read_hierachy(const string );
 	void addColumn(string);
