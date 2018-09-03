@@ -10,6 +10,7 @@ typedef std::unordered_map<string, smat_fl>::iterator SmplAbunIT;
 typedef std::unordered_map<string, smat_fl> SmplAbun;
 typedef std::unordered_map<string, vector<int> >::iterator SmplOccurITmult;
 typedef std::unordered_map<string, vector<int> > SmplOccurMult;
+typedef std::unordered_map<string, string > string2string;
 typedef std::unordered_map<string, int >::iterator SmplOccurIT;
 typedef std::unordered_map<string, int> SmplOccur;
 typedef std::unordered_map<string, int> ModOccur;

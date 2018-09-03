@@ -29,7 +29,8 @@ textBlock* getClusBlock(FILE* incl,string& lastline) {//istream& incl
 	ret->cont = false;
 	return ret;
 }
-void printVec(clusWrk * curClus, ofstream* mO, ofstream* gN, const vector<bool>& useSmpl, long CLidx) {
+void printVec(clusWrk * curClus, ofstream* mO, ofstream* gN, const vector<bool>& useSmpl) {
+	long CLidx = curClus->Clnum;
 	string outStr; 
 	outStr.reserve(4000);
 	outStr = to_string(CLidx);
@@ -52,9 +53,9 @@ void printVec(clusWrk * curClus, ofstream* mO, ofstream* gN, const vector<bool>&
 	delete curClus;
 }
 clusWrk* workClusBlock(textBlock* inVs, const size_t smplN,
-			const string& sampleSeq, const vector<GeneAbundance*>& GAs,
-			const SmplOccurMult* smplsP) {
-	clusWrk* ret = new clusWrk(smplN);
+			const string& sampleSeq,  const vector<GeneAbundance*>& GAs,
+			const SmplOccurMult* smplsP, long CLidx) {
+	clusWrk* ret = new clusWrk(smplN, CLidx);
 	bool repFound = false;
 	for (uint i = 0; i < inVs->txt.size(); i++) {
 		string &line = inVs->txt[i];
@@ -123,7 +124,7 @@ clusWrk* workClusBlock(textBlock* inVs, const size_t smplN,
 }
 
 ClStr2Mat::ClStr2Mat(options* opts):
-	GAs(0), CCH(NULL),smplLoc(0), baseP(0), mapGr(0), SmplSum(0), smplN(0), curr(-1),
+	lastClIdWr(1),GAs(0), CCH(NULL),smplLoc(0), baseP(0), mapGr(0), SmplSum(0), smplN(0), curr(-1),
 	lastline(""){
 	//ifstream incl;
 	FILE* incl;
@@ -181,7 +182,7 @@ ClStr2Mat::ClStr2Mat(options* opts):
 	for (auto it = smpls.begin(); it != smpls.end(); it++) {
 		vector<int> XX = (*it).second;
 		if (XX.size() == 0) { continue; }
-		SmplNmsVec[ XX[XX.size()-1] ] = (*it).first;
+		SmplNmsVec[ XX[XX.size()-1] ] = smplRid[(*it).first];
 	}
 	(*matO) << "Genes";
 	for (size_t i = 0; i < SmplNmsVec.size(); i++) {
@@ -204,7 +205,7 @@ ClStr2Mat::ClStr2Mat(options* opts):
 
 	//thread pool
 	vector < job > slots(numthr);
-	jobW wrThr;
+	
 
 
 	//bool repFound = false;
@@ -232,23 +233,14 @@ ClStr2Mat::ClStr2Mat(options* opts):
 				slots[j].inUse = false;
 				clusWrk* curClus = slots[j].fut.get();
 
-				//push into wrThr.. (only one can run at a time, therefore wait)
-				if (wrThr.inUse) {
-					wrThr.inUse = false;
-					wrThr.fut.get();
-				}
-				
-				
 				this->addSums(curClus);
-				wrThr.fut = async(std::launch::async, printVec, curClus, matO, geneNames, 
-					useSmpl, CLidx);
-				CLidx++;
-				wrThr.inUse = true;
+				manage_write(curClus);
 				//printVec( curClus, matO, geneNames, useSmpl);
 			}
 			if (slots[j].inUse == false) {
 				slots[j].fut = async(std::launch::async, workClusBlock, clbl, smplN, sampleStrSep, 
-					GAs, &smpls);
+					GAs, &smpls, CLidx);
+				CLidx++;
 				slots[j].inUse = true;
 				break;//job submitted, break search for empty thread
 			}
@@ -261,28 +253,97 @@ ClStr2Mat::ClStr2Mat(options* opts):
 		if (slots[j].inUse == true) {
 			clusWrk* curClus = slots[j].fut.get();
 			this->addSums(curClus);
-			printVec(curClus, matO, geneNames, useSmpl, CLidx);
+			manage_write(curClus);
+//			printVec(curClus, matO, geneNames, useSmpl);
 			slots[j].inUse = false;
 			CLidx++;
 		}
 	}
+	//wrThr.fut.get();
+	finish_write();
+	
 
 	//incl.close();
 	fclose(incl);
 	matO->close(); geneNames->close();
-	ofstream matS;
-	matS.open(outF + ".mat.sum");
+	delete matO; delete geneNames;
+
+	ofstream* matS = new ofstream((outF + ".mat.sum"), ofstream::out);
+	
+	//matS.open(outF + ".mat.sum", ofstream::out);
 	//print sample sum
 	for (size_t i = 0; i < SmplNmsVec.size(); i++) {
 		if (!useSmpl[i]) { continue; }
 		//cout << SmplNmsVec[i] << "\t" << SmplSum[i] << endl;
-		matS << SmplNmsVec[i] << "\t" << SmplSum[i] << endl;
+		(*matS) << SmplNmsVec[i] << "\t" << SmplSum[i] << endl;
 	}
-	matS.close();
+	matS->close();  delete matS;
 }
 ClStr2Mat::~ClStr2Mat() {
 	for (size_t i = 0; i < GAs.size(); i++) { delete GAs[i]; }
 	delete CCH;
+}
+void ClStr2Mat::finish_write() {
+	if (wrThr.inUse) {
+		wrThr.fut.get();
+		wrThr.inUse = false;
+	}
+	if (tmpSave.size() > 0) {
+		auto saveCl = tmpSave.begin();
+		while (saveCl != tmpSave.end()) {
+			if ((*saveCl)->Clnum == (lastClIdWr + 1)) {
+				printVec((*saveCl), matO, geneNames, useSmpl);
+				/*wrThr.fut.get();
+				wrThr.fut = async(std::launch::async, printVec, (*saveCl), matO, geneNames,
+				useSmpl);
+				wrThr.inUse = true;*/
+				lastClIdWr++;
+				tmpSave.erase(saveCl);
+				saveCl = tmpSave.begin();
+			}
+			else {
+				saveCl++;
+			}
+		}
+	}
+
+	if (wrThr.inUse) {
+		wrThr.fut.get();
+		wrThr.inUse = false;
+	}
+}
+void ClStr2Mat::manage_write(clusWrk* curClus) {
+	//push into wrThr.. (only one can run at a time, therefore wait)
+	if (wrThr.inUse) {
+		wrThr.fut.get();
+		wrThr.inUse = false;
+	}
+	if (tmpSave.size() > 1) {
+		auto saveCl = tmpSave.begin();
+		while (saveCl != tmpSave.end()) {
+			if ((*saveCl)->Clnum == (lastClIdWr + 1)) {
+				printVec((*saveCl), matO, geneNames, useSmpl);
+				/*wrThr.fut.get();
+				wrThr.fut = async(std::launch::async, printVec, (*saveCl), matO, geneNames,
+					useSmpl);
+				wrThr.inUse = true;*/
+				lastClIdWr++;
+				tmpSave.erase(saveCl);
+				saveCl = tmpSave.begin();
+			}	else {
+				saveCl++;
+			}
+		}
+	}
+	if (curClus->Clnum == (lastClIdWr + 1)) {
+		wrThr.fut = async(std::launch::async, printVec, curClus, matO, geneNames,
+			useSmpl);
+		wrThr.inUse = true;
+		lastClIdWr++;
+	} else {
+		tmpSave.push_back(curClus);
+	}
+
 }
 
 void ClStr2Mat::read_map(const string mapF,bool calcCoverage, bool calcCovMedian, bool oldFolderStructure) {
@@ -362,12 +423,6 @@ void ClStr2Mat::read_map(const string mapF,bool calcCoverage, bool calcCovMedian
 
 
 		string smpID = curLine[0];
-		if (smpls.find(smpID) != smpls.end()) {
-			#ifdef notRpackage
-			cerr << "Double sample ID: " << smpID << endl;
-			exit(12);
-			#endif
-		}
 
 
 		//getline(ss, segments, '\t');
@@ -392,9 +447,23 @@ void ClStr2Mat::read_map(const string mapF,bool calcCoverage, bool calcCovMedian
 
 		if (assGrp != "" &&  CntAssGrps[assGrp].size() > 1) {
 			string nsmpID = smpID + "M" + std::to_string(CntAssGrps[assGrp].size());
+			if (smpls.find(nsmpID) != smpls.end()) {
+#ifdef notRpackage
+				cerr << "Double sample ID: " << nsmpID << endl;
+				exit(12);
+#endif
+			}
 			smpls[nsmpID] = CntAssGrps[assGrp];//(int)smplLoc.size();
+			smplRid[nsmpID] = smpID;
 		} else {
+			if (smpls.find(smpID) != smpls.end()) {
+#ifdef notRpackage
+				cerr << "Double sample ID: " << smpID << endl;
+				exit(12);
+#endif
+			}
 			smpls[smpID] = vector<int>(1,(int)smplLoc.size());
+			smplRid[smpID] = smpID;
 		}
 
 		//mapping groups
@@ -404,8 +473,7 @@ void ClStr2Mat::read_map(const string mapF,bool calcCoverage, bool calcCovMedian
 		}
 		if (mapGrp != "" && CntMapGrps.find(mapGrp) != CntMapGrps.end()) {
 			CntMapGrps[mapGrp].push_back((int)smplLoc.size());
-		}
-		else {
+		} else if (mapGrp != "") {
 			CntMapGrps[mapGrp] = vector<int>(1, (int)smplLoc.size());
 		}
 
@@ -445,6 +513,8 @@ void ClStr2Mat::read_map(const string mapF,bool calcCoverage, bool calcCovMedian
 #ifdef notRpackage
 		cerr << baseP[curr] + "/" + smplLoc[i] << endl;
 #endif
+		//DEBUG
+		//continue;
 		GAs.push_back(new GeneAbundance(baseP[curr] + "/" + smplLoc[i], pa2ab));
 	}
 }
@@ -463,9 +533,9 @@ void ClStr2Mat::sealMap() {
 					nSmpls[smNum.first].push_back(idxM);
 				}
 			}
-			else {
+			/*else {
 				nSmpls[smNum.first] = vector<int>(0);
-			}
+			}*/
 		}
 	}
 	smpls = nSmpls;
@@ -482,31 +552,36 @@ void ContigCrossHit::addHit(int Smpl, int Ctg) {
 GeneAbundance::GeneAbundance(const string path, const string abunF):
 	isPsAss(false){
 	if (path == "" && abunF == "") { return; }//not required to read this (non-existant) file
-	ifstream in;
+	FILE* in;
 	//first test if this is a pseudoassembly
-	in.open((path + pseudoAssMarker).c_str());
-	if (in) {
-		in.close();
+	in = fopen((path + pseudoAssMarker).c_str(), "r");
+	if (in != NULL) {
+		fclose(in);
 		isPsAss = true;
 		return;
 	}
-	in.close();
 	//not? then read abundances
 	string newS = path + abunF;
-	in.open(newS.c_str());
-	if (!in) {
-	 #ifdef notRpackage
-	cerr << "Couldn't open gene abundance file " << newS << endl;
-	exit(36);
-	#endif
-}
-	string line;
-	while (getline(in, line)) {
-		size_t pos = line.find("\t");
-		string gene = line.substr(0, pos);
-		GeneAbu[gene] = (smat_fl)atof(line.substr(pos + 1).c_str());
+	in = fopen(newS.c_str(), "r");
+	if (in == NULL) {
+		 #ifdef notRpackage
+		cerr << "Couldn't open gene abundance file " << newS << endl;
+		exit(36);
+		#endif
 	}
-	in.close();
+	char buf[200];
+	while (fgets(buf, sizeof buf, in) != NULL) {
+		//buf[strcspn(buf, "\n")] = 0;
+		smat_fl abu; char gene[100];
+		sscanf(buf, "%s\t%f",  gene, &abu);
+		GeneAbu[gene] = abu;
+		//string line(buf);
+		//size_t pos = line.find("\t");
+		//string gene = line.substr(0, pos);
+		//GeneAbu[gene] = (smat_fl)atof(line.substr(pos + 1).c_str());
+		
+	}
+	fclose(in);
 }
 smat_fl GeneAbundance::getAbundance(const string x) {
 	if (isPsAss) {

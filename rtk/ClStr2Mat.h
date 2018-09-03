@@ -56,15 +56,16 @@ struct textBlock {
 	string lastLine;
 };
 struct clusWrk {
-	clusWrk(void) :geneNamesStr(""), Vec(0) {}
-	clusWrk(int s) :geneNamesStr(""), Vec(s, (smat_fl)0) {}
+	clusWrk(void) :geneNamesStr(""), Vec(0),Clnum(-1) {}
+	clusWrk(int s, long x) :geneNamesStr(""), Vec(s, (smat_fl)0), Clnum(x) {}
 	string geneNamesStr;
 	vector<smat_fl> Vec;
+	long Clnum;
 };
 textBlock* getClusBlock(FILE* , string &lastline);
 clusWrk* workClusBlock(textBlock*, const size_t,  const string& sampleSeq,
-	const vector<GeneAbundance*>& GAs, const SmplOccurMult*);
-void printVec(clusWrk * curClus, ofstream*, ofstream*,const vector<bool>& useSmpl,long CLidx);
+	const vector<GeneAbundance*>& GAs, const SmplOccurMult*, long);
+void printVec(clusWrk * curClus, ofstream*, ofstream*,const vector<bool>& useSmpl);
 
 class ClStr2Mat
 {
@@ -93,13 +94,17 @@ private:
 	}
 
 	//takes care of output
-
+	void manage_write(clusWrk* curClus);
+	void finish_write();
+	long lastClIdWr;
+	list<clusWrk*> tmpSave;
 	//core routines (con be parralelized later)
 
 
 	vector<GeneAbundance*> GAs;
 	ContigCrossHit* CCH;
 	SmplOccurMult smpls;
+	string2string smplRid;
 	vector<string> smplLoc; // only needed in readmap
 	vector<string> baseP; // only needed in readmap
 	vector<string> mapGr;
@@ -112,5 +117,8 @@ private:
 	//output IO
 	ofstream* matO;
 	ofstream* geneNames;
+
+	//threads
+	jobW wrThr;
 };
 
