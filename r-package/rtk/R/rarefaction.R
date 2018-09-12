@@ -94,7 +94,7 @@ rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, ve
   }
     result <- lapply(result, function(res){
         # remove names, if there werent any
-        if(removeRnames == TRUE && removeRnames == TRUE){
+        if(removeRnames == TRUE && removeCnames == TRUE){
           res$raremat <- lapply(res$raremat, unname)
         }else{
           if(removeRnames == TRUE){
