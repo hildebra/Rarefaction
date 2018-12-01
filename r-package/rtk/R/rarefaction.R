@@ -10,7 +10,7 @@ rare.status <- function(msg, verbose=TRUE){
   }
 }
 # this is the rarefy function
-rtk <- function(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2, verbose = FALSE, threads = 1, tmpdir = NULL ){
+rtk <- function(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2, verbose = FALSE, threads = 1, tmpdir = NULL ){
 
 
     # pass 1:x to Cpp as colnames
