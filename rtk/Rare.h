@@ -2,6 +2,7 @@
 #include "ClStr2Mat.h"
 #include "options.h"
 
+
 struct rareStruct{
 	int i;
 	DivEsts* div;

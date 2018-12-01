@@ -10,6 +10,7 @@ typedef std::unordered_map<string, smat_fl>::iterator SmplAbunIT;
 typedef std::unordered_map<string, smat_fl> SmplAbun;
 typedef std::unordered_map<string, vector<int> >::iterator SmplOccurITmult;
 typedef std::unordered_map<string, vector<int> > SmplOccurMult;
+typedef std::unordered_map<string, string > string2string;
 typedef std::unordered_map<string, int >::iterator SmplOccurIT;
 typedef std::unordered_map<string, int> SmplOccur;
 typedef std::unordered_map<string, int> ModOccur;
@@ -24,6 +25,7 @@ class column{
 	public:
 		double colsum;
 		string id;
+
 };
 
 class HMat
@@ -45,6 +47,7 @@ private:
 	vector<string> FeatureNs, SampleNs;
 	vector< mat_fl > empty;
 	vector< vector< mat_fl > > mat;
+	uint hiTaNAcnt;
 };
 
 class SparseMatrix
@@ -118,11 +121,16 @@ class Matrix
 // convention: mat[smpl][feature]
 public:
 	//Matrix(const string inF);
+	//read and write
 	Matrix(const string inF, const string, const string xtra, vector<string>& outFName, bool highLvl = false, bool NumericRowId = false, bool writeTmpFiles = true);
-
-	Matrix(const string inF, const string xtra, bool highLvl = false); // this reads to mem
-	Matrix(const vector<string>& rnms, const vector<string>& cnms);//module abundance matrix
+	//read to mem
+	Matrix(const string inF, const string xtra, bool highLvl = false); 
+	//module abundance matrix
+	Matrix(const vector<string>& rnms, const vector<string>& cnms);
+	//empty opbject
 	Matrix(void);
+	//normalize on the fly on vector colSums
+	Matrix(const string inF, const string outF, vector< double> colsums, vector<string>colNmds);
 	~Matrix(void);
 	void addTtlSmpl(vector<mat_fl> x, int idx) { mat[idx] = x; }
 	void splitOnHDD(string out_seed);
@@ -155,9 +163,13 @@ public:
 	double getMinColSum();
 	column getMinColumn(uint offset = 0);
 	vector< pair <double, string>> getColSums(bool sorted = false);
+	vector<double> getCSum() { return colSum; }
 	void writeColSums(string outF);
 protected:
 	//subroutines
+	//reads the number of columns and checks in first few lines
+	void readColNms(istream* in);
+	int iniCols(istream* in);
 	void read_subset_genes(const string);
 	void read_hierachy(const string );
 	void addColumn(string);

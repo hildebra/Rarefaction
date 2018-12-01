@@ -2,15 +2,41 @@
 std::mutex rarefyMutex;
 
 
-void lineCntOut(const string inF, const string outF, const string arg4){
-    ifstream in(inF.c_str());
-    ofstream out(outF.c_str(), ios::out);
-    if (!in){
+bool isGZfile(const std::string fi) {
+	std::string subst = fi.substr(fi.length() - 3);
+	if (subst == ".gz") {
+		return true;
+	}
+	return false;
+}
+
+
+void lineCntOut(options* opts){
+	
+	string inF = opts->input;
+	string outF = opts->output;
+	string arg4 = opts->referenceFile;
+	bool check4idxMatch = opts->check4idxMatch;
+
+	istream* in;
+	if (isGZfile(inF)) {
+#ifdef _gzipread
+		in = new igzstream(inF.c_str(), ios::in);
+		cout << "Reading gzip input\n";
+#else
+		cout << "gzip not supported in your rtk build\n"; exit(50);
+#endif
+
+	}	else {
+		in = new ifstream(inF.c_str());
+	}
+    if (!(*in)){
 #ifdef notRpackage
         cerr << "Can't open infile " << inF << endl; std::exit(99);
 #endif
     }
-    if (!out){
+	ofstream out(outF.c_str(), ios::out);
+	if (!out){
 #ifdef notRpackage
         cerr << "Can't open outfile " << outF << endl; std::exit(99);
 #endif
@@ -41,9 +67,21 @@ void lineCntOut(const string inF, const string outF, const string arg4){
 #endif
     }
     uint cnt(1); uint j(0);
-    while (getline(in, line, '\n')) {
+    while (getline((*in), line, '\n')) {
         if (cnt == srtTar[j]){
-            out << line << endl;
+			if (check4idxMatch) {
+				size_t pos = line.find('\t');
+				if (pos == std::string::npos) {
+					cout << "requires tab separated row name: line " << cnt << "\n"<<line<<"\n";
+					exit(956);
+				}
+				string rowN = line.substr(0,pos);
+				if (stoi(rowN) != (int)cnt) {
+					cerr << "mismatch "<<rowN<<" != "<<cnt<<"\n";
+					exit(955);
+				}
+			}
+            out << line + "\n";
             uint cur = srtTar[j];
             while (srtTar[j] == cur){ j++; }
             if (j == srtTar.size()){ break; }
@@ -51,7 +89,9 @@ void lineCntOut(const string inF, const string outF, const string arg4){
         cnt++;
     }
 
-    in.close(); out.close();
+    //(*in).close(); 
+	delete in;
+	out.close();
     if (j != srtTar.size()){
 
 #ifdef notRpackage
@@ -169,7 +209,7 @@ void smplVec::rarefy(vector<double> depts, string ofile, int rep,
     divs->eve.resize(depts.size());
     
     for(uint i = 0; i < depts.size(); i++){
-        dep = depts[i];
+        dep = (long)depts[i];
 
         if (dep > totSum){
             skippedSample = divs->SampleName;

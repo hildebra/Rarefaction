@@ -23,6 +23,20 @@
 #include <chrono>
 #include "options.h"
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#define _gziprea//d
+#pragma warning(disable:4996)
+#else
+#define _gzipread
+#endif
+
+
+
+#ifdef _gzipread
+#include "gzstream.h"
+#endif
+
+
 //#include <tchar.h>
 //#include <string.h>
 
@@ -40,6 +54,7 @@ typedef std::mt19937 MyRNG;  // the Mersenne Twister with a popular choice of pa
 typedef double mat_fl;
 typedef float smat_fl;
 
+bool isGZfile(const std::string fi);
 
 using namespace std;
 typedef unsigned int uint;
@@ -60,7 +75,7 @@ template<typename T> T getMedian(vector<T>& in){
 	}
 	return median;
 }
-void lineCntOut(const string inF, const string outF, const string arg4);
+void lineCntOut(options*);//const string inF, const string outF, const string arg4);
 
 
 

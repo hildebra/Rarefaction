@@ -644,7 +644,183 @@ Matrix::Matrix(void)
 {
 }
 
-Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, bool highLvl, bool NumericRowId, bool writeTmpFiles)
+void Matrix::readColNms(istream* in) {
+	string segments; string line;
+	safeGetline((*in), line);
+	//getline(in, line, '\n');
+	while (line.substr(0, 1) == "#") {
+		safeGetline((*in), line);
+	}
+	stringstream sso;
+	int cnt2(-2);
+	sso << line;
+	while (getline(sso, segments, '\t')) {
+		cnt2++;
+		if (segments.length() > 150) {
+	#ifdef notRpackage
+			cerr << segments << " error!\n"; std::exit(5);
+	#endif
+		}
+		if (cnt2 == -1) { continue; }
+		colIDs[cnt2] = segments;
+	}
+}
+
+int Matrix::iniCols(istream* in) {
+	int ini_ColPerRow = 0;
+	int cnt = 0;
+	string line;
+	while (getline((*in), line, '\n')) {
+		if (line.substr(0, 1) == "#" || line.length() < 2) { continue; }
+		string segments;
+		int ColsPerRow = 0; // Initialize counter.
+		stringstream ss;
+		ss << line;
+		while (getline(ss, segments, '\t')) {
+			ColsPerRow++;
+		}
+
+		if (cnt == 0) {
+			ini_ColPerRow = ColsPerRow;
+		}
+		else {
+			if (ColsPerRow != ini_ColPerRow) {
+
+#ifdef notRpackage
+				cerr << "C1: Number of columns on line " << cnt << " is " << ColsPerRow << ". Expected " << ini_ColPerRow << " columns.\n" << line << endl;
+				std::exit(6);
+#endif
+
+			}
+		}
+		cnt++;
+		if (cnt > 10) { break; }
+	}
+	if (ini_ColPerRow == 0) {
+#ifdef notRpackage
+		cerr << "Could not find valid columns in matrix.. exiting\n"; exit(432);
+#endif
+	}
+	//reset input stream
+	(*in).clear();
+	(*in).seekg(0, ios::beg);
+	colIDs.resize(ini_ColPerRow - 1, "");
+	colSum.resize(ini_ColPerRow - 1, 0.0);
+
+	return ini_ColPerRow;
+}
+Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vector<string> colNms)
+	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(false)
+{
+	//reads matrix from HDD
+	//and writes it simultaneously to single files
+	string line;
+	//ifstream in(inF.c_str());
+	ofstream out(outF.c_str(), ios::out);
+	out.precision(9);
+	
+	istream* in;
+	if (isGZfile(inF)) {
+#ifdef _gzipread
+		in = new igzstream(inF.c_str(), ios::in);
+		cout << "Reading gzip input\n";
+#else
+		cout << "gzip not supported in your rtk build\n"; exit(50);
+#endif
+
+	}
+	else {
+		in = new ifstream(inF.c_str());
+	}
+
+	if (!(*in)) {
+		cerr << "Cant open file " << inF << endl; std::exit(11);
+	}
+	if (!out) {
+		cerr << "Can't open out file " << outF << endl; std::exit(11);
+	}
+	int ini_ColPerRow = iniCols(in);
+	readColNms(in);
+
+	//check that colNames and colSums are in same order..
+	for (uint i = 0; i < colIDs.size(); i++) {
+		if (colNms[i] != colIDs[i]) {
+			cout << "Unequal order!\n";
+			exit(339);
+		}
+	}
+	
+
+	int cnt(-1), geneCnt(0);
+	string SEP = "\t";
+	stringstream ss;
+
+	out << "Norm_rtk";
+	for (uint i = 0; i < colIDs.size(); i++) {
+		out << SEP << colIDs[i];
+	}
+	out << endl;
+
+	string rowID,segments;
+
+	while (safeGetline((*in), line)) {
+		//while (getline(in, line, '\n')) {
+		cnt++;
+		if (line.substr(0, 1) == "#") { out << line; continue; }
+		if (line.length()<3) { continue; }
+		int cnt2(-2);
+		stringstream ss;
+		ss << line;
+		bool breaker(false);
+		while (getline(ss, segments, '\t')) {
+			cnt2++;
+			if (cnt2 == -1) {
+				rowID = segments;
+
+				//maybe add functionality later: only normalize subset
+				if (doSubsets && subset.find(rowID) == subset.end()) {
+					breaker = true;
+					break;
+				}
+				
+				geneCnt++;
+				out << rowID;
+				continue;
+			}
+			mat_fl tmp = atof(segments.c_str());
+			colSum[cnt2] += (double)tmp;
+			if (tmp == 0) {
+				out << SEP << "0";
+			}
+			else {
+				out << SEP << (tmp / colsums[cnt2]);
+			}
+		}
+		if (breaker) {
+			continue;
+		}
+		if (cnt2 + 2 != ini_ColPerRow) {
+			cerr << "C2: Number of columns on line " << cnt << " is " << cnt2 + 2 << ". Expected " << ini_ColPerRow << " columns.\n";
+			std::exit(62);
+		}
+		out << endl;
+
+	}
+	
+	for (uint i = 0; i < colSum.size(); i++) {
+		if (colsums[i] != colSum[i]) {
+			cout << "Unequal colSum!\n";
+			exit(339);
+		}
+	}
+
+
+
+	delete in; //in.close();
+	out.close();
+}
+Matrix::Matrix(const string inF, const string outF, const string xtra, vector<string>& outFName, 
+			bool highLvl, bool NumericRowId, bool writeTmpFiles)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
@@ -655,97 +831,59 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		read_subset_genes(xtra);
 	}
 	string line;
-	ifstream in(inF.c_str());
-	if (!in){
+
+	istream* in;
+	if (isGZfile(inF)) {
+#ifdef _gzipread
+		in = new igzstream(inF.c_str(), ios::in);
+		cout << "Reading gzip input\n";
+#else
+		cout << "gzip not supported in your rtk build\n"; exit(50);
+#endif
+
+	}
+	else {
+		in = new ifstream(inF.c_str());
+	}
+	
+
+	//ifstream in(inF.c_str());
+	if (!(*in)){
 		#ifdef notRpackage
 		cerr << "Cant open file " << inF << endl; std::exit(11);
 		#endif		
 	}
-	int ini_ColPerRow(0),cnt(0);
-
-
-	//check MAP format
-	//while (safeGetline(in, line)) {
-	while (getline(in, line,'\n')) {
-		if (line.substr(0, 1) == "#" || line.length()<2){ continue; }
-		string segments;
-		int ColsPerRow = 0; // Initialize counter.
-		stringstream ss;
-		ss << line;
-		while (getline(ss,segments,'\t')) {
-			ColsPerRow++;
-		}
-
-		if (cnt==0){
-			ini_ColPerRow = ColsPerRow;
-		} else {
-			if (ColsPerRow != ini_ColPerRow){
-
-#ifdef notRpackage
-cerr<<"C1: Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<ini_ColPerRow<<" columns.\n"<<line<<endl;
-				std::exit(6);
-#endif
-
-			}
-		}
-		cnt++;
-		if (cnt>10){break;}
-	}
-	if (ini_ColPerRow == 0) {
-    	#ifdef notRpackage
-		cerr << "Could not find valid columns in matrix.. exiting\n"; exit(432);
-		#endif
-	}
-	colIDs.resize(ini_ColPerRow-1,"");
-	colSum.resize(ini_ColPerRow-1,0.0);
+	int ini_ColPerRow = iniCols(in);
+	int cnt(0);
+	cnt=-1;
+	readColNms(in);
+	//set up levels to calc sum stat for
 	vector<ofstream> outFs(ini_ColPerRow-1);
 	vector<string> outStr(ini_ColPerRow-1);
-	//int lineCnt= cnt;
-	//reset input stream
-	in.clear();
-	in.seekg(0, ios::beg);
-	cnt=-1;
-	string segments;
-	safeGetline(in, line);
-	//getline(in, line, '\n');
-	while (line.substr(0, 1) == "#"){
-		safeGetline(in, line);
-	}
-	stringstream sso;
-	int cnt2(-2);
-	sso << line;
-	while (getline(sso,segments,'\t')) {
-		cnt2++;
-		if (segments.length() > 150){
-
-#ifdef notRpackage
-cerr << segments << " error!\n"; std::exit(5);
-#endif
-
-		}
-		if (cnt2==-1){continue;}
-		colIDs[cnt2] = segments;
-		string oF2 = outF + sampleNameSep + colIDs[cnt2];
-		outFName.push_back(oF2);
-		if (!doHigh && writeTmpFiles){
-			outFs[cnt2].open(oF2.c_str(), ios_base::out);
-			outFs[cnt2].precision(12);
-			outFs[cnt2].close();
-		}
-	}
 	if (doHigh){
 		for (int i = 0; i < maxLvl; i++){
 			HI.push_back(new HMat(LvlNms[i], colIDs, vector<string>(0)));
 		}
 	}
+	//set up tmp empty files
+	if (!doHigh && writeTmpFiles) {
+		for (uint i = 0; i < colIDs.size(); i++) {
+			string oF2 = outF + sampleNameSep + colIDs[i];
+			outFName.push_back(oF2);
+			outFs[i].open(oF2.c_str(), ios_base::out);
+			outFs[i].precision(12);
+			outFs[i].close();
+		}
+	}
 	string rowID="";
 	int geneCnt(0);
 	int cntNA(0);
-	while (safeGetline(in, line)) {
+	string segments;
+	while (safeGetline((*in), line)) {
 	//while (getline(in, line, '\n')) {
 		cnt++;
 		if(line.substr(0,1) == "#"){continue;}
-		if (line.length()<10){continue;}
+		if (line.length()<3){continue;}
 		int cnt2(-2);
 		vector<string> taxa(0);
 		stringstream ss;
@@ -760,8 +898,6 @@ cerr << segments << " error!\n"; std::exit(5);
 					breaker = true;
 					break;
 				}
-				rowID_hash[rowID] = cnt;
-				rowIDs.push_back(rowID);
 				if (doHigh){
 					fnd = LUp.find(rowID);
 					if (fnd == LUp.end()){//needs to be added to HMat
@@ -780,18 +916,21 @@ cerr << segments << " error!\n"; std::exit(5);
 						taxa = (*fnd).second;
 					}
 
+				} else {
+					rowID_hash[rowID] = cnt;
+					rowIDs.push_back(rowID);
 				}
 				geneCnt++;
 				continue;
 			}
 			mat_fl tmp =  atof(segments.c_str());
+			colSum[cnt2] += (double)tmp;
 			if (doHigh){//1:finds relevant rowID, extracts taxa; 2:add on all HighLvl mats
 				for (int tt = 0; tt< maxLvl; tt++){
 					HI[tt]->set(taxa[tt], cnt2, tmp);
 				}
-				colSum[cnt2] += (double)tmp;
 			}
-			else if (tmp>0){//write to File
+			else if (writeTmpFiles && tmp>0){//write to File
 				//outFs[cnt2]<<rowID<<"\t"<<tmp<<endl;
 				// if id is numeric (number of row) or the actual id as string
 				if(NumericRowId == true){
@@ -799,19 +938,16 @@ cerr << segments << " error!\n"; std::exit(5);
 				}else{
 					outStr[cnt2] += rowID+"\t"+segments.c_str()+"\n";
 				}
-				colSum[cnt2] += (double)tmp;
 			}
 		}
 		if (breaker){
 			continue;
 		}
 		if (cnt2+2 != ini_ColPerRow){
-
 #ifdef notRpackage
-cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
+			cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_ColPerRow<<" columns.\n";
 			std::exit(62);
 #endif
-
 		}
 		if (cnt % 1000 == 0 && writeTmpFiles){
 			// every 1000 lines, write to file. The rest will be written later
@@ -826,9 +962,9 @@ cerr<<"C2: Number of columns on line "<<cnt<<" is "<<cnt2+2<<". Expected "<<ini_
 		}
 
 	}
-	in.close();
+	delete in;//in.close();
 	ofstream out;
-	if (doHigh && writeTmpFiles){//write out high lvl mats
+	if (doHigh ){//write out high lvl mats
 		for (int i = 0; i < maxLvl; i++){
 			string oF2 = outF + LvlNms[i] + ".txt";
 			out.open(oF2.c_str(), ios_base::out);
@@ -869,7 +1005,7 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 	: rowIDs(0), colIDs(0), maxCols(0), HI(0), maxLvl(0), sampleNameSep(""), doSubsets(false), doHigh(highLvl)
 {
 	//reads matrix from HDD
-	//and writes it simultaneously to single files
+	//into mem.. careful with big files!
 	if (doHigh){
 		read_hierachy(xtra);
 	}
@@ -877,89 +1013,51 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 		read_subset_genes(xtra);
 	}
 	string line;
-	ifstream in(inF.c_str());
-	if (!in){
+//	ifstream in(inF.c_str());
+	istream* in;
+	if (isGZfile(inF)) {
+#ifdef _gzipread
+		in = new igzstream(inF.c_str(), ios::in);
+		cout << "Reading gzip input\n";
+#else
+		cout << "gzip not supported in your rtk build\n"; exit(50);
+#endif
+
+	}
+	else {
+		in = new ifstream(inF.c_str());
+	}
+	if (!(*in)){
 #ifdef notRpackage
 cerr << "Cant open file " << inF << endl; std::exit(11);
 #endif
 }
-	int ini_ColPerRow(0), cnt(0);
+	int ini_ColPerRow = iniCols(in);
+	int cnt(0);
 
 
-	//check MAP format
-	//while (safeGetline(in, line)) {
-	while (getline(in, line, '\n')) {
-		if (line.substr(0, 1) == "#" || line.length()<2){ continue; }
-		string segments;
-		int ColsPerRow = 0; // Initialize counter.
-		stringstream ss;
-		ss << line;
-		while (getline(ss, segments, '\t')) {
-			ColsPerRow++;
-		}
-
-		if (cnt == 0){
-			ini_ColPerRow = ColsPerRow;
-		}
-		else {
-			if (ColsPerRow != ini_ColPerRow){
-
-#ifdef notRpackage
-cerr << "C1: Number of columns on line " << cnt << " is " << ColsPerRow << ". Expected " << ini_ColPerRow << " columns.\n" << line << endl;
-				std::exit(63);
-#endif
-
-			}
-		}
-		cnt++;
-		if (cnt>10){ break; }
-	}
 	if (ini_ColPerRow == 0) {
 
 #ifdef notRpackage
-cerr << "Empty matrix provided\n";
+		cerr << "Empty matrix provided\n";
 #endif
-
 		return;
 	}
-	colIDs.resize(ini_ColPerRow - 1, "");
-	colSum.resize(ini_ColPerRow - 1, 0.0);
-	in.clear();
-	in.seekg(0, ios::beg);
 	cnt = -1;
-	string segments;
-	safeGetline(in, line);
-	//getline(in, line, '\n');
-	while (line.substr(0, 1) == "#"){
-		safeGetline(in, line);
-	}
-	stringstream sso;
-	int cnt2(-2);
-	//read & prep header
-	sso << line;
-	while (getline(sso, segments, '\t')) {
-		cnt2++;
-		if (segments.length() > 150){
-
-#ifdef notRpackage
-cerr << segments << " error!\n"; std::exit(5);
-#endif
-
-		}
-		if (cnt2 == -1){ continue; }
-		colIDs[cnt2] = segments;
-	}
+	
+	readColNms(in);
 	if (doHigh){
 		for (int i = 0; i < maxLvl; i++){
 			HI.push_back(new HMat(LvlNms[i], colIDs, vector<string>(0)));
 		}
 	}
+	string segments;
 	string rowID = "";
 	int geneCnt(0);
 	int cntNA(0);
 	//vector<mat_fl> emptyVec(ini_ColPerRow, (mat_fl)0);
 	mat.resize(ini_ColPerRow -1, vector<mat_fl>(0));
-	while (safeGetline(in, line)) {
+	while (safeGetline((*in), line)) {
 		//while (getline(in, line, '\n')) {
 		cnt++;
 		if (line.substr(0, 1) == "#"){ continue; }
@@ -986,15 +1084,15 @@ cerr << segments << " error!\n"; std::exit(5);
 				rowID_hash[rowID] = cnt;
 				rowIDs.push_back(rowID);
 
-				if (doHigh){
+				if (doHigh){//check if present in hierachy already..
 					fnd = LUp.find(rowID);
 					if (fnd == LUp.end()){//needs to be added to HMat
 						taxa = vector<string>(maxLvl, "-1");
 						cntNA++;
-						if (cntNA < 100) {
+						if (cntNA < 50) {
 							#ifdef notRpackage
 							std::cout << "Row ID " << rowID << " is not in hierachy.\n";// \nAborting..\n"; std::exit(24);
-							if (cntNA == 99) { std::cout << " ..\n"; }
+							if (cntNA == 49) { std::cout << " ..\n"; }
 							#endif
 						}
 					}
@@ -1039,7 +1137,8 @@ cerr << "C2: Number of columns on line " << cnt << " is " << cnt2 + 2 << ". Expe
 		}
 
 	}
-	in.close();
+	//in.close();
+	delete in;
 	maxCols = (int)mat.size();
 	#ifdef notRpackage
 	std::cout << "Read " << geneCnt << " genes" << endl;
@@ -1167,6 +1266,9 @@ void Matrix::estimateModuleAbund(options* opts) {
 	}
 	//write description
 	ofstream of; ofstream of2; string nos;
+	of.precision(9);
+	of2.precision(9);
+
 	vector<string> moD = modDB->modDescr(); 
 	vector<string> moN = modDB->modNms_numbered();
 /*	string nos = outFile+".descr";
@@ -1300,7 +1402,7 @@ vector<mat_fl> Matrix::getRowSums() {
 void Matrix::writeMatrix(const string of, bool onlyFilled) {
 	ofstream out;
 	out.open(of.c_str(), ios_base::out);
-	out.precision(8); out << "Gene";
+	out.precision(9); out << "Gene";
 	for (size_t smpl = 0; smpl < (colIDs.size() ); smpl++) {
 		out << "\t" << colIDs[smpl ];
 	}
@@ -1438,7 +1540,7 @@ vector< pair <double, string>> Matrix::getColSums(bool sorted){
 	if(sorted == false){
 		return colsums;
 	}else{
-		// now we sort this shit
+		// now we sort this vector
 		std::sort(colsums.begin(), colsums.end(), sortPair);
 		return colsums;
 	}
@@ -1489,7 +1591,7 @@ void SparseMatrix::addCount(string smpl, int row, smat_fl abund) {
 
 
 HMat::HMat(string L, vector<string> Samples, vector<string> Features)
-:LvlName(L), FeatureNs(Features), SampleNs(Samples),mat(0){
+:LvlName(L), FeatureNs(Features), SampleNs(Samples),mat(0), hiTaNAcnt(0){
 	empty = vector<mat_fl>(SampleNs.size(), 0);
 	mat.resize(FeatureNs.size(), empty);
 	for (unsigned int i = 0; i < FeatureNs.size(); i++){
@@ -1498,12 +1600,12 @@ HMat::HMat(string L, vector<string> Samples, vector<string> Features)
 }
 
 void HMat::set(string kk, int j, mat_fl v) {
-	mat_fl div(1); size_t pos(kk.find(",", 0)), npos(0);
+	mat_fl div(1); size_t pos(kk.find("|", 0)), npos(0);
 	vector<string> subkk(0);
 	while (pos != string::npos ){
 		subkk.push_back(kk.substr(npos, pos-npos));
 		npos = pos+1;
-		pos = kk.find(",", npos);
+		pos = kk.find("|", npos);
 		div += 1.f;
 	}
 	subkk.push_back(kk.substr(npos));
@@ -1516,9 +1618,12 @@ void HMat::set(string kk, int j, mat_fl v) {
 			mat.push_back(empty);
 			FeatureNs.push_back(yy);
 			i = Feat2mat.find(yy);
+			hiTaNAcnt++;
 			//
 #ifdef notRpackage
-cerr << "Could not find entry " << yy << " in registered subset\nAborting.";
+			if (hiTaNAcnt < 100) {
+				cerr << "Could not find entry " << yy << " in registered subset\n";
+			}
 			//std::exit(23);
 #endif
 
@@ -1534,7 +1639,7 @@ cerr << "implied row index larger than high level mat!\nAborting.."; std::exit(2
 	}
 }
 void HMat::print(ofstream& O){
-	O << LvlName << "\t";
+	O << LvlName ;
 	for (unsigned int i = 0; i < SampleNs.size(); i++){
 		O << "\t" << SampleNs[i];
 	}
@@ -1572,12 +1677,12 @@ void VecFiles::readVecFile(const string inF){
 		stringstream ss;
 		ss << line;
 		int cnt2(-1);
-		int CurIdx(-1);
+		//int CurIdx(-1);
 		while (getline(ss,segments,'\t')) {
 			cnt2++;
 			if (cnt2 == -1){
 				//rowID = segments;
-				CurIdx = this->getIdx(segments);
+				//CurIdx = this->getIdx(segments);
 				continue;
 			}
 			mat_fl tmp =  atof(segments.c_str());
