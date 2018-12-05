@@ -22,7 +22,9 @@ void lineCntOut(options* opts){
 	if (isGZfile(inF)) {
 #ifdef _gzipread
 		in = new igzstream(inF.c_str(), ios::in);
+        #ifdef notRpackage
 		cout << "Reading gzip input\n";
+        #endif
 #else
 		cout << "gzip not supported in your rtk build\n"; exit(50);
 #endif
@@ -71,15 +73,19 @@ void lineCntOut(options* opts){
         if (cnt == srtTar[j]){
 			if (check4idxMatch) {
 				size_t pos = line.find('\t');
+                #ifdef notRpackage
 				if (pos == std::string::npos) {
 					cout << "requires tab separated row name: line " << cnt << "\n"<<line<<"\n";
 					exit(956);
 				}
+                #endif
 				string rowN = line.substr(0,pos);
+                #ifdef notRpackage
 				if (stoi(rowN) != (int)cnt) {
 					cerr << "mismatch "<<rowN<<" != "<<cnt<<"\n";
 					exit(955);
 				}
+                #endif
 			}
             out << line + "\n";
             uint cur = srtTar[j];
@@ -213,7 +219,9 @@ void smplVec::rarefy(vector<double> depts, string ofile, int rep,
 
         if (dep > totSum){
             skippedSample = divs->SampleName;
+            #ifdef notRpackage
             if (verbose){cout<<"skipped sample, because rowSums < depth \n";}
+            #endif
             return;
         }
         //long curIdx=(long)totSum+1;

@@ -397,12 +397,16 @@ void ClStr2Mat::read_map(const string mapF,bool calcCoverage, bool calcCovMedian
 				}
 				if (segments == "AssmblGrps") {
 					assGrpN = sbcnt;
+                    #ifdef notRpackage
 					cout << "Found Assembly groups in map\n";
+                    #endif
 				}
 				if (segments == "MapGrps") {
 					mapGrpN = sbcnt;
 					//fillMapGrp = true;
+                    #ifdef notRpackage
 					cout << "Found Mapping groups in map\n";
+                    #endif
 				}
 				if (segments == "ExcludeAssembly") {
 					skSmplCol = sbcnt; 

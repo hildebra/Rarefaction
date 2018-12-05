@@ -7,7 +7,7 @@
 \description{ Rarefy datasets in R or from a path. }
 
 \usage{
-rtk(input, repeats = 10, depth = 0, ReturnMatrix = 0, margin = 2,
+rtk(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2,
     verbose = FALSE, threads = 1, tmpdir = NULL )
 }
 

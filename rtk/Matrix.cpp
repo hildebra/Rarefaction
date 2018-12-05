@@ -1,76 +1,5 @@
 #include "Matrix.h"
 
-/*
-Matrix::Matrix(const string inF):rowIDs(0),colIDs(0),sampleNameSep("")
-{
-	//reads matrix from HDD
-	string line;
-	ifstream in(inF.c_str());
-	int ini_ColPerRow(0),cnt(0);
-
-	//check MAP format
-	while(getline(in,line,'\n')) {
-		if(line.substr(0,1) == "#" || line.length()<2){continue;}
-		string segments;
-		int ColsPerRow = 0; // Initialize counter.
-		stringstream ss;
-		ss << line;
-		while (getline(ss,segments,'\t')) {
-			ColsPerRow++;
-		}
-
-		if (cnt==0){
-			ini_ColPerRow = ColsPerRow;
-		} else {
-			if (ColsPerRow != ini_ColPerRow){
-
-#ifdef notRpackage
-cerr<<"Number of columns on line "<<cnt<<" is "<<ColsPerRow<<". Expected "<<ini_ColPerRow<<" columns.\n";
-				std::exit(6);
-			}
-		}
-		cnt++;
-	}
-	//vector<mat_fl> ini_vec(ini_ColPerRow-1,0.f);
-	mat.resize(cnt-1,vector<mat_fl>(ini_ColPerRow-1,0.f));
-	colIDs.resize(ini_ColPerRow,"");
-	rowIDs.resize(cnt-1,"");
-	int lineCnt= cnt;
-	//reset input stream
-	in.clear();
-	in.seekg(0, ios::beg);
-	cnt=-2;
-	string segments;
-
-	while(getline(in,line,'\n')) {
-		cnt++;
-		if(line.substr(0,1) == "#"){continue;}
-		if (line.length()<10){continue;}
-		stringstream ss;
-		ss << line;
-		int cnt2(-2);
-		if (cnt==-1){//read header
-			cnt2++;
-			while (getline(ss,segments,'\t')) {
-				cnt2++;
-				colIDs[cnt2] = segments;
-			}
-			continue;
-		}
-		while (getline(ss,segments,'\t')) {
-			cnt2++;
-			if (cnt2==-1){
-				rowIDs[cnt] = segments;
-				continue;
-			}
-			mat[cnt][cnt2] = (mat_fl)atof(segments.c_str());
-		}
-
-	}
-	in.close();
-
-}
-*/
 
 inline mat_fl median(std::vector<mat_fl> vec, bool ignoreZeros)
 {
@@ -110,9 +39,6 @@ string join(const vector<string>& in, const string &X) {
 ModStep::ModStep(const string & s, bool & recMod, vector<string>& subMod) :alternates(0), redundancy(0) {
 	istringstream ss(s);
 	string token(""), tok2("");
-	//std::istream_iterator<std::string> beg(ss), end;
-	//std::vector<std::string> tokens(beg, end); // done!
-	//for (auto& s : tokens) { std::cout << s; }
 	while (std::getline(ss, token, '\t')) {
 		stringstream buff(token);
 		vector<string> tmp(0);
@@ -492,10 +418,8 @@ void Modules::calc_redund() {
 		}
 		statKOr[kor.second] ++;
 	}
-	//std::cout << "stats on DB KO redundancy (redundancy : occurence):\n";
 	for (size_t i = 0; i < statKOr.size(); i++) {
 		if (statKOr[i] < 1) { continue; }
-		//std::cout << i << " : " << statKOr[i] << endl;
 	}
 	for (size_t i = 0; i < mods.size(); i++) {
 		mods[i].setReddundancy(MO);
@@ -723,7 +647,10 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 	if (isGZfile(inF)) {
 #ifdef _gzipread
 		in = new igzstream(inF.c_str(), ios::in);
+
+        #ifdef notRpackage
 		cout << "Reading gzip input\n";
+        #endif
 #else
 		cout << "gzip not supported in your rtk build\n"; exit(50);
 #endif
@@ -732,16 +659,18 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 	else {
 		in = new ifstream(inF.c_str());
 	}
-
+    #ifdef notRpackage
 	if (!(*in)) {
 		cerr << "Cant open file " << inF << endl; std::exit(11);
 	}
 	if (!out) {
 		cerr << "Can't open out file " << outF << endl; std::exit(11);
 	}
+    #endif
 	int ini_ColPerRow = iniCols(in);
 	readColNms(in);
 
+    #ifdef notRpackage
 	//check that colNames and colSums are in same order..
 	for (uint i = 0; i < colIDs.size(); i++) {
 		if (colNms[i] != colIDs[i]) {
@@ -749,7 +678,8 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 			exit(339);
 		}
 	}
-	
+    #endif
+
 
 	int cnt(-1), geneCnt(0);
 	string SEP = "\t";
@@ -799,20 +729,24 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 		if (breaker) {
 			continue;
 		}
+        #ifdef notRpackage
 		if (cnt2 + 2 != ini_ColPerRow) {
 			cerr << "C2: Number of columns on line " << cnt << " is " << cnt2 + 2 << ". Expected " << ini_ColPerRow << " columns.\n";
 			std::exit(62);
 		}
+        #endif
 		out << endl;
 
 	}
 	
+    #ifdef notRpackage
 	for (uint i = 0; i < colSum.size(); i++) {
 		if (colsums[i] != colSum[i]) {
 			cout << "Unequal colSum!\n";
 			exit(339);
 		}
 	}
+    #endif
 
 
 
@@ -836,9 +770,12 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 	if (isGZfile(inF)) {
 #ifdef _gzipread
 		in = new igzstream(inF.c_str(), ios::in);
+
+        #ifdef notRpackage
 		cout << "Reading gzip input\n";
+        #endif
 #else
-		cout << "gzip not supported in your rtk build\n"; exit(50);
+	   cout << "gzip not supported in your rtk build\n"; exit(50);
 #endif
 
 	}
@@ -1018,7 +955,9 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 	if (isGZfile(inF)) {
 #ifdef _gzipread
 		in = new igzstream(inF.c_str(), ios::in);
+        #ifdef notRpackage
 		cout << "Reading gzip input\n";
+        #endif
 #else
 		cout << "gzip not supported in your rtk build\n"; exit(50);
 #endif
