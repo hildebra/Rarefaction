@@ -26,7 +26,9 @@ void lineCntOut(options* opts){
 		cout << "Reading gzip input\n";
         #endif
 #else
+        #ifdef notRpackage
 		cout << "gzip not supported in your rtk build\n"; exit(50);
+        #endif
 #endif
 
 	}	else {

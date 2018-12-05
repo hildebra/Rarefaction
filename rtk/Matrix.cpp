@@ -652,7 +652,9 @@ Matrix::Matrix(const string inF, const string outF, vector<double> colsums, vect
 		cout << "Reading gzip input\n";
         #endif
 #else
+        #ifdef notRpackage
 		cout << "gzip not supported in your rtk build\n"; exit(50);
+        #endif
 #endif
 
 	}
@@ -775,7 +777,9 @@ Matrix::Matrix(const string inF, const string outF, const string xtra, vector<st
 		cout << "Reading gzip input\n";
         #endif
 #else
+        #ifdef notRpackage
 	   cout << "gzip not supported in your rtk build\n"; exit(50);
+#endif
 #endif
 
 	}
@@ -959,7 +963,9 @@ Matrix::Matrix(const string inF, const string xtra, bool highLvl)
 		cout << "Reading gzip input\n";
         #endif
 #else
+        #ifdef notRpackage
 		cout << "gzip not supported in your rtk build\n"; exit(50);
+        #endif
 #endif
 
 	}
