@@ -110,7 +110,7 @@ void helpMsg(){
 
 	printf("\n");
 
-	std::exit(2);
+	std::exit(0);
 }
 
 
