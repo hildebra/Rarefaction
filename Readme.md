@@ -2,9 +2,11 @@
 A rarefaction software written in C++11 to rarefy large high count datasets quickly and return diversity measures.
 
 # Installation
-To use RTK you can download the binary files under https://github.com/hildebra/Rarefaction/releases or compile from source.
+The easiest way is to install from bioconda (https://anaconda.org/bioconda/rtk) using "conda install -c bioconda rtk".
 
-For the R package please see the [readme of RTK](r-package/rtk/README.md).
+For use in R, use "install.packages("rtk")".
+
+Otherwise, download RTK from https://github.com/hildebra/Rarefaction/releases or compile from source.
 
 ## Compile from source
 To build this software you will need to have a compiler for C++11 on your system. On a GNU/Linux system you usually have to install developer tools to do that. For Ubuntu this is explained here: https://help.ubuntu.com/community/InstallingCompilers
