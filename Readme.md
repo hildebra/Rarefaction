@@ -2,9 +2,15 @@
 A rarefaction software written in C++11 to rarefy large high count datasets quickly and return diversity measures.
 
 # Installation
-The easiest way is to install from bioconda (https://anaconda.org/bioconda/rtk) using "conda install -c bioconda rtk".
 
-For use in R, use "install.packages("rtk")".
+![Miniconda](https://anaconda.org/bioconda/rtk/badges/installer/conda.svg) 
+![Date](https://anaconda.org/bioconda/rtk/badges/latest_release_date.svg)
+
+The easiest way is to install from [Miniconda](https://docs.conda.io/en/latest/miniconda.html) (see [rtk package](https://anaconda.org/bioconda/rtk)) using:
+
+        conda install -c bioconda rtk
+
+For use in R, use `install.packages("rtk")`.
 
 Otherwise, download RTK from https://github.com/hildebra/Rarefaction/releases or compile from source.
 
@@ -132,7 +138,7 @@ ls -lh test.*
 ```
 
 # Citation
-If you use RTK in a publication, please consider citing the Bioinformatics application note at: https://academic.oup.com/bioinformatics/article/3111845/RTK-efficient-rarefaction-analysis-of-large
+If you use RTK in a publication, please consider citing the Bioinformatics application note at: https://academic.oup.com/bioinformatics/article/3111845/RTK-efficient-rarefaction-analysis-of-large
 
 > Saary, Paul, et al. "RTK: efficient rarefaction analysis of large datasets." 
 > Bioinformatics (2017) 
