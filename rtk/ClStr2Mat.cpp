@@ -9,10 +9,10 @@ textBlock* getClusBlock(FILE* incl,string& lastline) {//istream& incl
 		ret->txt.push_back(lastline);
 	} else {
 		//getline(incl, line);
-		fgets(buf, sizeof buf, incl);
-		buf[strcspn(buf, "\n")] = 0;
-
-		ret->txt.push_back(string(buf));
+		if(fgets(buf, sizeof buf, incl) != NULL){
+			buf[strcspn(buf, "\n")] = 0;
+			ret->txt.push_back(string(buf));
+        }
 	}
 	while (fgets(buf, sizeof buf, incl) != NULL) {
 		buf[strcspn(buf, "\n")] = 0;
