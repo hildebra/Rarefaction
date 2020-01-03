@@ -2,12 +2,12 @@ Package: rtk
 Type: Package
 Title: Rarefaction Tool Kit
 Version: 0.2.5.8
-Date: 2020-01-03
+Date: 2020-01-13
 Author: Paul Saary, Falk Hildebrand
 Maintainer: Paul Saary <rtk@paulsaary.de>
 Description: Rarefy data, calculate diversity and plot the results.
 License: GPL (>= 2)
-Imports: Rcpp (>= 0.12.3)
+Imports: Rcpp (>= 0.12.3),methods
 LinkingTo: Rcpp
 SystemRequirements: C++11
 Suggests: testthat

@@ -21,7 +21,7 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 3, add=FALSE, 
         col2=col
     }
     # get the dimension names for later
-    if (class(x) != "colCurve" && !is.null(cls) ){
+    if ((!is(x,"colCurve")) && !is.null(cls) ){
         if (!is.null(names(cls))){
             cls = cls[dimnames(x)[[2]]]
         } else if ( length(cls) == dim(x)[2] ) {
@@ -38,7 +38,7 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 3, add=FALSE, 
     #}
 
     # in case of colCurveObject, we can reuse older stuff
-    if (class(x) == "colCurve"){
+    if (is(x,"colCurve")){
         cat("collectors curve object provided\n")
         cls         <- attr(x,"cls")
         accumOrder  <- attr(x,"accumOrder")
@@ -71,7 +71,7 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 3, add=FALSE, 
         cat("Done\n")
     }
     # in case of colCurve object to nothing
-    if (class(x) == "colCurve"){
+    if (is(x,"colCurve")){
         a   <- x
         x   <- NULL
         gc()
@@ -79,14 +79,14 @@ collectors.curve = function(x, y=NULL, col = 1, times = 10, bin = 3, add=FALSE, 
         yl  <- cum.sample.matched(x,y,bin,times,accumOrder)
         a   <- yl$d
         b   <- yl$d2
-    } else if (class(x) == "rtk") {
+    } else if (is(x, "rtk")) {
         a = cum.sample.rare(x, col, times, bin, cls, accumOrder)
         # in case of two depth, we get a list of matrices
     }else {
         a = cum.sample(x, col, times, bin, cls,  accumOrder)
     }
 
-    if (class(x) != "colCurve"){
+    if (!is(x, "colCurve")){
         # Define all the attributes of the object colCurve
         attr(a,"cls")           <- cls
         attr(a,"accumOrder")    <- accumOrder
@@ -223,7 +223,7 @@ sample.diversity <- function (i, df, bin = 5, cls = NULL,accumOrder=NULL){
     return(d)
 }
 cum.sample.rare <- function (x, col = 1, times = 10, bin, cls=NULL, accumOrder=NULL){
-    if (class(x) != "rtk") {
+    if (!is(x,"rtk")) {
         stop("Not a rarefaction object")
     }
     depths <- x$depths
