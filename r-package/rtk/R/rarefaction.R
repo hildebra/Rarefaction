@@ -27,12 +27,12 @@ rtk <- function(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2,
   depth <- sort(as.numeric(depth))
 
   # convert dataframes
-  if(class(input) == "data.frame"){
+  if(is.data.frame(input)){
     input <- as.matrix(input)
   }
 
   #validate if input is a path or a matrix
-  if(class(input) == "matrix"){
+  if(is.matrix(input)){
     rare.status("Matrix object supplied for analysis", verbose)
     # validate that the matrix is numeric
     if(!is.numeric(input)){
@@ -64,7 +64,7 @@ rtk <- function(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2,
           
 
 
-  }else if(class(input) == "character"){
+  }else if(is.character(input)){
     rare.status("A path to a matrix file was supplied", verbose)
     if(!is.null(tmpdir) & margin == 2){
       uselowmem <- TRUE;
@@ -139,7 +139,7 @@ rtk <- function(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2,
 
 get.diversity <- function(obj, div = 'richness', multi = FALSE){
     if(multi == FALSE){
-      if(class(obj) != 'rtk'){
+      if(!is(obj,'rtk')){
         stop("this function requires an object of type 'rtk'")
       }
     }
@@ -162,9 +162,9 @@ get.diversity <- function(obj, div = 'richness', multi = FALSE){
 }
 
 get.median.diversity <- function(obj, div = 'richness'){
-  if(class(obj) != 'rtk'){
-    stop("this function requires an object of type 'rtk'")
-  }
+   if(!is(obj,'rtk')){
+      stop("this function requires an object of type 'rtk'")
+    }
   res <- get.diversity(obj, div)
   if(length(obj$depths) == 1){
     ret <- apply(res, 2, median)
@@ -176,7 +176,7 @@ get.median.diversity <- function(obj, div = 'richness'){
   return(ret)
 }
 get.mean.diversity <- function(obj, div = 'richness'){
-  if(class(obj) != 'rtk'){
+  if(!is(obj,'rtk')){
     stop("this function requires an object of type 'rtk'")
   }
   res <- get.diversity(obj, div)
