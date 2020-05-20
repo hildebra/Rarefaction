@@ -116,7 +116,8 @@ public:
 		//delete[] arr;
 	}
 	void rarefy(vector<double> ,string o,int rep,DivEsts*, vector<vector<rare_map>>& RareSample,
-		vector<string>& retCntsSampleName, string& skippedSample, vector<vector<vector<uint>>>* ,vector<vector<vector<uint>>>* , int=0,bool=false, bool=false);
+		vector<string>& retCntsSampleName, string& skippedSample, vector<vector<vector<uint>>>* ,
+        vector<vector<vector<uint>>>* , int=0,bool=false, bool=false, uint seed=0);
 	long getRichness(rare_map& cnts);
 	long getRichness(const vector<unsigned int>&);
 	//int maxSiz(){return vector<unsigned short>::max_size();}
@@ -125,7 +126,7 @@ public:
 private:
 	int binarySearch(vector<float>,const float x);
 	//void shuffle();
-	void shuffle_singl();
+	void shuffle_singl(uint seed);
 
 	//diversity indices
 	//method: 1=shannon, 2=simpson, 3=invsimpson

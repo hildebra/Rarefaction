@@ -17,7 +17,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
 
     cur->rarefy(opts->depth, opts->output, opts->repeats,
             div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-            opts->write, false, wrAtAll);
+            opts->write, false, wrAtAll, opts->seed);
 
     // put everything in our nice return container
     rareStruct* tmpRS       = new rareStruct();
@@ -43,7 +43,7 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options
     bool wrAtAll(opts->write > 0);
     cur->rarefy(opts->depth, opts->output, opts->repeats,
             div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-            opts->write, false, wrAtAll);
+            opts->write, false, wrAtAll, opts->seed);
 
     rareStruct* tmpRS       = new rareStruct();
     tmpRS->div              = div;
@@ -93,6 +93,7 @@ void helpMsg(){
 	printf("    -w      Number of rarefied tables to write.\n");
 	printf("    -t      Number of threads to use. Default: 1\n");
 	printf("    -ns     If set, no temporary files will be used when writing rarefaction tables to disk.\n");
+    printf("    -s      Set to > 0 to use a non random seed to make runs reproducible.\n");
 	printf("\n");
 	printf("EXAMPLE\n");
 	printf("    Rarefy a table to 1000 counts per sample with two threads. Create one table:\n");
@@ -136,7 +137,7 @@ vector<double> parseDepths(string a){
 
 options::options(int argc, char** argv) :input(""), output(""), mode(""),
     referenceDir(""), referenceFile(""),
-    depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false), oldMapStyle(false),
+    depth(), seed(0), repeats(10), write(0), threads(1), writeSwap(true), verbose(false), oldMapStyle(false),
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
     modCollapse(false), calcCoverage(false), calcCovMedian(false), check4idxMatch(false),
 	modDescr(""), modHiera(""), xtra("") {
@@ -160,6 +161,9 @@ options::options(int argc, char** argv) :input(""), output(""), mode(""),
 				depth = parseDepths(argv[++i]);
 				depthMin = (long)*std::min_element(depth.begin(), depth.end());
 			}
+            else if (!strcmp(argv[i], "-s")) {
+                seed = atoi(argv[++i]);
+            }
 			else if (!strcmp(argv[i], "-r"))
 				repeats = atoi(argv[++i]);
 			else if (!strcmp(argv[i], "-w"))

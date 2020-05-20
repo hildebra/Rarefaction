@@ -5,7 +5,9 @@ struct options
 {
 public:
 	options(int argc, char** argv);
-	options(std::string, std::string , int repeats, std::vector<double> depth, int NoOfMatrices, 
+	options(std::string, std::string , int repeats, std::vector<double> depth, 
+            unsigned int seed,
+            int NoOfMatrices, 
 		bool verbose, unsigned int threads);
 	void print_rare_details();
 	//~options();
@@ -18,10 +20,12 @@ public:
   std::string referenceFile = "";
   std::string map = "";
   std::vector<double> depth;
+  
   long depthMin;
   unsigned int repeats = 10;
   unsigned int write = 0;
   unsigned int threads = 1;
+  unsigned int seed = 0;
   bool writeSwap = true;
   bool verbose = false;
   bool oldMapStyle = true;
