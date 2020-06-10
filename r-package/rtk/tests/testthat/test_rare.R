@@ -50,9 +50,10 @@ test_that("Skipped samples are reported", {
 })
 
 test_that("Seed produces reproducible runs", {
-    data <- matrix(c(10,0,5,2,3,4,0,4,5,2,4,10,3,0,0,2,3,5,10,0,0,5,19,20,0,4,5),3)
-    a = rtk(data, seed  = 42)
-    b = rtk(data, seed  = 42)
+    data  =  matrix(sample(0:100, 1000, replace = TRUE),
+                            20)
+    a = rtk(data, seed  = 42, depth = 5)
+    b = rtk(data, seed  = 42, depth = 5)
     expect_equal(a,b)
 })
 
