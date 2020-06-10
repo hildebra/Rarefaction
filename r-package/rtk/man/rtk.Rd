@@ -8,7 +8,7 @@
 
 \usage{
 rtk(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2,
-    verbose = FALSE, threads = 1, tmpdir = NULL )
+    verbose = FALSE, threads = 1, tmpdir = NULL, seed = 0)
 }
 
 \arguments{
@@ -20,6 +20,7 @@ rtk(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2,
   \item{verbose}{If extra output should be printed to std::out or not to see progress of rarefaction. (\code{default: TRUE)}}
   \item{threads}{Number of threads to use during rarefaction}
   \item{tmpdir}{Location to store temporary files}
+  \item{seed}{Set seed to integer > 0 to get reproducible results. \code{default: 0}}
 
 }
 \details{

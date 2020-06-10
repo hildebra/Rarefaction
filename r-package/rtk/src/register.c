@@ -8,10 +8,10 @@
 */
 
 /* .Call calls */
-extern SEXP rtk_rcpp_rarefaction(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _rtk_rcpp_rarefaction(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"rtk_rcpp_rarefaction", (DL_FUNC) &rtk_rcpp_rarefaction, 12},
+    {"_rtk_rcpp_rarefaction", (DL_FUNC) &_rtk_rcpp_rarefaction, 13},
     {NULL, NULL, 0}
 };
 

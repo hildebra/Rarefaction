@@ -25,7 +25,7 @@ rareStruct* calcDivRar(int i, Matrix* Mo, DivEsts* div, options* opts,
 
     cur->rarefy(opts->depth, opts->output, opts->repeats,
             div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-            opts->write, false, wrAtAll);
+            opts->write, false, wrAtAll, opts->seed);
 
     // put everything in our nice return container
     rareStruct* tmpRS       = new rareStruct();
@@ -49,9 +49,10 @@ rareStruct* calcDivRarVec(int i, vector<string> fileNames, DivEsts* div, options
     vector<string> cntsName(opts->depth.size());
     string skippedNames;
     bool wrAtAll(opts->write > 0);
+
     cur->rarefy(opts->depth, opts->output, opts->repeats,
             div, cntsMap, cntsName, skippedNames, abundInRow, occuencesInRow,
-            opts->write, false, wrAtAll);
+            opts->write, false, wrAtAll, opts->seed);
 
     rareStruct* tmpRS       = new rareStruct();
     tmpRS->div              = div;
@@ -306,7 +307,6 @@ int rarefyMain(options* opts,  string mode,
 	bool writeFiles = false;
 
 	MyRNG rng;
-
 
 	if (mode == "memory"){
 		Matrix* Mo;

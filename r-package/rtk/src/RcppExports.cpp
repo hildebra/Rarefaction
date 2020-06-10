@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // rcpp_rarefaction
-List rcpp_rarefaction(Rcpp::String input, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, Rcpp::NumericVector depth, int NoOfMatrices, bool verbose, unsigned int threads, int margin, Rcpp::String tmpDir, bool lowmem);
-RcppExport SEXP rtk_rcpp_rarefaction(SEXP inputSEXP, SEXP rMatrixSEXP, SEXP inColNamesSEXP, SEXP inRowNamesSEXP, SEXP repeatsSEXP, SEXP depthSEXP, SEXP NoOfMatricesSEXP, SEXP verboseSEXP, SEXP threadsSEXP, SEXP marginSEXP, SEXP tmpDirSEXP, SEXP lowmemSEXP) {
+List rcpp_rarefaction(Rcpp::String input, NumericMatrix rMatrix, StringVector inColNames, StringVector inRowNames, int repeats, Rcpp::NumericVector depth, unsigned int seed, int NoOfMatrices, bool verbose, unsigned int threads, int margin, Rcpp::String tmpDir, bool lowmem);
+RcppExport SEXP _rtk_rcpp_rarefaction(SEXP inputSEXP, SEXP rMatrixSEXP, SEXP inColNamesSEXP, SEXP inRowNamesSEXP, SEXP repeatsSEXP, SEXP depthSEXP, SEXP seedSEXP, SEXP NoOfMatricesSEXP, SEXP verboseSEXP, SEXP threadsSEXP, SEXP marginSEXP, SEXP tmpDirSEXP, SEXP lowmemSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -17,13 +17,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< StringVector >::type inRowNames(inRowNamesSEXP);
     Rcpp::traits::input_parameter< int >::type repeats(repeatsSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type depth(depthSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< int >::type NoOfMatrices(NoOfMatricesSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type threads(threadsSEXP);
     Rcpp::traits::input_parameter< int >::type margin(marginSEXP);
     Rcpp::traits::input_parameter< Rcpp::String >::type tmpDir(tmpDirSEXP);
     Rcpp::traits::input_parameter< bool >::type lowmem(lowmemSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_rarefaction(input, rMatrix, inColNames, inRowNames, repeats, depth, NoOfMatrices, verbose, threads, margin, tmpDir, lowmem));
+    rcpp_result_gen = Rcpp::wrap(rcpp_rarefaction(input, rMatrix, inColNames, inRowNames, repeats, depth, seed, NoOfMatrices, verbose, threads, margin, tmpDir, lowmem));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -10,20 +10,25 @@ using namespace Rcpp;
 
 
 
-options::options(string in, string tmpDir, int r, std::vector<double> d, int NoOfMatrices, bool v, unsigned int t) :input(""), output(""), mode(""),
+options::options(string in, string tmpDir, 
+                int r, std::vector<double> d, unsigned int s, 
+                int NoOfMatrices, bool v, unsigned int t):
+    input(""), output(""), mode(""),
     referenceDir(""), referenceFile(""),
-    depth(), repeats(10), write(0), threads(1), writeSwap(true), verbose(false),
+    depth(), repeats(10), seed(0), write(0), threads(1), writeSwap(true), verbose(false),
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
     modCollapse(false), calcCoverage(false),
     xtra("")
 {
     depth  = d;
     input = in;
+    seed = s;
     output = tmpDir;
     repeats = r;
     write = NoOfMatrices;
     verbose = v;
     threads = t;
+
 }
 
 // get the options passed from R
@@ -90,7 +95,10 @@ IntegerMatrix matrix2Mat(std::vector<rare_map>& dfMat,
 
 
 
-List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>& ACE, vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& chao2, std::vector<string> skippedSamples, std::vector<string>  cntsNam, std::vector<string> rowNames, bool transpose, vector< vector< vector< rare_map > >> MaRare, unsigned int di){
+List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>& ACE, 
+        vector<vector<mat_fl>>& ICE, vector<vector<mat_fl>>& chao2, 
+        std::vector<string> skippedSamples, std::vector<string>  cntsNam, 
+        std::vector<string> rowNames, bool transpose, vector< vector< vector< rare_map > >> MaRare, unsigned int di){
     std::list<Rcpp::List> majorLst;
 
     for(uint i = 0; i < divvs.size(); i++){
@@ -141,16 +149,17 @@ List returnRList(options* opts, vector<DivEsts*>& divvs, vector<vector<mat_fl>>&
 List rcpp_rarefaction(Rcpp::String input,
         NumericMatrix rMatrix, StringVector inColNames,
         StringVector inRowNames,
-        int repeats, Rcpp::NumericVector depth, int NoOfMatrices,
+        int repeats, 
+        Rcpp::NumericVector depth, 
+        unsigned int seed,
+        int NoOfMatrices,
         bool verbose = false, unsigned int threads = 1,
         int margin=2, Rcpp::String tmpDir = "", bool lowmem = false)
 {
-
     // check for user interrup
     Rcpp::checkUserInterrupt();
     // make options:
-    options* opts = new options(input, tmpDir, repeats, Rcpp::as<std::vector<double>>(depth), NoOfMatrices, verbose, threads);
-
+    options* opts = new options(input, tmpDir, repeats, Rcpp::as<std::vector<double>>(depth), seed, NoOfMatrices, verbose, threads);
 
     // initialize variables
     std::vector< std::vector < double > > rmat;
