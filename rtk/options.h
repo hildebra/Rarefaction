@@ -23,9 +23,9 @@ public:
   
   long depthMin;
   unsigned int repeats = 10;
+  unsigned int seed = 1;
   unsigned int write = 0;
   unsigned int threads = 1;
-  unsigned int seed = 0;
   bool writeSwap = true;
   bool verbose = false;
   bool oldMapStyle = true;

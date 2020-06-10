@@ -135,9 +135,13 @@ vector<double> parseDepths(string a){
     return vect;
 }
 
-options::options(int argc, char** argv) :input(""), output(""), mode(""),
+options::options(int argc, char** argv):
+    input(""), output(""), mode(""),
     referenceDir(""), referenceFile(""),
-    depth(), seed(0), repeats(10), write(0), threads(1), writeSwap(true), verbose(false), oldMapStyle(false),
+    depth(), 
+    repeats(10), 
+    seed(0),
+    write(0), threads(1), writeSwap(true), verbose(false), oldMapStyle(false),
     modDB(""), modRedund(5), modEnzCompl(0.5f), modModCompl(0.5f), modWrXtraInfo(false), 
     modCollapse(false), calcCoverage(false), calcCovMedian(false), check4idxMatch(false),
 	modDescr(""), modHiera(""), xtra("") {
