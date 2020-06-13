@@ -1,8 +1,8 @@
 Package: rtk
 Type: Package
 Title: Rarefaction Tool Kit
-Version: 0.2.6
-Date: 2020-06-10
+Version: 0.2.6.1
+Date: 2020-06-13
 Author: Paul Saary, Falk Hildebrand
 Maintainer: Paul Saary <rtk@paulsaary.de>
 Description: Rarefy data, calculate diversity and plot the results.
