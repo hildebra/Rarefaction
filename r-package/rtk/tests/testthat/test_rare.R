@@ -53,11 +53,41 @@ test_that("rare has the right names", {
 })
 
 
-test_that("diversity has the right names", {
+test_that("divvs has right names", {
   # Single thread
+  data <- matrix(seq(from = 1, to = 100), 10)
+  cnames <- paste(rep("TestColNames"), 1:ncol(data))
+  rnames <- paste(rep("TestRowNames"), 1:nrow(data))
+  colnames(data) <- cnames
+  rownames(data) <- rnames
 
-  # Parallel
+  # Single thread cases
+  res <- rtk(data, depth = min(colSums(data)), ReturnMatrix = 1, margin = 2,
+             verbose = FALSE)
+  expect_equal(
+    lapply(res$divvs, \(x) {x$samplename}) |> unlist(),
+    cnames
+  )
+  res <- rtk(data, depth = min(colSums(data)), ReturnMatrix = 1, margin = 1,
+             verbose = FALSE)
+  expect_equal(
+    lapply(res$divvs, \(x) {x$samplename}) |> unlist(),
+    rnames
+  )
 
+  # Multithread cases
+  res <- rtk(data, depth = min(colSums(data)), ReturnMatrix = 1, margin = 2,
+             verbose = FALSE, threads = 4)
+  expect_equal(
+    lapply(res$divvs, \(x) {x$samplename}) |> unlist(),
+    cnames
+  )
+  res <- rtk(data, depth = min(colSums(data)), ReturnMatrix = 1, margin = 1,
+             verbose = FALSE, threads = 4)
+  expect_equal(
+    lapply(res$divvs, \(x) {x$samplename}) |> unlist(),
+    rnames
+  )
 })
 
 
