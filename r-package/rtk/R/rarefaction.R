@@ -92,7 +92,20 @@ rtk <- function(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2,
   }else{
     stop("Unknown input type. Path to a file (character) or a numeric matrix are accepted types.")
   }
-    result <- lapply(result, function(res){
+    result <- lapply(result, function(res) {
+        # Parallel processing can cause rarefied matrices to have different
+        # column or row ordering than input. Rearrange to input order if
+        # number of threads > 1
+        if (threads > 1) {
+          res$raremat <- lapply(res$raremat, \(mat) {
+            # Some rows or columns could be dropped, so take subset which is 
+            # shared
+            cols <- colnames(input)[colnames(input) %in% colnames(mat)]
+            rows <- rownames(input)[rownames(input) %in% rownames(mat)]
+            return(mat[rows, cols])
+          })
+        }
+
         # remove names, if there werent any
         if(removeRnames == TRUE && removeCnames == TRUE){
           res$raremat <- lapply(res$raremat, unname)
@@ -104,7 +117,6 @@ rtk <- function(input, repeats = 10, depth = 1000, ReturnMatrix = 0, margin = 2,
             res$raremat <- lapply(res$raremat, function(x) {colnames(x) <- NULL; return (x)})
           }
         }
-            
         
 
         if(length(res$skipped) > 0){

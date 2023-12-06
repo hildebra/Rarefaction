@@ -24,6 +24,70 @@ test_that("rare has the right names", {
 
   expect_equal(colnames(rtk(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 1, verbose=F)$raremat[[1]]), cnames)
   expect_equal(rownames(rtk(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 1, verbose=F)$raremat[[1]]), rnames)
+
+  # Test rare has the right names when run with multiple threads
+  # If column / row order is truly random, there is still a small chance this
+  # test passes by randomly coming back in the right order. Could consider
+  # running multiple times if this is a consistent issue.
+  expect_equal(colnames(rtk(data, depth=min(colSums(data)), ReturnMatrix = 1, margin = 2, verbose=F, threads=4)$raremat[[1]]), cnames)
+  expect_equal(rownames(rtk(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 2, verbose=F, threads=4)$raremat[[1]]), rnames)
+
+  expect_equal(colnames(rtk(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 1, verbose=F, threads=4)$raremat[[1]]), cnames)
+  expect_equal(rownames(rtk(data, depth=min(rowSums(data)), ReturnMatrix = 1, margin = 1, verbose=F, threads=4)$raremat[[1]]), rnames)
+
+  # Test name order is consistent within rarefaction matrices from the same call
+  rare_mats <- rtk(data, depth=min(colSums(data)), ReturnMatrix = 5, margin = 2, verbose=F, threads=4, repeats=5)$raremat
+  for (i in seq(1, length(rare_mats) - 1)) {
+    for (j in seq(i + 1, length(rare_mats))) {
+      expect_equal(colnames(rare_mats[[i]]), colnames(rare_mats[[j]]))
+      expect_equal(rownames(rare_mats[[i]]), rownames(rare_mats[[j]]))
+    }
+  }
+  rare_mats <- rtk(data, depth=min(rowSums(data)), ReturnMatrix = 5, margin = 1, verbose=F, threads=4, repeats=5)$raremat
+  for (i in seq(1, length(rare_mats) - 1)) {
+    for (j in seq(i + 1, length(rare_mats))) {
+      expect_equal(colnames(rare_mats[[i]]), colnames(rare_mats[[j]]))
+      expect_equal(rownames(rare_mats[[i]]), rownames(rare_mats[[j]]))
+    }
+  }
+})
+
+
+test_that("divvs has right names", {
+  # Single thread
+  data <- matrix(seq(from = 1, to = 100), 10)
+  cnames <- paste(rep("TestColNames"), 1:ncol(data))
+  rnames <- paste(rep("TestRowNames"), 1:nrow(data))
+  colnames(data) <- cnames
+  rownames(data) <- rnames
+
+  # Single thread cases
+  res <- rtk(data, depth = min(colSums(data)), ReturnMatrix = 1, margin = 2,
+             verbose = FALSE)
+  expect_equal(
+    lapply(res$divvs, \(x) {x$samplename}) |> unlist(),
+    cnames
+  )
+  res <- rtk(data, depth = min(colSums(data)), ReturnMatrix = 1, margin = 1,
+             verbose = FALSE)
+  expect_equal(
+    lapply(res$divvs, \(x) {x$samplename}) |> unlist(),
+    rnames
+  )
+
+  # Multithread cases
+  res <- rtk(data, depth = min(colSums(data)), ReturnMatrix = 1, margin = 2,
+             verbose = FALSE, threads = 4)
+  expect_equal(
+    lapply(res$divvs, \(x) {x$samplename}) |> unlist(),
+    cnames
+  )
+  res <- rtk(data, depth = min(colSums(data)), ReturnMatrix = 1, margin = 1,
+             verbose = FALSE, threads = 4)
+  expect_equal(
+    lapply(res$divvs, \(x) {x$samplename}) |> unlist(),
+    rnames
+  )
 })
 
 
