@@ -251,3 +251,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+rtk.Rcheck/
+rtk_*.tar.gz
